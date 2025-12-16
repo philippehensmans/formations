@@ -7,8 +7,8 @@ if (!isFormateurLoggedIn()) {
 }
 
 $db = getDB();
-$sessionId = $_SESSION['session_id'];
-$sessionCode = $_SESSION['session_code'];
+$sessionId = $_SESSION['formateur_session_id'];
+$sessionCode = $_SESSION['formateur_session_code'];
 
 // Recuperer infos session
 $stmt = $db->prepare("SELECT * FROM sessions WHERE id = ?");
