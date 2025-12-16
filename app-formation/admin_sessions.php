@@ -1,14 +1,66 @@
 <?php
 require_once 'config/database.php';
 
-if (!isFormateurLoggedIn()) {
-    header('Location: index.php');
-    exit;
-}
-
 $db = getDB();
 $message = '';
 $error = '';
+$showAdminLogin = false;
+
+// Verifier acces: formateur connecte OU admin authentifie
+if (!isFormateurLoggedIn() && !isAdminLoggedIn()) {
+    // Verifier si tentative de connexion admin
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['admin_password'])) {
+        if ($_POST['admin_password'] === ADMIN_PASSWORD) {
+            $_SESSION['is_admin'] = true;
+        } else {
+            $error = 'Mot de passe administrateur incorrect';
+            $showAdminLogin = true;
+        }
+    } else {
+        $showAdminLogin = true;
+    }
+}
+
+// Si besoin d'afficher le formulaire admin
+if ($showAdminLogin && !isAdminLoggedIn() && !isFormateurLoggedIn()) {
+    ?>
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Administration - Connexion</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body class="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-lg p-8 w-full max-w-md">
+            <h1 class="text-2xl font-bold text-gray-800 mb-6 text-center">Administration</h1>
+            <?php if ($error): ?>
+                <div class="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded-lg mb-4">
+                    <?= sanitize($error) ?>
+                </div>
+            <?php endif; ?>
+            <form method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 font-medium mb-2">Mot de passe administrateur</label>
+                    <input type="password" name="admin_password" required
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                        placeholder="Entrez le mot de passe">
+                </div>
+                <button type="submit"
+                    class="w-full bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700 transition">
+                    Acceder
+                </button>
+            </form>
+            <div class="mt-4 text-center">
+                <a href="index.php" class="text-sm text-gray-500 hover:text-gray-700">← Retour a l'accueil</a>
+            </div>
+        </div>
+    </body>
+    </html>
+    <?php
+    exit;
+}
 
 // Traitement des actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -22,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $code = generateSessionCode();
             $passwordHash = $password ? password_hash($password, PASSWORD_DEFAULT) : null;
 
-            $stmt = $db->prepare("INSERT INTO sessions (code, nom, password_hash) VALUES (?, ?, ?)");
+            $stmt = $db->prepare("INSERT INTO sessions (code, nom, formateur_password) VALUES (?, ?, ?)");
             $stmt->execute([$code, $nom, $passwordHash]);
 
             $message = "Session creee avec le code: $code";
@@ -161,7 +213,7 @@ $sessions = $db->query("
                                                 <?php else: ?>
                                                     <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Inactive</span>
                                                 <?php endif; ?>
-                                                <?php if ($s['password_hash']): ?>
+                                                <?php if ($s['formateur_password']): ?>
                                                     <span class="text-gray-400" title="Protegee par mot de passe">🔒</span>
                                                 <?php endif; ?>
                                             </div>

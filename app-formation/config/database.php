@@ -72,12 +72,19 @@ function initDatabase($db) {
         duree TEXT DEFAULT '',
         matrice_data TEXT DEFAULT '{}',
         completion_percent INTEGER DEFAULT 0,
+        is_submitted INTEGER DEFAULT 0,
         submitted_at DATETIME,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (participant_id) REFERENCES participants(id),
         FOREIGN KEY (session_id) REFERENCES sessions(id)
     )");
+
+    // Creer une session par defaut si aucune n'existe
+    $stmt = $db->query("SELECT COUNT(*) as count FROM sessions");
+    if ($stmt->fetch()['count'] == 0) {
+        $db->exec("INSERT INTO sessions (code, nom, is_active) VALUES ('DEMO01', 'Session Demo', 1)");
+    }
 }
 
 /**

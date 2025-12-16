@@ -57,6 +57,9 @@ $isSubmitted = $participant['is_submitted'] == 1;
                 <span class="text-blue-200 text-sm ml-2"><?= sanitize($participant['session_nom']) ?></span>
             </div>
             <div class="flex items-center gap-4">
+                <button onclick="manualSave()" class="text-sm bg-green-500 hover:bg-green-600 px-3 py-1 rounded font-medium">
+                    Sauvegarder
+                </button>
                 <span id="saveStatus" class="text-sm px-3 py-1 rounded-full bg-white/20">
                     <?= $isSubmitted ? 'Soumis' : 'Brouillon' ?>
                 </span>
@@ -457,6 +460,11 @@ $isSubmitted = $participant['is_submitted'] == 1;
             console.error('Erreur:', error);
             document.getElementById('saveStatus').textContent = 'Erreur reseau';
         }
+    }
+
+    async function manualSave() {
+        if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
+        await saveData();
     }
 
     async function submitCadre() {
