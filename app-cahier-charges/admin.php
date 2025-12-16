@@ -62,6 +62,26 @@ if (isset($_GET['view'])) {
             </div>
         </div>
 
+        <!-- Actions de nettoyage -->
+        <?php if ($totalCahiers > 0 || $totalParticipants > 0): ?>
+        <div class="bg-red-50 border-2 border-red-200 rounded-xl p-4 mb-6">
+            <h3 class="font-bold text-red-800 mb-3">Nettoyage apres formation</h3>
+            <div class="flex flex-wrap gap-3">
+                <?php if ($totalCahiers > 0): ?>
+                <button onclick="deleteAllCahiers(false)" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded text-sm">
+                    Supprimer tous les cahiers (<?= $totalCahiers ?>)
+                </button>
+                <?php endif; ?>
+                <?php if ($totalParticipants > 0): ?>
+                <button onclick="deleteAllCahiers(true)" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm">
+                    Supprimer cahiers + participants (<?= $totalParticipants ?>)
+                </button>
+                <?php endif; ?>
+            </div>
+            <p class="text-xs text-red-600 mt-2">Attention : ces actions sont irreversibles !</p>
+        </div>
+        <?php endif; ?>
+
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Liste des participants -->
             <div class="bg-white rounded-xl shadow overflow-hidden">
@@ -82,18 +102,25 @@ if (isset($_GET['view'])) {
                 <?php else: ?>
                     <div class="divide-y max-h-96 overflow-y-auto">
                         <?php foreach ($cahiers as $cahier): ?>
-                            <a href="?view=<?= $cahier['id'] ?><?= $showAll ? '&all=1' : '' ?>" class="block p-4 hover:bg-gray-50 <?= ($selectedCahier && $selectedCahier['id'] == $cahier['id']) ? 'bg-blue-50 border-l-4 border-blue-600' : '' ?>">
-                                <div class="font-semibold"><?= sanitize($cahier['username']) ?></div>
-                                <div class="text-sm text-gray-600"><?= sanitize($cahier['titre_projet'] ?: 'Sans titre') ?></div>
-                                <div class="text-xs text-gray-400 mt-1 flex gap-2">
-                                    <span><?= date('d/m/Y H:i', strtotime($cahier['updated_at'])) ?></span>
-                                    <?php if ($cahier['is_shared']): ?>
-                                        <span class="bg-green-100 text-green-700 px-2 rounded">Partage</span>
-                                    <?php else: ?>
-                                        <span class="bg-red-100 text-red-700 px-2 rounded">Non partage</span>
-                                    <?php endif; ?>
-                                </div>
-                            </a>
+                            <div class="flex items-center hover:bg-gray-50 <?= ($selectedCahier && $selectedCahier['id'] == $cahier['id']) ? 'bg-blue-50 border-l-4 border-blue-600' : '' ?>">
+                                <a href="?view=<?= $cahier['id'] ?><?= $showAll ? '&all=1' : '' ?>" class="block p-4 flex-1">
+                                    <div class="font-semibold"><?= sanitize($cahier['username']) ?></div>
+                                    <div class="text-sm text-gray-600"><?= sanitize($cahier['titre_projet'] ?: 'Sans titre') ?></div>
+                                    <div class="text-xs text-gray-400 mt-1 flex gap-2">
+                                        <span><?= date('d/m/Y H:i', strtotime($cahier['updated_at'])) ?></span>
+                                        <?php if ($cahier['is_shared']): ?>
+                                            <span class="bg-green-100 text-green-700 px-2 rounded">Partage</span>
+                                        <?php else: ?>
+                                            <span class="bg-red-100 text-red-700 px-2 rounded">Non partage</span>
+                                        <?php endif; ?>
+                                    </div>
+                                </a>
+                                <button onclick="event.stopPropagation(); deleteCahier(<?= $cahier['id'] ?>, '<?= addslashes(sanitize($cahier['username'])) ?>')" class="p-2 mr-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded" title="Supprimer ce cahier">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </div>
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
@@ -245,5 +272,47 @@ if (isset($_GET['view'])) {
             .max-h-\\[70vh\\] { max-height: none; overflow: visible; }
         }
     </style>
+
+    <script>
+    async function deleteAllCahiers(includeUsers) {
+        const msg = includeUsers
+            ? 'ATTENTION : Supprimer TOUS les cahiers ET les comptes participants ?\n\nCette action est IRREVERSIBLE !'
+            : 'ATTENTION : Supprimer TOUS les cahiers ?\n\nCette action est IRREVERSIBLE !';
+
+        if (confirm(msg)) {
+            try {
+                const url = 'api.php?action=deleteAll' + (includeUsers ? '&users=1' : '');
+                const response = await fetch(url);
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('Suppression effectuee avec succes.');
+                    location.reload();
+                } else {
+                    alert('Erreur: ' + (result.error || 'Echec de la suppression'));
+                }
+            } catch (error) {
+                alert('Erreur de connexion: ' + error.message);
+            }
+        }
+    }
+
+    async function deleteCahier(cahierId, username) {
+        if (confirm('Supprimer le cahier de ' + username + ' ?')) {
+            try {
+                const response = await fetch('api.php?action=delete&id=' + cahierId);
+                const result = await response.json();
+
+                if (result.success) {
+                    location.reload();
+                } else {
+                    alert('Erreur: ' + (result.error || 'Echec de la suppression'));
+                }
+            } catch (error) {
+                alert('Erreur de connexion: ' + error.message);
+            }
+        }
+    }
+    </script>
 </body>
 </html>
