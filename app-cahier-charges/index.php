@@ -11,256 +11,360 @@ $user = getCurrentUser();
     <title>Cahier des Charges - <?= sanitize($user['username']) ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        .step { display: none; }
+        .step.active { display: block; }
+        .step-indicator { transition: all 0.3s; }
+        .step-indicator.completed { background: #10b981; color: white; }
+        .step-indicator.current { background: #3b82f6; color: white; transform: scale(1.1); }
+    </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
     <!-- Barre utilisateur -->
-    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 shadow-lg">
-        <div class="max-w-7xl mx-auto flex justify-between items-center flex-wrap gap-4">
-            <div class="flex items-center gap-4">
-                <span class="font-semibold">Connecte : <strong><?= sanitize($user['username']) ?></strong></span>
+    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-3 shadow-lg">
+        <div class="max-w-5xl mx-auto flex justify-between items-center flex-wrap gap-3">
+            <span class="font-semibold">Connecte : <strong><?= sanitize($user['username']) ?></strong>
                 <?php if ($user['is_admin']): ?>
-                    <a href="admin.php" class="bg-white/20 hover:bg-white/30 px-3 py-1 rounded text-sm">Interface Formateur</a>
+                    <a href="admin.php" class="ml-2 bg-white/20 hover:bg-white/30 px-2 py-1 rounded text-xs">Admin</a>
                 <?php endif; ?>
-            </div>
-            <div class="flex items-center gap-4">
-                <label class="flex items-center gap-2 cursor-pointer">
+            </span>
+            <div class="flex items-center gap-3">
+                <label class="flex items-center gap-2 cursor-pointer text-sm">
                     <input type="checkbox" id="shareToggle" onchange="toggleShare()" class="w-4 h-4">
-                    <span class="text-sm">Partager avec le formateur</span>
+                    Partager
                 </label>
-                <span id="saveStatus" class="text-sm opacity-80">Chargement...</span>
-                <a href="logout.php" class="bg-white/20 hover:bg-white/30 px-3 py-1 rounded text-sm">Deconnexion</a>
+                <span id="saveStatus" class="text-xs opacity-80">...</span>
+                <a href="logout.php" class="bg-white/20 hover:bg-white/30 px-2 py-1 rounded text-xs">Deconnexion</a>
             </div>
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+    <div class="max-w-5xl mx-auto p-4 sm:p-6">
         <!-- En-tete -->
-        <div class="bg-white rounded-2xl shadow-xl p-6 sm:p-8 mb-8">
-            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-4 text-center">
-                Cahier des Charges Associatif
-            </h1>
-            <p class="text-lg text-gray-600 text-center mb-6">
-                Outil de planification et de gestion de projets pour associations
-            </p>
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6 text-center">
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Cahier des Charges Associatif</h1>
+            <p class="text-gray-600">Completez votre cahier des charges etape par etape</p>
+        </div>
 
-            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">Qu'est-ce qu'un Cahier des Charges ?</h2>
-                <p class="text-gray-700 leading-relaxed mb-4">
-                    Le <strong>Cahier des Charges</strong> est un document de reference qui definit precisement
-                    les objectifs, les moyens, les contraintes et les resultats attendus d'un projet associatif.
-                </p>
-                <div class="bg-white rounded-lg p-4">
-                    <h3 class="font-bold text-gray-800 mb-3">Pourquoi utiliser un Cahier des Charges ?</h3>
-                    <ul class="space-y-2 text-sm">
-                        <li class="flex items-start"><span class="text-green-500 mr-2">OK</span><strong>Clarifier :</strong> Definir precisement les objectifs</li>
-                        <li class="flex items-start"><span class="text-green-500 mr-2">OK</span><strong>Organiser :</strong> Structurer votre projet</li>
-                        <li class="flex items-start"><span class="text-green-500 mr-2">OK</span><strong>Piloter :</strong> Suivre l'avancement</li>
-                        <li class="flex items-start"><span class="text-green-500 mr-2">OK</span><strong>Communiquer :</strong> Partager une vision commune</li>
-                    </ul>
-                </div>
+        <!-- Indicateurs d'etapes -->
+        <div class="bg-white rounded-xl shadow-lg p-4 mb-6">
+            <div class="flex justify-between items-center overflow-x-auto gap-2" id="stepIndicators">
+                <button onclick="goToStep(1)" class="step-indicator current flex flex-col items-center p-2 rounded-lg min-w-[80px]">
+                    <span class="text-lg font-bold">1</span>
+                    <span class="text-xs">Projet</span>
+                </button>
+                <div class="flex-1 h-1 bg-gray-200 min-w-[20px]"></div>
+                <button onclick="goToStep(2)" class="step-indicator flex flex-col items-center p-2 rounded-lg bg-gray-100 min-w-[80px]">
+                    <span class="text-lg font-bold">2</span>
+                    <span class="text-xs">Vision</span>
+                </button>
+                <div class="flex-1 h-1 bg-gray-200 min-w-[20px]"></div>
+                <button onclick="goToStep(3)" class="step-indicator flex flex-col items-center p-2 rounded-lg bg-gray-100 min-w-[80px]">
+                    <span class="text-lg font-bold">3</span>
+                    <span class="text-xs">Objectifs</span>
+                </button>
+                <div class="flex-1 h-1 bg-gray-200 min-w-[20px]"></div>
+                <button onclick="goToStep(4)" class="step-indicator flex flex-col items-center p-2 rounded-lg bg-gray-100 min-w-[80px]">
+                    <span class="text-lg font-bold">4</span>
+                    <span class="text-xs">Resultats</span>
+                </button>
+                <div class="flex-1 h-1 bg-gray-200 min-w-[20px]"></div>
+                <button onclick="goToStep(5)" class="step-indicator flex flex-col items-center p-2 rounded-lg bg-gray-100 min-w-[80px]">
+                    <span class="text-lg font-bold">5</span>
+                    <span class="text-xs">Risques</span>
+                </button>
+                <div class="flex-1 h-1 bg-gray-200 min-w-[20px]"></div>
+                <button onclick="goToStep(6)" class="step-indicator flex flex-col items-center p-2 rounded-lg bg-gray-100 min-w-[80px]">
+                    <span class="text-lg font-bold">6</span>
+                    <span class="text-xs">Ressources</span>
+                </button>
+                <div class="flex-1 h-1 bg-gray-200 min-w-[20px]"></div>
+                <button onclick="goToStep(7)" class="step-indicator flex flex-col items-center p-2 rounded-lg bg-gray-100 min-w-[80px]">
+                    <span class="text-lg font-bold">7</span>
+                    <span class="text-xs">Pilotage</span>
+                </button>
             </div>
         </div>
 
-        <!-- Formulaire -->
-        <div class="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">Construisez votre Cahier des Charges</h2>
+        <!-- Contenu des etapes -->
+        <form id="cahierForm">
+            <!-- ETAPE 1: Grandes lignes -->
+            <div class="step active" data-step="1">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg p-4 mb-6">
+                        <h2 class="text-xl font-bold">Etape 1/7 : Les Grandes Lignes du Projet</h2>
+                        <p class="text-sm opacity-90">Definissez les informations generales de votre projet</p>
+                    </div>
 
-            <form id="cahierForm" class="space-y-8">
-                <!-- 1. Grandes lignes -->
-                <div class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-6 border-4 border-blue-200">
-                    <h3 class="text-xl font-bold text-blue-800 mb-4">Les Grandes Lignes du Projet</h3>
                     <div class="space-y-4">
-                        <input type="text" id="titreProjet" placeholder="Titre du projet"
-                               class="w-full px-4 py-3 border-2 border-blue-300 rounded-lg focus:border-blue-500 focus:outline-none" oninput="scheduleAutoSave()">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Titre du projet *</label>
+                            <input type="text" id="titreProjet" placeholder="Ex: Festival solidaire 2025"
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none" oninput="scheduleAutoSave()">
+                        </div>
 
                         <div class="grid sm:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm text-blue-700 mb-1">Date de debut</label>
-                                <input type="date" id="dateDebut" class="w-full px-4 py-3 border-2 border-blue-300 rounded-lg focus:border-blue-500 focus:outline-none" oninput="scheduleAutoSave()">
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Date de debut</label>
+                                <input type="date" id="dateDebut" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none" oninput="scheduleAutoSave()">
                             </div>
                             <div>
-                                <label class="block text-sm text-blue-700 mb-1">Date de fin</label>
-                                <input type="date" id="dateFin" class="w-full px-4 py-3 border-2 border-blue-300 rounded-lg focus:border-blue-500 focus:outline-none" oninput="scheduleAutoSave()">
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Date de fin</label>
+                                <input type="date" id="dateFin" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none" oninput="scheduleAutoSave()">
                             </div>
                         </div>
 
-                        <div class="bg-white rounded-lg p-4">
-                            <h4 class="font-bold text-blue-700 mb-3">Equipe de projet</h4>
-                            <div class="grid sm:grid-cols-2 gap-4">
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h4 class="font-bold text-gray-700 mb-3">Equipe de projet</h4>
+                            <div class="grid sm:grid-cols-2 gap-3">
                                 <input type="text" id="chefProjet" placeholder="Chef de projet" class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-sm" oninput="scheduleAutoSave()">
                                 <input type="text" id="sponsor" placeholder="Sponsor" class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-sm" oninput="scheduleAutoSave()">
                                 <input type="text" id="groupeTravail" placeholder="Groupe de travail" class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-sm" oninput="scheduleAutoSave()">
                                 <input type="text" id="benevoles" placeholder="Benevoles" class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-sm" oninput="scheduleAutoSave()">
                             </div>
                             <textarea id="autresActeurs" placeholder="Autres acteurs (membres, coordinations, prestataires)..."
-                                      class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg mt-4 text-sm" rows="2" oninput="scheduleAutoSave()"></textarea>
+                                      class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg mt-3 text-sm" rows="2" oninput="scheduleAutoSave()"></textarea>
                         </div>
 
-                        <textarea id="objectifStrategique" placeholder="Objectif du plan strategique concerne..."
-                                  class="w-full px-4 py-3 border-2 border-blue-300 rounded-lg" rows="2" oninput="scheduleAutoSave()"></textarea>
-
-                        <textarea id="inclusivite" placeholder="En quoi ce projet est-il inclusif ? (diversite, accessibilite...)..."
-                                  class="w-full px-4 py-3 border-2 border-blue-300 rounded-lg" rows="2" oninput="scheduleAutoSave()"></textarea>
-
-                        <textarea id="aspectDigital" placeholder="Aspect digital du projet (outils numeriques, communication en ligne...)..."
-                                  class="w-full px-4 py-3 border-2 border-blue-300 rounded-lg" rows="2" oninput="scheduleAutoSave()"></textarea>
-
-                        <textarea id="evolution" placeholder="Points d'evolution par rapport a l'an passe..."
-                                  class="w-full px-4 py-3 border-2 border-blue-300 rounded-lg" rows="3" oninput="scheduleAutoSave()"></textarea>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Objectif strategique concerne</label>
+                            <textarea id="objectifStrategique" placeholder="A quel objectif du plan strategique ce projet repond-il ?"
+                                      class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg" rows="2" oninput="scheduleAutoSave()"></textarea>
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- 2. Vision -->
-                <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border-4 border-purple-200">
-                    <h3 class="text-xl font-bold text-purple-800 mb-4">La Vision du Projet</h3>
+            <!-- ETAPE 2: Vision -->
+            <div class="step" data-step="2">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg p-4 mb-6">
+                        <h2 class="text-xl font-bold">Etape 2/7 : La Vision du Projet</h2>
+                        <p class="text-sm opacity-90">Decrivez votre projet et ses objectifs</p>
+                    </div>
+
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-semibold text-purple-700 mb-2">Description du projet</label>
-                            <textarea id="descriptionProjet" placeholder="Decrivez votre approche, la mise en oeuvre, les alliances..."
-                                      class="w-full px-4 py-3 border-2 border-purple-300 rounded-lg" rows="5" oninput="scheduleAutoSave()"></textarea>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Description du projet</label>
+                            <textarea id="descriptionProjet" placeholder="Decrivez votre approche, la mise en oeuvre, les alliances envisagees..."
+                                      class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg" rows="5" oninput="scheduleAutoSave()"></textarea>
                         </div>
+
                         <div>
-                            <label class="block text-sm font-semibold text-purple-700 mb-2">Objectif du projet</label>
-                            <textarea id="objectifProjet" placeholder="Quel probleme ce projet cherche-t-il a resoudre ?"
-                                      class="w-full px-4 py-3 border-2 border-purple-300 rounded-lg" rows="4" oninput="scheduleAutoSave()"></textarea>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Objectif du projet</label>
+                            <textarea id="objectifProjet" placeholder="Quel probleme ce projet cherche-t-il a resoudre ? Comment contribuera-t-il a le resoudre ?"
+                                      class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg" rows="4" oninput="scheduleAutoSave()"></textarea>
                         </div>
+
                         <div>
-                            <label class="block text-sm font-semibold text-purple-700 mb-2">Logique du projet</label>
-                            <textarea id="logiqueProjet" placeholder="Pourquoi ce projet ? Pourquoi maintenant ? Quel est l'impact attendu ?"
-                                      class="w-full px-4 py-3 border-2 border-purple-300 rounded-lg" rows="4" oninput="scheduleAutoSave()"></textarea>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Logique du projet</label>
+                            <textarea id="logiqueProjet" placeholder="Pourquoi ce projet ? Pourquoi maintenant ? Quel impact attendu ?"
+                                      class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg" rows="4" oninput="scheduleAutoSave()"></textarea>
+                        </div>
+
+                        <div class="grid sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Aspect inclusif</label>
+                                <textarea id="inclusivite" placeholder="En quoi ce projet est-il inclusif ?"
+                                          class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg" rows="3" oninput="scheduleAutoSave()"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Aspect digital</label>
+                                <textarea id="aspectDigital" placeholder="Outils numeriques utilises ?"
+                                          class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg" rows="3" oninput="scheduleAutoSave()"></textarea>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Evolution par rapport a l'an passe</label>
+                            <textarea id="evolution" placeholder="Si projet recurrent, quels sont les points d'evolution ?"
+                                      class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg" rows="2" oninput="scheduleAutoSave()"></textarea>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- 3. Objectifs -->
-                <div class="bg-gradient-to-r from-green-50 to-teal-50 rounded-xl p-6 border-4 border-green-200">
-                    <h3 class="text-xl font-bold text-green-800 mb-4">Les Objectifs</h3>
+            <!-- ETAPE 3: Objectifs -->
+            <div class="step" data-step="3">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-lg p-4 mb-6">
+                        <h2 class="text-xl font-bold">Etape 3/7 : Les Objectifs</h2>
+                        <p class="text-sm opacity-90">Definissez vos objectifs global et specifiques</p>
+                    </div>
+
                     <div class="space-y-6">
-                        <div class="bg-white rounded-lg p-4 border-l-4 border-yellow-400">
-                            <label class="block text-sm font-semibold text-green-700 mb-2">Objectif Global</label>
-                            <p class="text-xs text-gray-600 mb-3 italic">L'objectif "lointain", sur lequel nous n'avons pas de prise directe</p>
-                            <textarea id="objectifGlobal" placeholder="Ex: Les convictions racistes auront diminue de moitie en 2030"
-                                      class="w-full px-4 py-3 border-2 border-green-300 rounded-lg" rows="3" oninput="scheduleAutoSave()"></textarea>
+                        <div class="bg-yellow-50 rounded-lg p-4 border-l-4 border-yellow-400">
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Objectif Global</label>
+                            <p class="text-xs text-gray-500 mb-2 italic">L'objectif "lointain" sur lequel d'autres facteurs ont aussi une influence</p>
+                            <textarea id="objectifGlobal" placeholder="Ex: Reduire les discriminations dans notre region d'ici 2030"
+                                      class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg" rows="3" oninput="scheduleAutoSave()"></textarea>
                         </div>
-                        <div class="bg-white rounded-lg p-4 border-l-4 border-orange-400">
-                            <label class="block text-sm font-semibold text-green-700 mb-2">Objectifs Specifiques</label>
-                            <p class="text-xs text-gray-600 mb-3 italic">Ce qu'on entend changer dans notre sphere d'influence</p>
+
+                        <div class="bg-orange-50 rounded-lg p-4 border-l-4 border-orange-400">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Objectifs Specifiques</label>
+                            <p class="text-xs text-gray-500 mb-3 italic">Ce que VOUS allez changer concretement (mesurable et atteignable)</p>
                             <div id="objectifsSpecifiquesContainer" class="space-y-2"></div>
                             <button type="button" onclick="ajouterObjectifSpecifique()"
                                     class="mt-3 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm">
-                                + Ajouter un Objectif Specifique
+                                + Ajouter un objectif specifique
                             </button>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- 4. Resultats et Indicateurs -->
-                <div class="bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-6 border-4 border-orange-200">
-                    <h3 class="text-xl font-bold text-orange-800 mb-4">Resultats et Indicateurs</h3>
+            <!-- ETAPE 4: Resultats -->
+            <div class="step" data-step="4">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-lg p-4 mb-6">
+                        <h2 class="text-xl font-bold">Etape 4/7 : Resultats et Indicateurs</h2>
+                        <p class="text-sm opacity-90">Definissez comment vous mesurerez votre succes</p>
+                    </div>
+
+                    <div class="bg-amber-50 rounded-lg p-3 mb-4 text-sm">
+                        <strong>Legende :</strong> EXPECT = minimum acceptable | LIKE = resultat souhaite | LOVE = resultat optimal
+                    </div>
+
                     <div class="overflow-x-auto">
-                        <table class="w-full border-collapse border-2 border-orange-300 text-sm">
+                        <table class="w-full border-collapse text-sm">
                             <thead class="bg-orange-100">
                                 <tr>
-                                    <th class="border border-orange-300 px-3 py-2 text-left">Objectif</th>
-                                    <th class="border border-orange-300 px-3 py-2 text-left">Acteurs</th>
-                                    <th class="border border-orange-300 px-3 py-2 text-left">Indicateurs</th>
-                                    <th class="border border-orange-300 px-3 py-2 text-left">Delivrables</th>
-                                    <th class="border border-orange-300 px-3 py-2 text-left">EXPECT</th>
-                                    <th class="border border-orange-300 px-3 py-2 text-left">LIKE</th>
-                                    <th class="border border-orange-300 px-3 py-2 text-left">LOVE</th>
-                                    <th class="border border-orange-300 px-3 py-2">Actions</th>
+                                    <th class="border border-orange-300 px-2 py-2 text-left">Objectif</th>
+                                    <th class="border border-orange-300 px-2 py-2 text-left">Acteurs</th>
+                                    <th class="border border-orange-300 px-2 py-2 text-left">Indicateurs</th>
+                                    <th class="border border-orange-300 px-2 py-2 text-left">EXPECT</th>
+                                    <th class="border border-orange-300 px-2 py-2 text-left">LIKE</th>
+                                    <th class="border border-orange-300 px-2 py-2 text-left">LOVE</th>
+                                    <th class="border border-orange-300 px-2 py-2 w-10"></th>
                                 </tr>
                             </thead>
                             <tbody id="resultatsTableBody" class="bg-white"></tbody>
                         </table>
-                        <button type="button" onclick="ajouterLigneResultat()"
-                                class="mt-4 bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm">
-                            + Ajouter une Ligne de Resultats
-                        </button>
                     </div>
+                    <button type="button" onclick="ajouterLigneResultat()"
+                            class="mt-4 bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm">
+                        + Ajouter une ligne
+                    </button>
                 </div>
+            </div>
 
-                <!-- 5. Contraintes et Risques -->
-                <div class="bg-gradient-to-r from-red-50 to-pink-50 rounded-xl p-6 border-4 border-red-200">
-                    <h3 class="text-xl font-bold text-red-800 mb-4">Contraintes et Risques</h3>
-                    <div class="space-y-4">
-                        <div class="bg-white rounded-lg p-4">
-                            <label class="block text-sm font-semibold text-red-700 mb-3">Contraintes Principales</label>
+            <!-- ETAPE 5: Risques -->
+            <div class="step" data-step="5">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-lg p-4 mb-6">
+                        <h2 class="text-xl font-bold">Etape 5/7 : Contraintes et Risques</h2>
+                        <p class="text-sm opacity-90">Identifiez les obstacles et vos strategies pour les surmonter</p>
+                    </div>
+
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="bg-red-50 rounded-lg p-4">
+                            <label class="block text-sm font-semibold text-red-700 mb-3">Contraintes principales</label>
                             <div id="contraintesContainer" class="space-y-2"></div>
                             <button type="button" onclick="ajouterContrainte()"
                                     class="mt-3 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm">
-                                + Ajouter une Contrainte
+                                + Ajouter
                             </button>
                         </div>
-                        <div class="bg-white rounded-lg p-4">
-                            <label class="block text-sm font-semibold text-red-700 mb-3">Strategies d'Attenuation</label>
+
+                        <div class="bg-green-50 rounded-lg p-4">
+                            <label class="block text-sm font-semibold text-green-700 mb-3">Strategies d'attenuation</label>
                             <div id="strategiesContainer" class="space-y-2"></div>
                             <button type="button" onclick="ajouterStrategie()"
-                                    class="mt-3 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm">
-                                + Ajouter une Strategie
+                                    class="mt-3 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm">
+                                + Ajouter
                             </button>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- 6. Ressources -->
-                <div class="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-6 border-4 border-indigo-200">
-                    <h3 class="text-xl font-bold text-indigo-800 mb-4">Ressources Disponibles</h3>
+            <!-- ETAPE 6: Ressources -->
+            <div class="step" data-step="6">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="bg-gradient-to-r from-indigo-500 to-blue-500 text-white rounded-lg p-4 mb-6">
+                        <h2 class="text-xl font-bold">Etape 6/7 : Ressources Disponibles</h2>
+                        <p class="text-sm opacity-90">Listez les moyens dont vous disposez</p>
+                    </div>
+
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-semibold text-indigo-700 mb-2">Budget</label>
-                            <input type="text" id="budget" placeholder="Budget total et repartition..."
-                                   class="w-full px-4 py-3 border-2 border-indigo-300 rounded-lg" oninput="scheduleAutoSave()">
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Budget</label>
+                            <input type="text" id="budget" placeholder="Ex: 5000 EUR (subventions: 3000, autofinancement: 2000)"
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg" oninput="scheduleAutoSave()">
                         </div>
+
                         <div>
-                            <label class="block text-sm font-semibold text-indigo-700 mb-2">Ressources Humaines</label>
-                            <textarea id="ressourcesHumaines" placeholder="Equipes, competences necessaires, temps alloue..."
-                                      class="w-full px-4 py-3 border-2 border-indigo-300 rounded-lg" rows="3" oninput="scheduleAutoSave()"></textarea>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Ressources humaines</label>
+                            <textarea id="ressourcesHumaines" placeholder="Ex: 2 salaries (50h), 10 benevoles, 1 stagiaire..."
+                                      class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg" rows="3" oninput="scheduleAutoSave()"></textarea>
                         </div>
+
                         <div>
-                            <label class="block text-sm font-semibold text-indigo-700 mb-2">Ressources Materielles</label>
-                            <textarea id="ressourcesMaterialles" placeholder="Equipements, locaux, logiciels, materiel..."
-                                      class="w-full px-4 py-3 border-2 border-indigo-300 rounded-lg" rows="3" oninput="scheduleAutoSave()"></textarea>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Ressources materielles</label>
+                            <textarea id="ressourcesMaterialles" placeholder="Ex: Salle de reunion, materiel sono, vehicule..."
+                                      class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg" rows="3" oninput="scheduleAutoSave()"></textarea>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- 7. Etapes et Pilotage -->
-                <div class="bg-gradient-to-r from-teal-50 to-cyan-50 rounded-xl p-6 border-4 border-teal-200">
-                    <h3 class="text-xl font-bold text-teal-800 mb-4">Etapes et Pilotage</h3>
+            <!-- ETAPE 7: Pilotage -->
+            <div class="step" data-step="7">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-lg p-4 mb-6">
+                        <h2 class="text-xl font-bold">Etape 7/7 : Etapes et Pilotage</h2>
+                        <p class="text-sm opacity-90">Planifiez le deroulement de votre projet</p>
+                    </div>
+
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-semibold text-teal-700 mb-3">Etapes et Points de Controle (CoPil)</label>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Etapes cles et points de controle (CoPil)</label>
                             <div id="etapesContainer" class="space-y-2"></div>
                             <button type="button" onclick="ajouterEtape()"
                                     class="mt-3 bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg text-sm">
-                                + Ajouter une Etape
+                                + Ajouter une etape
                             </button>
                         </div>
+
                         <div>
-                            <label class="block text-sm font-semibold text-teal-700 mb-2">Informations a Communiquer</label>
-                            <textarea id="communication" placeholder="Plan de communication, comptes-rendus..."
-                                      class="w-full px-4 py-3 border-2 border-teal-300 rounded-lg" rows="3" oninput="scheduleAutoSave()"></textarea>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Plan de communication</label>
+                            <textarea id="communication" placeholder="Comment allez-vous communiquer sur l'avancement ? Quels outils ?"
+                                      class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg" rows="3" oninput="scheduleAutoSave()"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Resume et export -->
+                    <div class="mt-8 pt-6 border-t-2 border-gray-200">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">Votre cahier des charges est pret !</h3>
+                        <div class="flex flex-wrap gap-3">
+                            <button type="button" onclick="exporterExcel()"
+                                    class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg">
+                                Exporter Excel
+                            </button>
+                            <button type="button" onclick="reinitialiser()"
+                                    class="bg-gray-500 hover:bg-gray-600 text-white py-3 px-6 rounded-lg">
+                                Reinitialiser
+                            </button>
                         </div>
                     </div>
                 </div>
+            </div>
+        </form>
 
-                <!-- Boutons -->
-                <div class="flex flex-wrap gap-4 pt-6 border-t-2 border-gray-200">
-                    <button type="button" onclick="exporterExcel()"
-                            class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg">
-                        Exporter vers Excel
-                    </button>
-                    <button type="button" onclick="reinitialiser()"
-                            class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg">
-                        Reinitialiser
-                    </button>
-                </div>
-            </form>
+        <!-- Navigation -->
+        <div class="flex justify-between mt-6">
+            <button onclick="previousStep()" id="btnPrev" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-8 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                Precedent
+            </button>
+            <button onclick="nextStep()" id="btnNext" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg">
+                Suivant
+            </button>
         </div>
     </div>
 
     <script>
+        let currentStep = 1;
+        const totalSteps = 7;
         let compteurResultats = 0;
         let autoSaveTimeout = null;
         let isShared = false;
@@ -268,6 +372,50 @@ $user = getCurrentUser();
         window.onload = function() {
             loadFromServer();
         };
+
+        function goToStep(step) {
+            if (step < 1 || step > totalSteps) return;
+            currentStep = step;
+            updateStepDisplay();
+        }
+
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateStepDisplay();
+            }
+        }
+
+        function previousStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateStepDisplay();
+            }
+        }
+
+        function updateStepDisplay() {
+            // Cacher toutes les etapes
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            // Afficher l'etape courante
+            document.querySelector(`[data-step="${currentStep}"]`).classList.add('active');
+
+            // Mettre a jour les indicateurs
+            document.querySelectorAll('.step-indicator').forEach((ind, idx) => {
+                ind.classList.remove('current', 'completed');
+                if (idx + 1 < currentStep) {
+                    ind.classList.add('completed');
+                } else if (idx + 1 === currentStep) {
+                    ind.classList.add('current');
+                }
+            });
+
+            // Mettre a jour les boutons
+            document.getElementById('btnPrev').disabled = (currentStep === 1);
+            document.getElementById('btnNext').textContent = (currentStep === totalSteps) ? 'Terminer' : 'Suivant';
+
+            // Scroll en haut
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
 
         async function loadFromServer() {
             try {
@@ -300,33 +448,29 @@ $user = getCurrentUser();
                     isShared = d.isShared || false;
                     document.getElementById('shareToggle').checked = isShared;
 
-                    // Charger les listes
                     (d.objectifsSpecifiques || []).forEach(v => ajouterObjectifSpecifique(v));
                     (d.contraintes || []).forEach(v => ajouterContrainte(v));
                     (d.strategies || []).forEach(v => ajouterStrategie(v));
                     (d.etapes || []).forEach(v => ajouterEtape(v));
                     (d.resultats || []).forEach(r => ajouterLigneResultat(r));
 
-                    // Ajouter des champs vides si necessaire
-                    if (!d.objectifsSpecifiques?.length) for(let i=0;i<3;i++) ajouterObjectifSpecifique();
+                    if (!d.objectifsSpecifiques?.length) for(let i=0;i<2;i++) ajouterObjectifSpecifique();
                     if (!d.contraintes?.length) for(let i=0;i<2;i++) ajouterContrainte();
                     if (!d.strategies?.length) for(let i=0;i<2;i++) ajouterStrategie();
                     if (!d.etapes?.length) for(let i=0;i<3;i++) ajouterEtape();
                     if (!d.resultats?.length) ajouterLigneResultat();
                 } else {
-                    // Initialiser avec des champs vides
-                    for(let i=0;i<3;i++) ajouterObjectifSpecifique();
+                    for(let i=0;i<2;i++) ajouterObjectifSpecifique();
                     for(let i=0;i<2;i++) ajouterContrainte();
                     for(let i=0;i<2;i++) ajouterStrategie();
                     for(let i=0;i<3;i++) ajouterEtape();
                     ajouterLigneResultat();
                 }
-                updateSaveStatus('Donnees chargees');
+                updateSaveStatus('Charge');
             } catch (error) {
                 console.error('Erreur:', error);
-                updateSaveStatus('Erreur de chargement');
-                // Initialiser quand meme
-                for(let i=0;i<3;i++) ajouterObjectifSpecifique();
+                updateSaveStatus('Erreur');
+                for(let i=0;i<2;i++) ajouterObjectifSpecifique();
                 for(let i=0;i<2;i++) ajouterContrainte();
                 for(let i=0;i<2;i++) ajouterStrategie();
                 for(let i=0;i<3;i++) ajouterEtape();
@@ -337,7 +481,7 @@ $user = getCurrentUser();
         function scheduleAutoSave() {
             if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
             autoSaveTimeout = setTimeout(saveToServer, 1500);
-            updateSaveStatus('Modifications en attente...');
+            updateSaveStatus('...');
         }
 
         async function saveToServer() {
@@ -350,14 +494,9 @@ $user = getCurrentUser();
                     body: JSON.stringify(data)
                 });
                 const result = await response.json();
-                if (result.success) {
-                    updateSaveStatus('Sauvegarde a ' + new Date().toLocaleTimeString());
-                } else {
-                    updateSaveStatus('Erreur: ' + result.error);
-                }
+                updateSaveStatus(result.success ? 'Sauvegarde' : 'Erreur');
             } catch (error) {
-                console.error('Erreur:', error);
-                updateSaveStatus('Erreur de connexion');
+                updateSaveStatus('Erreur');
             }
         }
 
@@ -369,14 +508,12 @@ $user = getCurrentUser();
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ shared: isShared })
                 });
-                updateSaveStatus(isShared ? 'Partage avec le formateur' : 'Non partage');
-            } catch (error) {
-                console.error('Erreur:', error);
-            }
+                updateSaveStatus(isShared ? 'Partage' : 'Prive');
+            } catch (error) {}
         }
 
-        function updateSaveStatus(message) {
-            document.getElementById('saveStatus').textContent = message;
+        function updateSaveStatus(msg) {
+            document.getElementById('saveStatus').textContent = msg;
         }
 
         function collectAllData() {
@@ -414,193 +551,85 @@ $user = getCurrentUser();
             const div = document.createElement('div');
             div.className = 'flex gap-2';
             div.innerHTML = `
-                <textarea placeholder="${placeholder}"
-                       class="flex-1 px-3 py-2 border-2 border-gray-300 rounded-lg text-sm"
+                <textarea placeholder="${placeholder}" class="flex-1 px-3 py-2 border-2 border-gray-300 rounded-lg text-sm"
                        data-type="${type}" rows="2" oninput="scheduleAutoSave()">${value}</textarea>
                 <button type="button" onclick="this.parentElement.remove(); scheduleAutoSave();"
-                        class="bg-red-400 hover:bg-red-500 text-white px-3 py-2 rounded-lg text-xs h-fit">X</button>
+                        class="bg-red-400 hover:bg-red-500 text-white px-3 py-1 rounded-lg text-xs h-fit">X</button>
             `;
             container.appendChild(div);
         }
 
-        function ajouterObjectifSpecifique(value = '') {
-            creerChamp('objectifsSpecifiquesContainer', 'Ex: Sensibiliser 400 personnes sur le droit d\'asile', 'objectif-specifique', value);
-        }
-
-        function ajouterContrainte(value = '') {
-            creerChamp('contraintesContainer', 'Ex: Budget limite, delais courts', 'contrainte', value);
-        }
-
-        function ajouterStrategie(value = '') {
-            creerChamp('strategiesContainer', 'Ex: Recherche de sponsors, planification anticipee', 'strategie', value);
-        }
-
-        function ajouterEtape(value = '') {
-            creerChamp('etapesContainer', 'Ex: Kick-off meeting (15/01), CoPil #1 (15/03)', 'etape', value);
-        }
+        function ajouterObjectifSpecifique(v='') { creerChamp('objectifsSpecifiquesContainer', 'Ex: Sensibiliser 400 personnes...', 'objectif-specifique', v); }
+        function ajouterContrainte(v='') { creerChamp('contraintesContainer', 'Ex: Budget limite, delais courts...', 'contrainte', v); }
+        function ajouterStrategie(v='') { creerChamp('strategiesContainer', 'Ex: Recherche de partenaires...', 'strategie', v); }
+        function ajouterEtape(v='') { creerChamp('etapesContainer', 'Ex: Lancement (15/01), Bilan (15/06)...', 'etape', v); }
 
         function ajouterLigneResultat(data = null) {
             const tbody = document.getElementById('resultatsTableBody');
             const id = ++compteurResultats;
             const tr = document.createElement('tr');
-            tr.className = 'border-b border-orange-200';
             tr.innerHTML = `
-                <td class="border border-orange-300 px-2 py-2">
-                    <input type="text" data-type="resultat-objectif" data-id="${id}" value="${data?.objectif || ''}"
-                           placeholder="Objectif..." class="w-full px-2 py-1 border rounded text-xs" oninput="scheduleAutoSave()">
-                </td>
-                <td class="border border-orange-300 px-2 py-2">
-                    <input type="text" data-type="resultat-acteurs" data-id="${id}" value="${data?.acteurs || ''}"
-                           placeholder="Acteurs..." class="w-full px-2 py-1 border rounded text-xs" oninput="scheduleAutoSave()">
-                </td>
-                <td class="border border-orange-300 px-2 py-2">
-                    <input type="text" data-type="resultat-indicateurs" data-id="${id}" value="${data?.indicateurs || ''}"
-                           placeholder="Indicateurs..." class="w-full px-2 py-1 border rounded text-xs" oninput="scheduleAutoSave()">
-                </td>
-                <td class="border border-orange-300 px-2 py-2">
-                    <input type="text" data-type="resultat-delivrables" data-id="${id}" value="${data?.delivrables || ''}"
-                           placeholder="Delivrables..." class="w-full px-2 py-1 border rounded text-xs" oninput="scheduleAutoSave()">
-                </td>
-                <td class="border border-orange-300 px-2 py-2">
-                    <input type="text" data-type="resultat-expect" data-id="${id}" value="${data?.expect || ''}"
-                           placeholder="Minimum..." class="w-full px-2 py-1 border rounded text-xs" oninput="scheduleAutoSave()">
-                </td>
-                <td class="border border-orange-300 px-2 py-2">
-                    <input type="text" data-type="resultat-like" data-id="${id}" value="${data?.like || ''}"
-                           placeholder="Souhaite..." class="w-full px-2 py-1 border rounded text-xs" oninput="scheduleAutoSave()">
-                </td>
-                <td class="border border-orange-300 px-2 py-2">
-                    <input type="text" data-type="resultat-love" data-id="${id}" value="${data?.love || ''}"
-                           placeholder="Optimal..." class="w-full px-2 py-1 border rounded text-xs" oninput="scheduleAutoSave()">
-                </td>
-                <td class="border border-orange-300 px-2 py-2 text-center">
-                    <button type="button" onclick="this.closest('tr').remove(); scheduleAutoSave();"
-                            class="bg-red-400 hover:bg-red-500 text-white px-2 py-1 rounded text-xs">X</button>
-                </td>
+                <td class="border border-orange-300 p-1"><input type="text" data-type="resultat-objectif" data-id="${id}" value="${data?.objectif || ''}" placeholder="Objectif" class="w-full px-2 py-1 border rounded text-xs" oninput="scheduleAutoSave()"></td>
+                <td class="border border-orange-300 p-1"><input type="text" data-type="resultat-acteurs" data-id="${id}" value="${data?.acteurs || ''}" placeholder="Acteurs" class="w-full px-2 py-1 border rounded text-xs" oninput="scheduleAutoSave()"></td>
+                <td class="border border-orange-300 p-1"><input type="text" data-type="resultat-indicateurs" data-id="${id}" value="${data?.indicateurs || ''}" placeholder="Indicateurs" class="w-full px-2 py-1 border rounded text-xs" oninput="scheduleAutoSave()"></td>
+                <td class="border border-orange-300 p-1"><input type="text" data-type="resultat-expect" data-id="${id}" value="${data?.expect || ''}" placeholder="Min" class="w-full px-2 py-1 border rounded text-xs" oninput="scheduleAutoSave()"></td>
+                <td class="border border-orange-300 p-1"><input type="text" data-type="resultat-like" data-id="${id}" value="${data?.like || ''}" placeholder="Souhaite" class="w-full px-2 py-1 border rounded text-xs" oninput="scheduleAutoSave()"></td>
+                <td class="border border-orange-300 p-1"><input type="text" data-type="resultat-love" data-id="${id}" value="${data?.love || ''}" placeholder="Optimal" class="w-full px-2 py-1 border rounded text-xs" oninput="scheduleAutoSave()"></td>
+                <td class="border border-orange-300 p-1 text-center"><button type="button" onclick="this.closest('tr').remove(); scheduleAutoSave();" class="bg-red-400 hover:bg-red-500 text-white px-2 py-1 rounded text-xs">X</button></td>
             `;
             tbody.appendChild(tr);
         }
 
         function collecterDonnees(type) {
-            const elements = document.querySelectorAll(`[data-type="${type}"]`);
-            return Array.from(elements).map(el => el.value).filter(val => val.trim() !== '');
+            return Array.from(document.querySelectorAll(`[data-type="${type}"]`)).map(el => el.value).filter(v => v.trim());
         }
 
         function collecterResultats() {
-            const resultats = [];
+            const res = [];
             for (let i = 1; i <= compteurResultats; i++) {
-                const objectif = document.querySelector(`[data-type="resultat-objectif"][data-id="${i}"]`)?.value || '';
-                const acteurs = document.querySelector(`[data-type="resultat-acteurs"][data-id="${i}"]`)?.value || '';
-                const indicateurs = document.querySelector(`[data-type="resultat-indicateurs"][data-id="${i}"]`)?.value || '';
-                const delivrables = document.querySelector(`[data-type="resultat-delivrables"][data-id="${i}"]`)?.value || '';
-                const expect = document.querySelector(`[data-type="resultat-expect"][data-id="${i}"]`)?.value || '';
-                const like = document.querySelector(`[data-type="resultat-like"][data-id="${i}"]`)?.value || '';
-                const love = document.querySelector(`[data-type="resultat-love"][data-id="${i}"]`)?.value || '';
-
-                if (objectif || acteurs || indicateurs || delivrables || expect || like || love) {
-                    resultats.push({ objectif, acteurs, indicateurs, delivrables, expect, like, love });
-                }
+                const obj = document.querySelector(`[data-type="resultat-objectif"][data-id="${i}"]`)?.value || '';
+                const act = document.querySelector(`[data-type="resultat-acteurs"][data-id="${i}"]`)?.value || '';
+                const ind = document.querySelector(`[data-type="resultat-indicateurs"][data-id="${i}"]`)?.value || '';
+                const exp = document.querySelector(`[data-type="resultat-expect"][data-id="${i}"]`)?.value || '';
+                const lik = document.querySelector(`[data-type="resultat-like"][data-id="${i}"]`)?.value || '';
+                const lov = document.querySelector(`[data-type="resultat-love"][data-id="${i}"]`)?.value || '';
+                if (obj || act || ind || exp || lik || lov) res.push({ objectif: obj, acteurs: act, indicateurs: ind, expect: exp, like: lik, love: lov });
             }
-            return resultats;
+            return res;
         }
 
         function reinitialiser() {
-            if (confirm('Etes-vous sur de vouloir reinitialiser le formulaire ?')) {
+            if (confirm('Reinitialiser le formulaire ?')) {
                 document.getElementById('cahierForm').reset();
-                ['objectifsSpecifiquesContainer', 'contraintesContainer', 'strategiesContainer', 'etapesContainer'].forEach(id => {
-                    document.getElementById(id).innerHTML = '';
-                });
+                ['objectifsSpecifiquesContainer', 'contraintesContainer', 'strategiesContainer', 'etapesContainer'].forEach(id => document.getElementById(id).innerHTML = '');
                 document.getElementById('resultatsTableBody').innerHTML = '';
                 compteurResultats = 0;
-                for(let i=0;i<3;i++) ajouterObjectifSpecifique();
+                for(let i=0;i<2;i++) ajouterObjectifSpecifique();
                 for(let i=0;i<2;i++) ajouterContrainte();
                 for(let i=0;i<2;i++) ajouterStrategie();
                 for(let i=0;i<3;i++) ajouterEtape();
                 ajouterLigneResultat();
+                currentStep = 1;
+                updateStepDisplay();
                 scheduleAutoSave();
             }
         }
 
         function exporterExcel() {
             const data = collectAllData();
-            const titreProjet = data.titreProjet || 'Projet sans nom';
-
-            const vueEnsemble = [
-                ['CAHIER DES CHARGES - VUE D\'ENSEMBLE'],
-                [''],
-                ['Titre du projet:', titreProjet],
-                ['Date de debut:', data.dateDebut],
-                ['Date de fin:', data.dateFin],
-                [''],
-                ['EQUIPE DE PROJET'],
-                ['Chef de projet:', data.chefProjet],
-                ['Sponsor:', data.sponsor],
-                ['Groupe de travail:', data.groupeTravail],
-                ['Benevoles:', data.benevoles],
-                ['Autres acteurs:', data.autresActeurs],
-                [''],
-                ['CONTEXTE STRATEGIQUE'],
-                ['Objectif strategique:', data.objectifStrategique],
-                ['Inclusivite:', data.inclusivite],
-                ['Aspect digital:', data.aspectDigital],
-                ['Evolution:', data.evolution]
-            ];
-
-            const visionObjectifs = [
-                ['VISION ET OBJECTIFS DU PROJET'],
-                [''],
-                ['Description:', data.descriptionProjet],
-                ['Objectif:', data.objectifProjet],
-                ['Logique:', data.logiqueProjet],
-                [''],
-                ['OBJECTIF GLOBAL'],
-                [data.objectifGlobal],
-                [''],
-                ['OBJECTIFS SPECIFIQUES']
-            ];
-            data.objectifsSpecifiques.forEach((obj, idx) => {
-                visionObjectifs.push([`Objectif ${idx + 1}`, obj]);
-            });
-
-            const resultatsSheet = [
-                ['RESULTATS ET INDICATEURS'],
-                [''],
-                ['Objectif', 'Acteurs', 'Indicateurs', 'Delivrables', 'EXPECT', 'LIKE', 'LOVE']
-            ];
-            data.resultats.forEach(r => {
-                resultatsSheet.push([r.objectif, r.acteurs, r.indicateurs, r.delivrables, r.expect, r.like, r.love]);
-            });
-
-            const risquesRessources = [
-                ['RISQUES, CONTRAINTES ET RESSOURCES'],
-                [''],
-                ['CONTRAINTES PRINCIPALES']
-            ];
-            data.contraintes.forEach((c, idx) => risquesRessources.push([`Contrainte ${idx + 1}`, c]));
-            risquesRessources.push([''], ['STRATEGIES D\'ATTENUATION']);
-            data.strategies.forEach((s, idx) => risquesRessources.push([`Strategie ${idx + 1}`, s]));
-            risquesRessources.push([''], ['RESSOURCES']);
-            risquesRessources.push(['Budget', data.budget]);
-            risquesRessources.push(['Ressources Humaines', data.ressourcesHumaines]);
-            risquesRessources.push(['Ressources Materielles', data.ressourcesMaterialles]);
-
-            const pilotage = [
-                ['PILOTAGE ET COMMUNICATION'],
-                [''],
-                ['ETAPES ET POINTS DE CONTROLE']
-            ];
-            data.etapes.forEach((e, idx) => pilotage.push([`Etape ${idx + 1}`, e]));
-            pilotage.push([''], ['PLAN DE COMMUNICATION'], [data.communication]);
-
+            const titre = data.titreProjet || 'Projet';
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(vueEnsemble), 'Vue d\'ensemble');
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(visionObjectifs), 'Vision et Objectifs');
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(resultatsSheet), 'Resultats');
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(risquesRessources), 'Risques et Ressources');
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(pilotage), 'Pilotage');
 
-            const nomFichier = `CahierDesCharges_${titreProjet.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.xlsx`;
-            XLSX.writeFile(wb, nomFichier);
+            const vue = [['CAHIER DES CHARGES'], [''], ['Titre:', titre], ['Dates:', data.dateDebut + ' - ' + data.dateFin], ['Chef de projet:', data.chefProjet], [''], ['VISION'], ['Description:', data.descriptionProjet], ['Objectif:', data.objectifProjet], [''], ['OBJECTIFS'], ['Global:', data.objectifGlobal]];
+            data.objectifsSpecifiques.forEach((o,i) => vue.push(['Specifique '+(i+1)+':', o]));
+            vue.push([''], ['RESSOURCES'], ['Budget:', data.budget], ['RH:', data.ressourcesHumaines], ['Materiel:', data.ressourcesMaterialles]);
+
+            const res = [['RESULTATS ET INDICATEURS'], [''], ['Objectif', 'Acteurs', 'Indicateurs', 'EXPECT', 'LIKE', 'LOVE']];
+            data.resultats.forEach(r => res.push([r.objectif, r.acteurs, r.indicateurs, r.expect, r.like, r.love]));
+
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(vue), 'Cahier des Charges');
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(res), 'Resultats');
+            XLSX.writeFile(wb, `CahierDesCharges_${titre.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
     </script>
 </body>

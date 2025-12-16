@@ -42,9 +42,43 @@ switch ($action) {
             echo json_encode(['error' => 'Accès refusé']);
         }
         break;
+    case 'delete':
+        if (isAdmin()) {
+            deleteCahier($db, $_GET['id'] ?? 0);
+        } else {
+            http_response_code(403);
+            echo json_encode(['error' => 'Accès refusé']);
+        }
+        break;
+    case 'deleteAll':
+        if (isAdmin()) {
+            deleteAllCahiers($db, isset($_GET['users']));
+        } else {
+            http_response_code(403);
+            echo json_encode(['error' => 'Accès refusé']);
+        }
+        break;
     default:
         http_response_code(400);
         echo json_encode(['error' => 'Action non reconnue']);
+}
+
+function deleteCahier($db, $cahierId) {
+    $stmt = $db->prepare("DELETE FROM cahiers WHERE id = ?");
+    $stmt->execute([$cahierId]);
+    echo json_encode(['success' => true, 'message' => 'Cahier supprimé']);
+}
+
+function deleteAllCahiers($db, $deleteUsers = false) {
+    $db->exec("DELETE FROM cahiers");
+    $deleted = ['cahiers' => true];
+
+    if ($deleteUsers) {
+        $db->exec("DELETE FROM users WHERE is_admin = 0");
+        $deleted['users'] = true;
+    }
+
+    echo json_encode(['success' => true, 'deleted' => $deleted]);
 }
 
 function loadData($db, $userId) {
