@@ -115,9 +115,12 @@ if (isset($_GET['view'])) {
             <div class="bg-white rounded-xl shadow p-4">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="font-bold text-lg">Projets</h2>
-                    <div class="flex gap-2">
-                        <a href="?<?= $showAll ? '' : 'all=1' ?>" class="text-sm px-3 py-1 rounded <?= $showAll ? 'bg-blue-600 text-white' : 'bg-gray-200' ?>">
-                            <?= $showAll ? 'Tous' : 'Partages' ?>
+                    <div class="flex gap-1">
+                        <a href="?" class="text-sm px-3 py-1 rounded <?= !$showAll ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700' ?>">
+                            Partages
+                        </a>
+                        <a href="?all=1" class="text-sm px-3 py-1 rounded <?= $showAll ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700' ?>">
+                            Tous
                         </a>
                     </div>
                 </div>
