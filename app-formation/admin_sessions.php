@@ -1,7 +1,6 @@
 <?php
 require_once 'config/database.php';
 
-$db = getDB();
 $message = '';
 $error = '';
 $showAdminLogin = false;
@@ -61,6 +60,9 @@ if ($showAdminLogin && !isAdminLoggedIn() && !isFormateurLoggedIn()) {
     <?php
     exit;
 }
+
+// Connexion DB uniquement apres authentification
+$db = getDB();
 
 // Traitement des actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

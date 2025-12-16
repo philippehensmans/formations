@@ -4,7 +4,9 @@
  * Application de formation - Cadre Logique
  */
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 define('DB_PATH', __DIR__ . '/../data/formation.db');
 define('ADMIN_PASSWORD', 'formation2024'); // Mot de passe admin pour gestion des sessions
