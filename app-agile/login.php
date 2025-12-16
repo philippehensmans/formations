@@ -78,10 +78,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p class="text-gray-600">Pas encore de compte ?</p>
             <a href="register.php" class="text-blue-600 hover:underline font-medium">Creer un compte</a>
         </div>
-
-        <div class="mt-6 pt-6 border-t border-gray-200 text-center text-sm text-gray-500">
-            <p><strong>Formateur :</strong> formateur / admin123</p>
-        </div>
     </div>
 </body>
 </html>

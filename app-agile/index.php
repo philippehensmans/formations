@@ -891,8 +891,6 @@ $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goa
                 sprint: data.sprint
             };
 
-            if (showAlert) console.log('Envoi payload:', payload);
-
             try {
                 const response = await fetch('api.php?action=save', {
                     method: 'POST',
@@ -900,18 +898,12 @@ $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goa
                     body: JSON.stringify(payload)
                 });
                 const text = await response.text();
-                console.log('API response:', text);
-
-                if (showAlert) {
-                    alert('Reponse serveur:\n' + text);
-                }
 
                 try {
                     const result = JSON.parse(text);
                     if (result.success) {
                         document.getElementById('saveStatus').className = 'save-status saved';
                         document.getElementById('saveStatus').textContent = 'Sauvegarde';
-                        if (showAlert) alert('Sauvegarde reussie !');
                     } else {
                         document.getElementById('saveStatus').className = 'save-status saving';
                         document.getElementById('saveStatus').textContent = 'Erreur: ' + (result.error || 'Echec');
