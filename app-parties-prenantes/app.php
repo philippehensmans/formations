@@ -7,6 +7,14 @@ requireParticipant();
 
 $db = getDB();
 $participant = getCurrentParticipant();
+
+// Verifier que le participant existe
+if (!$participant) {
+    session_destroy();
+    header('Location: index.php');
+    exit;
+}
+
 $categories = getCategories();
 
 // Charger la cartographie
