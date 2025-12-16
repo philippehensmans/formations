@@ -31,6 +31,7 @@ $isSubmitted = $analyse['is_submitted'] == 1;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Analyse PESTEL - <?= sanitize($participant['prenom']) ?> <?= sanitize($participant['nom']) ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
         .pestel-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
@@ -308,9 +309,17 @@ $isSubmitted = $analyse['is_submitted'] == 1;
                 class="bg-purple-600 text-white px-6 py-3 rounded-md hover:bg-purple-700 transition font-semibold shadow-md">
                 ✅ Soumettre
             </button>
-            <button type="button" onclick="exportJSON()"
+            <button type="button" onclick="exportToExcel()"
+                class="bg-emerald-600 text-white px-6 py-3 rounded-md hover:bg-emerald-700 transition font-semibold shadow-md">
+                📊 Exporter Excel
+            </button>
+            <button type="button" onclick="exportToWord()"
                 class="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition font-semibold shadow-md">
-                📥 Exporter JSON
+                📄 Exporter Word
+            </button>
+            <button type="button" onclick="exportJSON()"
+                class="bg-gray-500 text-white px-6 py-3 rounded-md hover:bg-gray-600 transition font-semibold shadow-md">
+                📥 JSON
             </button>
             <button type="button" onclick="window.print()"
                 class="bg-gray-600 text-white px-6 py-3 rounded-md hover:bg-gray-700 transition font-semibold shadow-md">
@@ -452,6 +461,164 @@ $isSubmitted = $analyse['is_submitted'] == 1;
             link.href = url;
             const nom = data.nom_projet ? data.nom_projet.replace(/[^a-z0-9]/gi, '_').toLowerCase() : 'pestel';
             link.download = `pestel_${nom}_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function exportToExcel() {
+            const wb = XLSX.utils.book_new();
+            const nomProjet = document.getElementById('nomProjet').value || 'Analyse PESTEL';
+
+            // Feuille 1: Informations
+            const infoData = [
+                ['ANALYSE PESTEL'],
+                [''],
+                ['Projet / Organisation', document.getElementById('nomProjet').value],
+                ['Participants', document.getElementById('participantsAnalyse').value],
+                ['Zone geographique', document.getElementById('zone').value],
+                ['Date d\'export', new Date().toLocaleDateString('fr-FR')]
+            ];
+            const wsInfo = XLSX.utils.aoa_to_sheet(infoData);
+            wsInfo['!cols'] = [{ wch: 25 }, { wch: 60 }];
+
+            // Feuille 2: Analyse PESTEL
+            const pestelData = [
+                ['ANALYSE DES FACTEURS PESTEL'],
+                [''],
+                ['POLITIQUE']
+            ];
+            getCategoryValues('politique').forEach((item, i) => {
+                if (item.trim()) pestelData.push([`${i + 1}.`, item]);
+            });
+
+            pestelData.push([''], ['ECONOMIQUE']);
+            getCategoryValues('economique').forEach((item, i) => {
+                if (item.trim()) pestelData.push([`${i + 1}.`, item]);
+            });
+
+            pestelData.push([''], ['SOCIOCULTUREL']);
+            getCategoryValues('socioculturel').forEach((item, i) => {
+                if (item.trim()) pestelData.push([`${i + 1}.`, item]);
+            });
+
+            pestelData.push([''], ['TECHNOLOGIQUE']);
+            getCategoryValues('technologique').forEach((item, i) => {
+                if (item.trim()) pestelData.push([`${i + 1}.`, item]);
+            });
+
+            pestelData.push([''], ['ENVIRONNEMENTAL']);
+            getCategoryValues('environnemental').forEach((item, i) => {
+                if (item.trim()) pestelData.push([`${i + 1}.`, item]);
+            });
+
+            pestelData.push([''], ['LEGAL']);
+            getCategoryValues('legal').forEach((item, i) => {
+                if (item.trim()) pestelData.push([`${i + 1}.`, item]);
+            });
+
+            const wsPestel = XLSX.utils.aoa_to_sheet(pestelData);
+            wsPestel['!cols'] = [{ wch: 5 }, { wch: 80 }];
+
+            // Feuille 3: Synthese
+            const syntheseData = [
+                ['SYNTHESE : FACTEURS CLES & IMPLICATIONS'],
+                [''],
+                [document.getElementById('synthese').value],
+                [''],
+                ['NOTES COMPLEMENTAIRES'],
+                [''],
+                [document.getElementById('notes').value]
+            ];
+            const wsSynthese = XLSX.utils.aoa_to_sheet(syntheseData);
+            wsSynthese['!cols'] = [{ wch: 100 }];
+
+            // Ajouter les feuilles
+            XLSX.utils.book_append_sheet(wb, wsInfo, 'Informations');
+            XLSX.utils.book_append_sheet(wb, wsPestel, 'Analyse PESTEL');
+            XLSX.utils.book_append_sheet(wb, wsSynthese, 'Synthese');
+
+            // Telecharger
+            const filename = `pestel_${nomProjet.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(wb, filename);
+        }
+
+        function exportToWord() {
+            const nomProjet = document.getElementById('nomProjet').value || 'Analyse PESTEL';
+            const participants = document.getElementById('participantsAnalyse').value;
+            const zone = document.getElementById('zone').value;
+            const synthese = document.getElementById('synthese').value;
+            const notes = document.getElementById('notes').value;
+
+            const categories = [
+                { key: 'politique', label: 'POLITIQUE', color: '#DC2626' },
+                { key: 'economique', label: 'ECONOMIQUE', color: '#16A34A' },
+                { key: 'socioculturel', label: 'SOCIOCULTUREL', color: '#9333EA' },
+                { key: 'technologique', label: 'TECHNOLOGIQUE', color: '#2563EB' },
+                { key: 'environnemental', label: 'ENVIRONNEMENTAL', color: '#0D9488' },
+                { key: 'legal', label: 'LEGAL', color: '#D97706' }
+            ];
+
+            let pestelHtml = '';
+            categories.forEach(cat => {
+                const items = getCategoryValues(cat.key).filter(item => item.trim());
+                pestelHtml += `
+                    <h3 style="color: ${cat.color}; margin-top: 20px;">${cat.label}</h3>
+                    <ul>
+                        ${items.length > 0 ? items.map(item => `<li>${item}</li>`).join('') : '<li><em>Aucun element</em></li>'}
+                    </ul>
+                `;
+            });
+
+            const html = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Analyse PESTEL - ${nomProjet}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+                        h1 { color: #4F46E5; border-bottom: 2px solid #4F46E5; padding-bottom: 10px; }
+                        h2 { color: #374151; margin-top: 30px; }
+                        h3 { margin-bottom: 10px; }
+                        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+                        td, th { border: 1px solid #ddd; padding: 10px; text-align: left; }
+                        th { background-color: #f3f4f6; }
+                        ul { margin: 10px 0; }
+                        li { margin: 5px 0; }
+                        .synthese { background-color: #EEF2FF; padding: 15px; border-radius: 8px; margin-top: 20px; }
+                    </style>
+                </head>
+                <body>
+                    <h1>Analyse PESTEL</h1>
+
+                    <table>
+                        <tr><th>Projet / Organisation</th><td>${nomProjet}</td></tr>
+                        <tr><th>Participants</th><td>${participants}</td></tr>
+                        <tr><th>Zone geographique</th><td>${zone}</td></tr>
+                        <tr><th>Date</th><td>${new Date().toLocaleDateString('fr-FR')}</td></tr>
+                    </table>
+
+                    <h2>Analyse des Facteurs PESTEL</h2>
+                    ${pestelHtml}
+
+                    <div class="synthese">
+                        <h2>Synthese : Facteurs Cles & Implications</h2>
+                        <p>${synthese.replace(/\n/g, '<br>') || '<em>Non renseigne</em>'}</p>
+                    </div>
+
+                    ${notes ? `
+                    <h2>Notes Complementaires</h2>
+                    <p>${notes.replace(/\n/g, '<br>')}</p>
+                    ` : ''}
+                </body>
+                </html>
+            `;
+
+            const blob = new Blob([html], { type: 'application/msword' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `pestel_${nomProjet.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${new Date().toISOString().split('T')[0]}.doc`;
             link.click();
             URL.revokeObjectURL(url);
         }
