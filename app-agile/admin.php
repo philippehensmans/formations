@@ -3,15 +3,17 @@ require_once 'config.php';
 requireLogin();
 requireAdmin();
 
+$db = getDB();
+
 // Statistiques
-$stmt = $db->query("SELECT COUNT(*) FROM projects WHERE user_id IN (SELECT id FROM users WHERE is_admin = 0)");
-$totalProjects = $stmt->fetchColumn();
+$stmt = $db->query("SELECT COUNT(*) as count FROM projects WHERE user_id IN (SELECT id FROM users WHERE is_admin = 0)");
+$totalProjects = $stmt->fetch()['count'];
 
-$stmt = $db->query("SELECT COUNT(*) FROM users WHERE is_admin = 0");
-$totalParticipants = $stmt->fetchColumn();
+$stmt = $db->query("SELECT COUNT(*) as count FROM users WHERE is_admin = 0");
+$totalParticipants = $stmt->fetch()['count'];
 
-$stmt = $db->query("SELECT COUNT(*) FROM projects WHERE is_shared = 1 AND user_id IN (SELECT id FROM users WHERE is_admin = 0)");
-$sharedProjects = $stmt->fetchColumn();
+$stmt = $db->query("SELECT COUNT(*) as count FROM projects WHERE is_shared = 1 AND user_id IN (SELECT id FROM users WHERE is_admin = 0)");
+$sharedProjects = $stmt->fetch()['count'];
 
 // Afficher tous ou seulement partages
 $showAll = isset($_GET['all']);
@@ -34,7 +36,7 @@ if ($showAll) {
         ORDER BY p.updated_at DESC
     ");
 }
-$projects = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$projects = $stmt->fetchAll();
 
 // Projet selectionne
 $selectedProject = null;
@@ -46,7 +48,7 @@ if (isset($_GET['view'])) {
         WHERE p.id = ?
     ");
     $stmt->execute([$_GET['view']]);
-    $selectedProject = $stmt->fetch(PDO::FETCH_ASSOC);
+    $selectedProject = $stmt->fetch();
 }
 ?>
 <!DOCTYPE html>

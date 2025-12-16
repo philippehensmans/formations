@@ -17,10 +17,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Les mots de passe ne correspondent pas';
     } else {
         // Verifier si l'utilisateur existe
-        $stmt = $db->prepare("SELECT COUNT(*) FROM users WHERE username = ?");
+        $db = getDB();
+        $stmt = $db->prepare("SELECT COUNT(*) as count FROM users WHERE username = ?");
         $stmt->execute([$username]);
+        $result = $stmt->fetch();
 
-        if ($stmt->fetchColumn() > 0) {
+        if ($result['count'] > 0) {
             $error = 'Ce nom d\'utilisateur existe deja';
         } else {
             $hash = password_hash($password, PASSWORD_DEFAULT);

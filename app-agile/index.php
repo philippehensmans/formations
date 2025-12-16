@@ -2,13 +2,15 @@
 require_once 'config.php';
 requireLogin();
 
+$db = getDB();
 $userId = $_SESSION['user_id'];
-$username = $_SESSION['username'];
+$user = getCurrentUser();
+$username = $user['username'];
 
 // Charger ou creer le projet de l'utilisateur
 $stmt = $db->prepare("SELECT * FROM projects WHERE user_id = ?");
 $stmt->execute([$userId]);
-$project = $stmt->fetch(PDO::FETCH_ASSOC);
+$project = $stmt->fetch();
 
 if (!$project) {
     $stmt = $db->prepare("INSERT INTO projects (user_id, cards, user_stories, retrospective, sprint) VALUES (?, '[]', '[]', '{\"good\":[],\"improve\":[],\"actions\":[]}', '{\"number\":1,\"start\":\"\",\"end\":\"\",\"goal\":\"\"}')");
@@ -16,7 +18,7 @@ if (!$project) {
     $projectId = $db->lastInsertId();
     $stmt = $db->prepare("SELECT * FROM projects WHERE id = ?");
     $stmt->execute([$projectId]);
-    $project = $stmt->fetch(PDO::FETCH_ASSOC);
+    $project = $stmt->fetch();
 }
 
 // Valeurs par defaut si les champs sont vides
@@ -879,19 +881,20 @@ $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goa
             data.sprint.end = document.getElementById('sprintEnd').value;
             data.sprint.goal = document.getElementById('sprintGoal').value;
 
-            const formData = new FormData();
-            formData.append('action', 'save');
-            formData.append('project_name', document.getElementById('projectName').value);
-            formData.append('team_name', document.getElementById('teamName').value);
-            formData.append('cards', JSON.stringify(data.cards));
-            formData.append('user_stories', JSON.stringify(data.userStories));
-            formData.append('retrospective', JSON.stringify(data.retrospective));
-            formData.append('sprint', JSON.stringify(data.sprint));
+            const payload = {
+                project_name: document.getElementById('projectName').value,
+                team_name: document.getElementById('teamName').value,
+                cards: data.cards,
+                user_stories: data.userStories,
+                retrospective: data.retrospective,
+                sprint: data.sprint
+            };
 
             try {
-                const response = await fetch('api.php', {
+                const response = await fetch('api.php?action=save', {
                     method: 'POST',
-                    body: formData
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
                 });
                 const text = await response.text();
                 console.log('API response:', text);
@@ -918,12 +921,13 @@ $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goa
 
         async function toggleShare() {
             const isShared = document.getElementById('shareToggle').checked;
-            const formData = new FormData();
-            formData.append('action', 'share');
-            formData.append('is_shared', isShared ? '1' : '0');
 
             try {
-                await fetch('api.php', { method: 'POST', body: formData });
+                await fetch('api.php?action=share', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ shared: isShared })
+                });
             } catch (error) {
                 console.error('Erreur:', error);
             }
