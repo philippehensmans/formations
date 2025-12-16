@@ -82,6 +82,18 @@ function initDatabase($db) {
         FOREIGN KEY (session_id) REFERENCES sessions(id)
     )");
 
+    // Migration: ajouter is_submitted si la colonne n'existe pas
+    try {
+        $db->exec("ALTER TABLE cadre_logique ADD COLUMN is_submitted INTEGER DEFAULT 0");
+    } catch (PDOException $e) {
+        // Colonne existe deja, ignorer l'erreur
+    }
+    try {
+        $db->exec("ALTER TABLE cadre_logique ADD COLUMN submitted_at DATETIME");
+    } catch (PDOException $e) {
+        // Colonne existe deja, ignorer l'erreur
+    }
+
     // Creer une session par defaut si aucune n'existe
     $stmt = $db->query("SELECT COUNT(*) as count FROM sessions");
     if ($stmt->fetch()['count'] == 0) {
