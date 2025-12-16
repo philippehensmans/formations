@@ -11,13 +11,19 @@ $stmt->execute([$userId]);
 $project = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$project) {
-    $stmt = $db->prepare("INSERT INTO projects (user_id) VALUES (?)");
+    $stmt = $db->prepare("INSERT INTO projects (user_id, cards, user_stories, retrospective, sprint) VALUES (?, '[]', '[]', '{\"good\":[],\"improve\":[],\"actions\":[]}', '{\"number\":1,\"start\":\"\",\"end\":\"\",\"goal\":\"\"}')");
     $stmt->execute([$userId]);
     $projectId = $db->lastInsertId();
     $stmt = $db->prepare("SELECT * FROM projects WHERE id = ?");
     $stmt->execute([$projectId]);
     $project = $stmt->fetch(PDO::FETCH_ASSOC);
 }
+
+// Valeurs par defaut si les champs sont vides
+$project['cards'] = $project['cards'] ?: '[]';
+$project['user_stories'] = $project['user_stories'] ?: '[]';
+$project['retrospective'] = $project['retrospective'] ?: '{"good":[],"improve":[],"actions":[]}';
+$project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goal":""}';
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -887,13 +893,26 @@ if (!$project) {
                     method: 'POST',
                     body: formData
                 });
-                const result = await response.json();
-                if (result.success) {
-                    document.getElementById('saveStatus').className = 'save-status saved';
-                    document.getElementById('saveStatus').textContent = 'Sauvegarde';
+                const text = await response.text();
+                console.log('API response:', text);
+                try {
+                    const result = JSON.parse(text);
+                    if (result.success) {
+                        document.getElementById('saveStatus').className = 'save-status saved';
+                        document.getElementById('saveStatus').textContent = 'Sauvegarde';
+                    } else {
+                        document.getElementById('saveStatus').className = 'save-status saving';
+                        document.getElementById('saveStatus').textContent = 'Erreur: ' + (result.error || 'Echec');
+                        console.error('Erreur API:', result);
+                    }
+                } catch (parseError) {
+                    console.error('Reponse non-JSON:', text);
+                    document.getElementById('saveStatus').textContent = 'Erreur serveur';
                 }
             } catch (error) {
                 console.error('Erreur de sauvegarde:', error);
+                document.getElementById('saveStatus').className = 'save-status saving';
+                document.getElementById('saveStatus').textContent = 'Erreur reseau';
             }
         }
 
