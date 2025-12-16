@@ -815,7 +815,8 @@ $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goa
         </div>
 
         <div class="actions no-print">
-            <button onclick="window.print()" class="btn btn-primary">Imprimer / PDF</button>
+            <button onclick="manualSave()" class="btn btn-primary">Sauvegarder</button>
+            <button onclick="window.print()" class="btn btn-outline">Imprimer / PDF</button>
             <button onclick="exportJSON()" class="btn btn-outline">Exporter JSON</button>
             <button onclick="exportToExcel()" class="btn btn-outline">Exporter Excel</button>
             <button onclick="resetAll()" class="btn btn-outline">Reinitialiser</button>
@@ -875,7 +876,7 @@ $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goa
             autoSaveTimeout = setTimeout(saveData, 1500);
         }
 
-        async function saveData() {
+        async function saveData(showAlert = false) {
             data.sprint.number = document.getElementById('sprintNumber').value;
             data.sprint.start = document.getElementById('sprintStart').value;
             data.sprint.end = document.getElementById('sprintEnd').value;
@@ -890,6 +891,8 @@ $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goa
                 sprint: data.sprint
             };
 
+            if (showAlert) console.log('Envoi payload:', payload);
+
             try {
                 const response = await fetch('api.php?action=save', {
                     method: 'POST',
@@ -898,25 +901,39 @@ $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goa
                 });
                 const text = await response.text();
                 console.log('API response:', text);
+
+                if (showAlert) {
+                    alert('Reponse serveur:\n' + text);
+                }
+
                 try {
                     const result = JSON.parse(text);
                     if (result.success) {
                         document.getElementById('saveStatus').className = 'save-status saved';
                         document.getElementById('saveStatus').textContent = 'Sauvegarde';
+                        if (showAlert) alert('Sauvegarde reussie !');
                     } else {
                         document.getElementById('saveStatus').className = 'save-status saving';
                         document.getElementById('saveStatus').textContent = 'Erreur: ' + (result.error || 'Echec');
-                        console.error('Erreur API:', result);
+                        if (showAlert) alert('Erreur: ' + (result.error || 'Echec'));
                     }
                 } catch (parseError) {
                     console.error('Reponse non-JSON:', text);
                     document.getElementById('saveStatus').textContent = 'Erreur serveur';
+                    if (showAlert) alert('Erreur serveur - reponse non-JSON:\n' + text.substring(0, 500));
                 }
             } catch (error) {
                 console.error('Erreur de sauvegarde:', error);
                 document.getElementById('saveStatus').className = 'save-status saving';
                 document.getElementById('saveStatus').textContent = 'Erreur reseau';
+                if (showAlert) alert('Erreur reseau: ' + error.message);
             }
+        }
+
+        function manualSave() {
+            document.getElementById('saveStatus').className = 'save-status saving';
+            document.getElementById('saveStatus').textContent = 'Sauvegarde...';
+            saveData(true);
         }
 
         async function toggleShare() {
