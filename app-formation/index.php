@@ -17,9 +17,12 @@ if (isFormateurLoggedIn()) {
     exit;
 }
 
+// Charger la liste des sessions actives
+$db = getDB();
+$sessions = $db->query("SELECT code, nom FROM sessions WHERE is_active = 1 ORDER BY nom")->fetchAll();
+
 // Traitement du formulaire participant
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-    $db = getDB();
 
     if ($_POST['action'] === 'participant') {
         $code = strtoupper(trim($_POST['code'] ?? ''));
@@ -136,12 +139,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 <input type="hidden" name="action" value="participant">
 
                 <div>
-                    <label class="block text-gray-700 font-medium mb-1">Code de session *</label>
-                    <input type="text" name="code" required maxlength="10"
-                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none uppercase text-center text-xl tracking-widest"
-                        placeholder="ABC123"
-                        value="<?= sanitize($_POST['code'] ?? '') ?>">
-                    <p class="text-sm text-gray-500 mt-1">Code fourni par votre formateur</p>
+                    <label class="block text-gray-700 font-medium mb-1">Session *</label>
+                    <select name="code" required
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none text-lg">
+                        <option value="">-- Choisir une session --</option>
+                        <?php foreach ($sessions as $s): ?>
+                            <option value="<?= sanitize($s['code']) ?>" <?= (($_POST['code'] ?? '') === $s['code']) ? 'selected' : '' ?>>
+                                <?= sanitize($s['code']) ?> - <?= sanitize($s['nom']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
@@ -179,11 +186,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 <input type="hidden" name="action" value="formateur">
 
                 <div>
-                    <label class="block text-gray-700 font-medium mb-1">Code de session</label>
-                    <input type="text" name="code" required maxlength="10"
-                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none uppercase text-center text-xl tracking-widest"
-                        placeholder="ABC123"
-                        value="<?= sanitize($_POST['code'] ?? '') ?>">
+                    <label class="block text-gray-700 font-medium mb-1">Session</label>
+                    <select name="code" required
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none text-lg">
+                        <option value="">-- Choisir une session --</option>
+                        <?php foreach ($sessions as $s): ?>
+                            <option value="<?= sanitize($s['code']) ?>" <?= (($_POST['code'] ?? '') === $s['code']) ? 'selected' : '' ?>>
+                                <?= sanitize($s['code']) ?> - <?= sanitize($s['nom']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
 
                 <div>
