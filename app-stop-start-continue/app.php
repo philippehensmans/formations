@@ -87,7 +87,7 @@ $isSubmitted = $retro['is_submitted'] == 1;
 
     <?php if ($isSubmitted): ?>
         <div class="bg-green-100 border-l-4 border-green-500 p-4 max-w-7xl mx-auto mt-4">
-            <p class="text-green-700 font-medium">Travail soumis - Consultation seule</p>
+            <p class="text-green-700 font-medium">Travail marque comme termine (modifications toujours possibles)</p>
         </div>
     <?php endif; ?>
 
@@ -99,15 +99,15 @@ $isSubmitted = $retro['is_submitted'] == 1;
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nom du projet / programme</label>
                     <input type="text" id="projetNom" value="<?= sanitize($retro['projet_nom']) ?>"
-                           <?= $isSubmitted ? 'disabled' : '' ?>
-                           class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 <?= $isSubmitted ? 'bg-gray-100' : '' ?>"
+                           
+                           class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 "
                            placeholder="Ex: Programme de formation 2024">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Contexte de l'evaluation</label>
                     <input type="text" id="projetContexte" value="<?= sanitize($retro['projet_contexte']) ?>"
-                           <?= $isSubmitted ? 'disabled' : '' ?>
-                           class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 <?= $isSubmitted ? 'bg-gray-100' : '' ?>"
+                           
+                           class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 "
                            placeholder="Ex: Evaluation annuelle Q4 2024">
                 </div>
             </div>
@@ -188,8 +188,8 @@ $isSubmitted = $retro['is_submitted'] == 1;
         <!-- Notes et Actions -->
         <div class="bg-white rounded-lg shadow p-6 mt-6">
             <h3 class="font-semibold mb-3">Notes complementaires</h3>
-            <textarea id="notes" rows="3" <?= $isSubmitted ? 'disabled' : '' ?>
-                      class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 <?= $isSubmitted ? 'bg-gray-100' : '' ?>"
+            <textarea id="notes" rows="3" 
+                      class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 "
                       placeholder="Ressources necessaires, obstacles potentiels, points d'attention..."><?= sanitize($retro['notes']) ?></textarea>
         </div>
 
@@ -211,7 +211,7 @@ $isSubmitted = $retro['is_submitted'] == 1;
             </div>
             <?php if (!$isSubmitted): ?>
                 <button onclick="submitWork()" class="bg-blue-900 hover:bg-blue-800 text-white px-6 py-3 rounded-lg font-medium">
-                    Soumettre le travail
+                    Marquer comme termine
                 </button>
             <?php endif; ?>
         </div>
@@ -460,13 +460,13 @@ $isSubmitted = $retro['is_submitted'] == 1;
         }
 
         function submitWork() {
-            if (!confirm('Soumettre votre travail ? Vous ne pourrez plus le modifier.')) return;
+            if (!confirm('Marquer comme termine ? Vous pourrez toujours modifier ensuite.')) return;
 
             fetch('api/submit.php', { method: 'POST' })
             .then(r => r.json())
             .then(result => {
                 if (result.success) {
-                    alert('Travail soumis avec succes !');
+                    alert('Marque comme termine !');
                     location.reload();
                 } else {
                     alert('Erreur: ' + (result.error || 'Erreur inconnue'));

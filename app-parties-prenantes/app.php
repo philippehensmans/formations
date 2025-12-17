@@ -226,7 +226,7 @@ $isSubmitted = $carto['is_submitted'] == 1;
                     <!-- Boutons export -->
                     <div class="mt-6 flex flex-wrap gap-3 no-print">
                         <button onclick="submitCarto()" class="bg-purple-600 text-white px-6 py-3 rounded font-semibold hover:bg-purple-700 transition">
-                            ✅ Soumettre
+                            ✅ Marquer termine
                         </button>
                         <button onclick="exportToExcel()" class="bg-emerald-600 text-white px-6 py-3 rounded font-semibold hover:bg-emerald-700 transition">
                             📊 Excel
@@ -442,7 +442,7 @@ $isSubmitted = $carto['is_submitted'] == 1;
         }
 
         async function submitCarto() {
-            if (!confirm('Soumettre votre cartographie ?')) return;
+            if (!confirm('Marquer comme termine ? Vous pourrez toujours modifier ensuite.')) return;
             await saveData();
 
             try {
@@ -451,7 +451,7 @@ $isSubmitted = $carto['is_submitted'] == 1;
                 if (result.success) {
                     document.getElementById('saveStatus').textContent = 'Soumis';
                     document.getElementById('saveStatus').className = 'text-sm px-3 py-1 rounded-full bg-purple-500 text-white';
-                    alert('Cartographie soumise avec succes !');
+                    alert('Marque comme termine !');
                 } else {
                     alert(result.error || 'Erreur lors de la soumission');
                 }

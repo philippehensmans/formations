@@ -28,10 +28,7 @@ if (!$retro) {
     exit;
 }
 
-if ($retro['is_submitted']) {
-    echo json_encode(['success' => false, 'error' => 'Travail deja soumis']);
-    exit;
-}
+// Permettre les modifications meme apres soumission
 
 // Calculer completion
 $completion = 0;
