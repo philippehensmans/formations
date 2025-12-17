@@ -5,6 +5,13 @@ function getDB() {
     static $db = null;
     if ($db === null) {
         $dbPath = __DIR__ . '/../data/mesure_impact.sqlite';
+
+        // Créer le répertoire data s'il n'existe pas
+        $dir = dirname($dbPath);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
         $db = new PDO('sqlite:' . $dbPath);
         $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
