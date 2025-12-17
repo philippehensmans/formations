@@ -60,11 +60,9 @@ $isSubmitted = $carte['is_submitted'] == 1;
             </div>
             <div class="flex items-center gap-3">
                 <span id="saveStatus" class="text-sm text-purple-200"></span>
-                <?php if (!$isSubmitted): ?>
-                    <button onclick="manualSave()" class="bg-purple-700 hover:bg-purple-600 px-4 py-2 rounded text-sm">
-                        Sauvegarder
-                    </button>
-                <?php endif; ?>
+                <button onclick="manualSave()" class="bg-purple-700 hover:bg-purple-600 px-4 py-2 rounded text-sm">
+                    Sauvegarder
+                </button>
                 <a href="logout.php" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm">
                     Deconnexion
                 </a>
@@ -75,7 +73,7 @@ $isSubmitted = $carte['is_submitted'] == 1;
     <?php if ($isSubmitted): ?>
         <div class="max-w-4xl mx-auto mb-4">
             <div class="bg-green-100 border-l-4 border-green-500 p-4 rounded">
-                <p class="text-green-700 font-medium">Travail soumis - Consultation seule</p>
+                <p class="text-green-700 font-medium">Travail marque comme termine (modifications toujours possibles)</p>
             </div>
         </div>
     <?php endif; ?>
@@ -93,8 +91,8 @@ $isSubmitted = $carte['is_submitted'] == 1;
                     Titre du projet
                 </label>
                 <input type="text" id="titre" value="<?= sanitize($carte['titre']) ?>"
-                       <?= $isSubmitted ? 'disabled' : '' ?>
-                       class="w-full px-4 py-2 border-2 border-purple-200 rounded-md focus:ring-2 focus:ring-purple-500 <?= $isSubmitted ? 'bg-gray-100' : '' ?>"
+                       
+                       class="w-full px-4 py-2 border-2 border-purple-200 rounded-md focus:ring-2 focus:ring-purple-500 "
                        placeholder="Indiquez le titre de votre projet...">
             </div>
 
@@ -104,8 +102,8 @@ $isSubmitted = $carte['is_submitted'] == 1;
                     Objectifs du projet
                 </label>
                 <p class="text-sm text-gray-600 mb-2 italic">Que cherche-t-on a atteindre ? Quelles transformations souhaitees ?</p>
-                <textarea id="objectifs" rows="4" <?= $isSubmitted ? 'disabled' : '' ?>
-                          class="w-full px-4 py-2 border-2 border-blue-200 rounded-md focus:ring-2 focus:ring-blue-500 <?= $isSubmitted ? 'bg-gray-100' : '' ?>"
+                <textarea id="objectifs" rows="4" 
+                          class="w-full px-4 py-2 border-2 border-blue-200 rounded-md focus:ring-2 focus:ring-blue-500 "
                           placeholder="Decrivez les objectifs principaux de votre projet..."><?= sanitize($carte['objectifs']) ?></textarea>
             </div>
 
@@ -115,8 +113,8 @@ $isSubmitted = $carte['is_submitted'] == 1;
                     Public(s) cible(s)
                 </label>
                 <p class="text-sm text-gray-600 mb-2 italic">A qui s'adresse le projet ? (age, situation, territoire, nombre estime, etc.)</p>
-                <textarea id="publicCible" rows="3" <?= $isSubmitted ? 'disabled' : '' ?>
-                          class="w-full px-4 py-2 border-2 border-green-200 rounded-md focus:ring-2 focus:ring-green-500 <?= $isSubmitted ? 'bg-gray-100' : '' ?>"
+                <textarea id="publicCible" rows="3" 
+                          class="w-full px-4 py-2 border-2 border-green-200 rounded-md focus:ring-2 focus:ring-green-500 "
                           placeholder="Decrivez le(s) public(s) vise(s)..."><?= sanitize($carte['public_cible']) ?></textarea>
             </div>
 
@@ -126,8 +124,8 @@ $isSubmitted = $carte['is_submitted'] == 1;
                     Zone d'action / Territoire concerne
                 </label>
                 <input type="text" id="territoire" value="<?= sanitize($carte['territoire']) ?>"
-                       <?= $isSubmitted ? 'disabled' : '' ?>
-                       class="w-full px-4 py-2 border-2 border-yellow-200 rounded-md focus:ring-2 focus:ring-yellow-500 <?= $isSubmitted ? 'bg-gray-100' : '' ?>"
+                       
+                       class="w-full px-4 py-2 border-2 border-yellow-200 rounded-md focus:ring-2 focus:ring-yellow-500 "
                        placeholder="Indiquez la zone geographique...">
             </div>
 
@@ -143,9 +141,7 @@ $isSubmitted = $carte['is_submitted'] == 1;
                                 <th class="border border-pink-200 px-3 py-2 text-left text-sm font-semibold">Structure / Organisme</th>
                                 <th class="border border-pink-200 px-3 py-2 text-left text-sm font-semibold">Role ou contribution</th>
                                 <th class="border border-pink-200 px-3 py-2 text-left text-sm font-semibold">Contact de reference</th>
-                                <?php if (!$isSubmitted): ?>
-                                    <th class="border border-pink-200 px-3 py-2 text-center text-sm font-semibold no-print">Action</th>
-                                <?php endif; ?>
+                                <th class="border border-pink-200 px-3 py-2 text-center text-sm font-semibold no-print">Action</th>
                             </tr>
                         </thead>
                         <tbody id="partenairesList">
@@ -153,12 +149,10 @@ $isSubmitted = $carte['is_submitted'] == 1;
                         </tbody>
                     </table>
                 </div>
-                <?php if (!$isSubmitted): ?>
-                    <button type="button" onclick="addPartenaireRow()"
-                            class="no-print bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 transition text-sm">
-                        + Ajouter un partenaire
-                    </button>
-                <?php endif; ?>
+                <button type="button" onclick="addPartenaireRow()"
+                        class="no-print bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 transition text-sm">
+                    + Ajouter un partenaire
+                </button>
             </div>
 
             <!-- Ressources -->
@@ -170,22 +164,22 @@ $isSubmitted = $carte['is_submitted'] == 1;
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Humaines :</label>
                         <input type="text" id="ressourcesHumaines" value="<?= sanitize($carte['ressources_humaines']) ?>"
-                               <?= $isSubmitted ? 'disabled' : '' ?>
-                               class="w-full px-3 py-2 border-2 border-indigo-200 rounded-md focus:ring-2 focus:ring-indigo-500 <?= $isSubmitted ? 'bg-gray-100' : '' ?>"
+                               
+                               class="w-full px-3 py-2 border-2 border-indigo-200 rounded-md focus:ring-2 focus:ring-indigo-500 "
                                placeholder="Equipe, benevoles, competences disponibles...">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Materielles :</label>
                         <input type="text" id="ressourcesMaterielles" value="<?= sanitize($carte['ressources_materielles']) ?>"
-                               <?= $isSubmitted ? 'disabled' : '' ?>
-                               class="w-full px-3 py-2 border-2 border-indigo-200 rounded-md focus:ring-2 focus:ring-indigo-500 <?= $isSubmitted ? 'bg-gray-100' : '' ?>"
+                               
+                               class="w-full px-3 py-2 border-2 border-indigo-200 rounded-md focus:ring-2 focus:ring-indigo-500 "
                                placeholder="Locaux, equipements, materiel...">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Financieres :</label>
                         <input type="text" id="ressourcesFinancieres" value="<?= sanitize($carte['ressources_financieres']) ?>"
-                               <?= $isSubmitted ? 'disabled' : '' ?>
-                               class="w-full px-3 py-2 border-2 border-indigo-200 rounded-md focus:ring-2 focus:ring-indigo-500 <?= $isSubmitted ? 'bg-gray-100' : '' ?>"
+                               
+                               class="w-full px-3 py-2 border-2 border-indigo-200 rounded-md focus:ring-2 focus:ring-indigo-500 "
                                placeholder="Budget, subventions, sources de financement...">
                     </div>
                 </div>
@@ -197,8 +191,8 @@ $isSubmitted = $carte['is_submitted'] == 1;
                     Calendrier previsionnel / Periode de mise en oeuvre
                 </label>
                 <input type="text" id="calendrier" value="<?= sanitize($carte['calendrier']) ?>"
-                       <?= $isSubmitted ? 'disabled' : '' ?>
-                       class="w-full px-4 py-2 border-2 border-orange-200 rounded-md focus:ring-2 focus:ring-orange-500 <?= $isSubmitted ? 'bg-gray-100' : '' ?>"
+                       
+                       class="w-full px-4 py-2 border-2 border-orange-200 rounded-md focus:ring-2 focus:ring-orange-500 "
                        placeholder="Ex: Janvier 2025 - Decembre 2025, ou phases specifiques...">
             </div>
 
@@ -208,8 +202,8 @@ $isSubmitted = $carte['is_submitted'] == 1;
                     Resultats attendus (effets ou changements vises)
                 </label>
                 <p class="text-sm text-gray-600 mb-2 italic">Qu'esperez-vous observer concretement ? Qu'est-ce qui prouvera la reussite ?</p>
-                <textarea id="resultats" rows="4" <?= $isSubmitted ? 'disabled' : '' ?>
-                          class="w-full px-4 py-2 border-2 border-teal-200 rounded-md focus:ring-2 focus:ring-teal-500 <?= $isSubmitted ? 'bg-gray-100' : '' ?>"
+                <textarea id="resultats" rows="4" 
+                          class="w-full px-4 py-2 border-2 border-teal-200 rounded-md focus:ring-2 focus:ring-teal-500 "
                           placeholder="Decrivez les resultats attendus et les indicateurs de reussite..."><?= sanitize($carte['resultats']) ?></textarea>
             </div>
 
@@ -218,8 +212,8 @@ $isSubmitted = $carte['is_submitted'] == 1;
                 <label class="block text-lg font-semibold text-gray-800 mb-2">
                     Notes complementaires / Observations
                 </label>
-                <textarea id="notes" rows="3" <?= $isSubmitted ? 'disabled' : '' ?>
-                          class="w-full px-4 py-2 border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-gray-500 <?= $isSubmitted ? 'bg-gray-100' : '' ?>"
+                <textarea id="notes" rows="3" 
+                          class="w-full px-4 py-2 border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-gray-500 "
                           placeholder="Ajoutez toute information complementaire pertinente..."><?= sanitize($carte['notes']) ?></textarea>
             </div>
 
@@ -244,7 +238,7 @@ $isSubmitted = $carte['is_submitted'] == 1;
                 <?php if (!$isSubmitted): ?>
                     <button type="button" onclick="submitWork()"
                             class="ml-auto bg-purple-900 text-white px-6 py-3 rounded-md hover:bg-purple-800 transition font-semibold shadow-md">
-                        Soumettre le travail
+                        Marquer comme termine
                     </button>
                 <?php endif; ?>
             </div>
@@ -261,15 +255,13 @@ $isSubmitted = $carte['is_submitted'] == 1;
         document.addEventListener('DOMContentLoaded', function() {
             renderPartenaires();
 
-            if (!isSubmitted) {
-                // Auto-save sur tous les champs
-                const fields = ['titre', 'objectifs', 'publicCible', 'territoire', 'ressourcesHumaines',
-                               'ressourcesMaterielles', 'ressourcesFinancieres', 'calendrier', 'resultats', 'notes'];
-                fields.forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) el.addEventListener('input', scheduleSave);
-                });
-            }
+            // Auto-save sur tous les champs (toujours actif)
+            const fields = ['titre', 'objectifs', 'publicCible', 'territoire', 'ressourcesHumaines',
+                           'ressourcesMaterielles', 'ressourcesFinancieres', 'calendrier', 'resultats', 'notes'];
+            fields.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', scheduleSave);
+            });
         });
 
         function renderPartenaires() {
@@ -282,28 +274,26 @@ $isSubmitted = $carte['is_submitted'] == 1;
             tbody.innerHTML = partenaires.map((p, index) => `
                 <tr class="partenaire-row">
                     <td class="border border-pink-200 p-2">
-                        <input type="text" value="${escapeHtml(p.structure)}" ${isSubmitted ? 'disabled' : ''}
+                        <input type="text" value="${escapeHtml(p.structure)}"
                                onchange="updatePartenaire(${index}, 'structure', this.value)"
-                               class="w-full px-2 py-1 border border-gray-300 rounded ${isSubmitted ? 'bg-gray-100' : ''}"
+                               class="w-full px-2 py-1 border border-gray-300 rounded"
                                placeholder="Nom de la structure">
                     </td>
                     <td class="border border-pink-200 p-2">
-                        <input type="text" value="${escapeHtml(p.role)}" ${isSubmitted ? 'disabled' : ''}
+                        <input type="text" value="${escapeHtml(p.role)}"
                                onchange="updatePartenaire(${index}, 'role', this.value)"
-                               class="w-full px-2 py-1 border border-gray-300 rounded ${isSubmitted ? 'bg-gray-100' : ''}"
+                               class="w-full px-2 py-1 border border-gray-300 rounded"
                                placeholder="Role">
                     </td>
                     <td class="border border-pink-200 p-2">
-                        <input type="text" value="${escapeHtml(p.contact)}" ${isSubmitted ? 'disabled' : ''}
+                        <input type="text" value="${escapeHtml(p.contact)}"
                                onchange="updatePartenaire(${index}, 'contact', this.value)"
-                               class="w-full px-2 py-1 border border-gray-300 rounded ${isSubmitted ? 'bg-gray-100' : ''}"
+                               class="w-full px-2 py-1 border border-gray-300 rounded"
                                placeholder="Contact">
                     </td>
-                    ${!isSubmitted ? `
-                        <td class="border border-pink-200 p-2 text-center no-print">
-                            <button type="button" onclick="removePartenaire(${index})" class="text-red-500 hover:text-red-700">X</button>
-                        </td>
-                    ` : ''}
+                    <td class="border border-pink-200 p-2 text-center no-print">
+                        <button type="button" onclick="removePartenaire(${index})" class="text-red-500 hover:text-red-700">X</button>
+                    </td>
                 </tr>
             `).join('');
         }

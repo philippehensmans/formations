@@ -28,10 +28,7 @@ if (!$carte) {
     exit;
 }
 
-if ($carte['is_submitted']) {
-    echo json_encode(['success' => false, 'error' => 'Travail deja soumis']);
-    exit;
-}
+// Permettre les modifications meme apres soumission
 
 // Calculer completion
 $fields = ['titre', 'objectifs', 'public_cible', 'territoire', 'calendrier', 'resultats',
