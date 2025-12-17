@@ -170,7 +170,7 @@ $exemples = getExemplesParDomaine();
     </main>
 
     <!-- Help Panel -->
-    <div id="helpPanel" class="fixed inset-y-0 right-0 w-80 bg-white shadow-xl transform translate-x-full transition-transform z-50">
+    <div id="helpPanel" class="fixed inset-y-0 right-0 w-80 bg-white shadow-xl transform translate-x-full transition-transform duration-300 z-50">
         <div class="p-4 bg-emerald-700 text-white flex justify-between items-center">
             <h3 class="font-bold">Aide SMART</h3>
             <button onclick="toggleHelp()" class="text-2xl">&times;</button>
@@ -178,7 +178,7 @@ $exemples = getExemplesParDomaine();
         <div class="p-4 overflow-y-auto" style="height: calc(100% - 60px);" id="helpContent"></div>
     </div>
 
-    <button onclick="toggleHelp()" class="fixed bottom-4 right-4 bg-emerald-600 text-white w-12 h-12 rounded-full shadow-lg hover:bg-emerald-700 text-xl z-40">?</button>
+    <button onclick="toggleHelp()" class="fixed bottom-6 right-6 bg-emerald-600 text-white w-14 h-14 rounded-full shadow-xl hover:bg-emerald-700 text-2xl font-bold z-40 flex items-center justify-center animate-pulse hover:animate-none" title="Aide SMART">?</button>
 
     <script>
         // Data
