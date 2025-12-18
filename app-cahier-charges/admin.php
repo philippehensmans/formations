@@ -178,7 +178,7 @@ if (isset($_GET['view'])) {
 
                         <!-- Resultats -->
                         <div class="bg-orange-50 p-4 rounded-lg border-2 border-orange-200">
-                            <h3 class="font-bold text-orange-800 mb-3">Resultats et Indicateurs</h3>
+                            <h3 class="font-bold text-orange-800 mb-3">Cadre Logique - Resultats et Indicateurs</h3>
                             <?php $resultats = json_decode($selectedCahier['resultats'] ?? '[]', true); ?>
                             <?php if (empty($resultats)): ?>
                                 <p class="text-sm text-gray-500 italic">Aucun resultat defini</p>
@@ -187,23 +187,31 @@ if (isset($_GET['view'])) {
                                     <table class="w-full text-xs border-collapse">
                                         <thead class="bg-orange-100">
                                             <tr>
-                                                <th class="border p-2 text-left">Objectif</th>
-                                                <th class="border p-2 text-left">Acteurs</th>
+                                                <th class="border p-2 text-left">Objectif specifique</th>
+                                                <th class="border p-2 text-left">Acteurs vises</th>
                                                 <th class="border p-2 text-left">Indicateurs</th>
-                                                <th class="border p-2 text-left">EXPECT</th>
-                                                <th class="border p-2 text-left">LIKE</th>
-                                                <th class="border p-2 text-left">LOVE</th>
+                                                <th class="border p-2 text-left">Delivrables</th>
+                                                <th class="border p-2 text-left bg-red-100">EXPECT</th>
+                                                <th class="border p-2 text-left bg-yellow-100">LIKE</th>
+                                                <th class="border p-2 text-left bg-green-100">LOVE</th>
+                                                <th class="border p-2 text-left">Verification</th>
+                                                <th class="border p-2 text-left">Lecons</th>
+                                                <th class="border p-2 text-left">Ajustements</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <?php foreach ($resultats as $r): ?>
                                                 <tr>
-                                                    <td class="border p-2"><?= sanitize($r['objectif'] ?? '') ?></td>
-                                                    <td class="border p-2"><?= sanitize($r['acteurs'] ?? '') ?></td>
-                                                    <td class="border p-2"><?= sanitize($r['indicateurs'] ?? '') ?></td>
-                                                    <td class="border p-2"><?= sanitize($r['expect'] ?? '') ?></td>
-                                                    <td class="border p-2"><?= sanitize($r['like'] ?? '') ?></td>
-                                                    <td class="border p-2"><?= sanitize($r['love'] ?? '') ?></td>
+                                                    <td class="border p-2"><?= nl2br(sanitize($r['objectif'] ?? '')) ?></td>
+                                                    <td class="border p-2"><?= nl2br(sanitize($r['acteurs'] ?? '')) ?></td>
+                                                    <td class="border p-2"><?= nl2br(sanitize($r['indicateurs'] ?? '')) ?></td>
+                                                    <td class="border p-2"><?= nl2br(sanitize($r['delivrables'] ?? '')) ?></td>
+                                                    <td class="border p-2 bg-red-50"><?= nl2br(sanitize($r['expect'] ?? '')) ?></td>
+                                                    <td class="border p-2 bg-yellow-50"><?= nl2br(sanitize($r['like'] ?? '')) ?></td>
+                                                    <td class="border p-2 bg-green-50"><?= nl2br(sanitize($r['love'] ?? '')) ?></td>
+                                                    <td class="border p-2"><?= nl2br(sanitize($r['verification'] ?? '')) ?></td>
+                                                    <td class="border p-2"><?= nl2br(sanitize($r['lecons'] ?? '')) ?></td>
+                                                    <td class="border p-2"><?= nl2br(sanitize($r['ajustements'] ?? '')) ?></td>
                                                 </tr>
                                             <?php endforeach; ?>
                                         </tbody>
