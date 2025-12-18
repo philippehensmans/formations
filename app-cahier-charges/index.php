@@ -563,17 +563,66 @@ $user = getCurrentUser();
             container.appendChild(div);
         }
 
-        function ajouterObjectifSpecifique(v='') { creerChamp('objectifsSpecifiquesContainer', 'Ex: Sensibiliser 400 personnes...', 'objectif-specifique', v); }
+        function ajouterObjectifSpecifique(v='') {
+            const container = document.getElementById('objectifsSpecifiquesContainer');
+            const div = document.createElement('div');
+            div.className = 'flex gap-2';
+            div.innerHTML = `
+                <textarea placeholder="Ex: Sensibiliser 400 personnes..." class="flex-1 px-3 py-2 border-2 border-gray-300 rounded-lg text-sm"
+                       data-type="objectif-specifique" rows="2" oninput="scheduleAutoSave(); updateAllObjectifsDropdowns();">${v}</textarea>
+                <button type="button" onclick="this.parentElement.remove(); scheduleAutoSave(); updateAllObjectifsDropdowns();"
+                        class="bg-red-400 hover:bg-red-500 text-white px-3 py-1 rounded-lg text-xs h-fit">X</button>
+            `;
+            container.appendChild(div);
+        }
         function ajouterContrainte(v='') { creerChamp('contraintesContainer', 'Ex: Budget limite, delais courts...', 'contrainte', v); }
         function ajouterStrategie(v='') { creerChamp('strategiesContainer', 'Ex: Recherche de partenaires...', 'strategie', v); }
         function ajouterEtape(v='') { creerChamp('etapesContainer', 'Ex: Lancement (15/01), Bilan (15/06)...', 'etape', v); }
+
+        function getObjectifsOptions(selectedValue = '') {
+            const objectifs = collecterDonnees('objectif-specifique');
+            let options = '<option value="">-- Choisir un objectif --</option>';
+            objectifs.forEach((obj, i) => {
+                const truncated = obj.length > 50 ? obj.substring(0, 50) + '...' : obj;
+                const selected = obj === selectedValue ? 'selected' : '';
+                options += `<option value="${obj.replace(/"/g, '&quot;')}" ${selected}>${i+1}. ${truncated}</option>`;
+            });
+            options += '<option value="__autre__">Autre (saisie libre)</option>';
+            return options;
+        }
+
+        function updateAllObjectifsDropdowns() {
+            document.querySelectorAll('[data-type="resultat-objectif-select"]').forEach(select => {
+                const currentValue = select.value;
+                select.innerHTML = getObjectifsOptions(currentValue);
+            });
+        }
+
+        function handleObjectifChange(select, id) {
+            const textareaContainer = document.getElementById(`objectif-libre-${id}`);
+            if (select.value === '__autre__') {
+                textareaContainer.style.display = 'block';
+            } else {
+                textareaContainer.style.display = 'none';
+                textareaContainer.querySelector('textarea').value = '';
+            }
+            scheduleAutoSave();
+        }
 
         function ajouterLigneResultat(data = null) {
             const tbody = document.getElementById('resultatsTableBody');
             const id = ++compteurResultats;
             const tr = document.createElement('tr');
+            const isAutre = data?.objectif && !collecterDonnees('objectif-specifique').includes(data.objectif);
             tr.innerHTML = `
-                <td class="border border-orange-300 p-1"><textarea data-type="resultat-objectif" data-id="${id}" placeholder="Objectif specifique" class="w-full px-2 py-1 border rounded text-xs" rows="2" oninput="scheduleAutoSave()">${data?.objectif || ''}</textarea></td>
+                <td class="border border-orange-300 p-1">
+                    <select data-type="resultat-objectif-select" data-id="${id}" class="w-full px-2 py-1 border rounded text-xs mb-1" onchange="handleObjectifChange(this, ${id}); scheduleAutoSave()">
+                        ${getObjectifsOptions(isAutre ? '__autre__' : (data?.objectif || ''))}
+                    </select>
+                    <div id="objectif-libre-${id}" style="display: ${isAutre ? 'block' : 'none'}">
+                        <textarea data-type="resultat-objectif-libre" data-id="${id}" placeholder="Saisie libre..." class="w-full px-2 py-1 border rounded text-xs" rows="2" oninput="scheduleAutoSave()">${isAutre ? data?.objectif || '' : ''}</textarea>
+                    </div>
+                </td>
                 <td class="border border-orange-300 p-1"><textarea data-type="resultat-acteurs" data-id="${id}" placeholder="Un acteur par ligne" class="w-full px-2 py-1 border rounded text-xs" rows="2" oninput="scheduleAutoSave()">${data?.acteurs || ''}</textarea></td>
                 <td class="border border-orange-300 p-1"><textarea data-type="resultat-indicateurs" data-id="${id}" placeholder="Indicateurs d'activites" class="w-full px-2 py-1 border rounded text-xs" rows="2" oninput="scheduleAutoSave()">${data?.indicateurs || ''}</textarea></td>
                 <td class="border border-orange-300 p-1"><textarea data-type="resultat-delivrables" data-id="${id}" placeholder="Delivrables/Moyens" class="w-full px-2 py-1 border rounded text-xs" rows="2" oninput="scheduleAutoSave()">${data?.delivrables || ''}</textarea></td>
@@ -595,7 +644,9 @@ $user = getCurrentUser();
         function collecterResultats() {
             const res = [];
             for (let i = 1; i <= compteurResultats; i++) {
-                const obj = document.querySelector(`[data-type="resultat-objectif"][data-id="${i}"]`)?.value || '';
+                const selectVal = document.querySelector(`[data-type="resultat-objectif-select"][data-id="${i}"]`)?.value || '';
+                const libreVal = document.querySelector(`[data-type="resultat-objectif-libre"][data-id="${i}"]`)?.value || '';
+                const obj = selectVal === '__autre__' ? libreVal : selectVal;
                 const act = document.querySelector(`[data-type="resultat-acteurs"][data-id="${i}"]`)?.value || '';
                 const ind = document.querySelector(`[data-type="resultat-indicateurs"][data-id="${i}"]`)?.value || '';
                 const del = document.querySelector(`[data-type="resultat-delivrables"][data-id="${i}"]`)?.value || '';
