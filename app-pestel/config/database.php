@@ -151,7 +151,7 @@ function requireParticipant() {
     }
 }
 
-function requireFormateur() {
+function requireLocalFormateur() {
     if (!isFormateurLoggedIn()) {
         header('Location: index.php');
         exit;
