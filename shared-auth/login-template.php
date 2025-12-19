@@ -143,6 +143,13 @@ $sessions = getActiveSessions($db);
                 </a>
             </div>
             <?php endif; ?>
+
+            <div class="mt-4 pt-4 border-t border-gray-200 text-center text-sm text-gray-600">
+                Vous souhaitez une session ?
+                <a href="https://k1m.be/contact/" target="_blank" class="text-<?= $appColor ?>-600 hover:text-<?= $appColor ?>-800 font-medium">
+                    Cliquez ici pour prendre contact avec nous.
+                </a>
+            </div>
         </div>
 
         <div class="mt-6 text-center">
