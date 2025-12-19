@@ -1,44 +1,69 @@
 <?php
 /**
- * Configuration et connexion à la base de données SQLite
- * Cahier des Charges - Application multi-utilisateurs
+ * Configuration Cahier des Charges
+ * Utilise le systeme d'authentification partage
  */
 
-session_start();
+// Charger le systeme d'authentification partage
+require_once __DIR__ . '/../shared-auth/config.php';
+require_once __DIR__ . '/../shared-auth/sessions.php';
 
 define('APP_NAME', 'Cahier des Charges Associatif');
+define('APP_COLOR', 'blue');
 define('DB_PATH', __DIR__ . '/data/cahier_charges.db');
 
+/**
+ * Connexion a la base de donnees locale de l'application
+ */
 function getDB() {
     static $db = null;
     if ($db === null) {
+        $dir = dirname(DB_PATH);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
         try {
             $db = new PDO('sqlite:' . DB_PATH);
             $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
             initDatabase($db);
         } catch (PDOException $e) {
-            die("Erreur de connexion à la base de données: " . $e->getMessage());
+            die("Erreur de connexion a la base de donnees: " . $e->getMessage());
         }
     }
     return $db;
 }
 
+/**
+ * Initialisation des tables locales
+ */
 function initDatabase($db) {
-    // Table des utilisateurs
-    $db->exec("CREATE TABLE IF NOT EXISTS users (
+    // Table des sessions de formation
+    $db->exec("CREATE TABLE IF NOT EXISTS sessions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username VARCHAR(50) UNIQUE NOT NULL,
-        password VARCHAR(255) NOT NULL,
-        email VARCHAR(100),
-        is_admin INTEGER DEFAULT 0,
+        code VARCHAR(10) UNIQUE NOT NULL,
+        nom VARCHAR(255) NOT NULL,
+        formateur_id INTEGER,
+        is_active INTEGER DEFAULT 1,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )");
+
+    // Table des participants aux sessions
+    $db->exec("CREATE TABLE IF NOT EXISTS participants (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        session_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (session_id) REFERENCES sessions(id),
+        UNIQUE(session_id, user_id)
     )");
 
     // Table des cahiers des charges
     $db->exec("CREATE TABLE IF NOT EXISTS cahiers (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
+        session_id INTEGER,
         titre_projet VARCHAR(255),
         date_debut DATE,
         date_fin DATE,
@@ -66,50 +91,55 @@ function initDatabase($db) {
         communication TEXT,
         is_shared INTEGER DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id)
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )");
 
-    // Créer un compte admin par défaut
-    $stmt = $db->query("SELECT COUNT(*) as count FROM users WHERE is_admin = 1");
-    $result = $stmt->fetch();
-    if ($result['count'] == 0) {
-        $adminPassword = password_hash('Formation2024!', PASSWORD_DEFAULT);
-        $db->exec("INSERT INTO users (username, password, is_admin) VALUES ('formateur', '$adminPassword', 1)");
+    // Migration: ajouter session_id si la colonne n'existe pas
+    try {
+        $db->exec("ALTER TABLE cahiers ADD COLUMN session_id INTEGER");
+    } catch (Exception $e) {
+        // Colonne existe deja
     }
 }
 
-function isLoggedIn() {
-    return isset($_SESSION['user_id']);
+/**
+ * Fonction de securisation (alias de h() pour compatibilite)
+ */
+function sanitize($input) {
+    return h($input);
 }
 
+/**
+ * Verification admin (utilise isFormateur du shared-auth)
+ */
 function isAdmin() {
-    return isset($_SESSION['is_admin']) && $_SESSION['is_admin'] == 1;
+    return isFormateur();
 }
 
+/**
+ * Recuperer l'utilisateur courant (wrapper pour compatibilite)
+ */
+function getCurrentUser() {
+    return getLoggedUser();
+}
+
+/**
+ * Exiger connexion avec session
+ */
 function requireLogin() {
     if (!isLoggedIn()) {
         header('Location: login.php');
         exit;
     }
-}
-
-function requireAdmin() {
-    requireLogin();
-    if (!isAdmin()) {
-        header('Location: index.php');
+    if (!isset($_SESSION['current_session_id'])) {
+        header('Location: login.php');
         exit;
     }
 }
 
-function getCurrentUser() {
-    if (!isLoggedIn()) return null;
-    $db = getDB();
-    $stmt = $db->prepare("SELECT id, username, email, is_admin FROM users WHERE id = ?");
-    $stmt->execute([$_SESSION['user_id']]);
-    return $stmt->fetch();
-}
-
-function sanitize($input) {
-    return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
+/**
+ * Exiger droits admin/formateur
+ */
+function requireAdmin() {
+    requireFormateur();
 }

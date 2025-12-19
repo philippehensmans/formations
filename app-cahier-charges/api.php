@@ -1,37 +1,39 @@
 <?php
 /**
- * API pour sauvegarder et charger les données du Cahier des Charges
+ * API pour sauvegarder et charger les donnees du Cahier des Charges
+ * Utilise le systeme d'authentification partage
  */
-require_once 'config.php';
+require_once __DIR__ . '/config.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
 if (!isLoggedIn()) {
     http_response_code(401);
-    echo json_encode(['error' => 'Non authentifié']);
+    echo json_encode(['error' => 'Non authentifie']);
     exit;
 }
 
 $db = getDB();
 $userId = $_SESSION['user_id'];
+$sessionId = $_SESSION['current_session_id'] ?? null;
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
 switch ($action) {
     case 'load':
-        loadData($db, $userId);
+        loadData($db, $userId, $sessionId);
         break;
     case 'save':
-        saveData($db, $userId);
+        saveData($db, $userId, $sessionId);
         break;
     case 'share':
-        toggleShare($db, $userId);
+        toggleShare($db, $userId, $sessionId);
         break;
     case 'list':
         if (isAdmin()) {
-            listSharedCahiers($db);
+            listSharedCahiers($db, $sessionId);
         } else {
             http_response_code(403);
-            echo json_encode(['error' => 'Accès refusé']);
+            echo json_encode(['error' => 'Acces refuse']);
         }
         break;
     case 'view':
@@ -39,7 +41,7 @@ switch ($action) {
             viewCahier($db, $_GET['id'] ?? 0);
         } else {
             http_response_code(403);
-            echo json_encode(['error' => 'Accès refusé']);
+            echo json_encode(['error' => 'Acces refuse']);
         }
         break;
     case 'delete':
@@ -47,15 +49,15 @@ switch ($action) {
             deleteCahier($db, $_GET['id'] ?? 0);
         } else {
             http_response_code(403);
-            echo json_encode(['error' => 'Accès refusé']);
+            echo json_encode(['error' => 'Acces refuse']);
         }
         break;
     case 'deleteAll':
         if (isAdmin()) {
-            deleteAllCahiers($db, isset($_GET['users']));
+            deleteAllCahiers($db, $sessionId);
         } else {
             http_response_code(403);
-            echo json_encode(['error' => 'Accès refusé']);
+            echo json_encode(['error' => 'Acces refuse']);
         }
         break;
     default:
@@ -66,24 +68,27 @@ switch ($action) {
 function deleteCahier($db, $cahierId) {
     $stmt = $db->prepare("DELETE FROM cahiers WHERE id = ?");
     $stmt->execute([$cahierId]);
-    echo json_encode(['success' => true, 'message' => 'Cahier supprimé']);
+    echo json_encode(['success' => true, 'message' => 'Cahier supprime']);
 }
 
-function deleteAllCahiers($db, $deleteUsers = false) {
-    $db->exec("DELETE FROM cahiers");
-    $deleted = ['cahiers' => true];
-
-    if ($deleteUsers) {
-        $db->exec("DELETE FROM users WHERE is_admin = 0");
-        $deleted['users'] = true;
+function deleteAllCahiers($db, $sessionId) {
+    if ($sessionId) {
+        $stmt = $db->prepare("DELETE FROM cahiers WHERE session_id = ?");
+        $stmt->execute([$sessionId]);
+    } else {
+        $db->exec("DELETE FROM cahiers");
     }
-
-    echo json_encode(['success' => true, 'deleted' => $deleted]);
+    echo json_encode(['success' => true, 'deleted' => ['cahiers' => true]]);
 }
 
-function loadData($db, $userId) {
-    $stmt = $db->prepare("SELECT * FROM cahiers WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1");
-    $stmt->execute([$userId]);
+function loadData($db, $userId, $sessionId) {
+    if ($sessionId) {
+        $stmt = $db->prepare("SELECT * FROM cahiers WHERE user_id = ? AND session_id = ? ORDER BY updated_at DESC LIMIT 1");
+        $stmt->execute([$userId, $sessionId]);
+    } else {
+        $stmt = $db->prepare("SELECT * FROM cahiers WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1");
+        $stmt->execute([$userId]);
+    }
     $cahier = $stmt->fetch();
 
     if ($cahier) {
@@ -124,17 +129,22 @@ function loadData($db, $userId) {
     }
 }
 
-function saveData($db, $userId) {
+function saveData($db, $userId, $sessionId) {
     $input = json_decode(file_get_contents('php://input'), true);
 
     if (!$input) {
         http_response_code(400);
-        echo json_encode(['error' => 'Données invalides']);
+        echo json_encode(['error' => 'Donnees invalides']);
         return;
     }
 
-    $stmt = $db->prepare("SELECT id FROM cahiers WHERE user_id = ?");
-    $stmt->execute([$userId]);
+    if ($sessionId) {
+        $stmt = $db->prepare("SELECT id FROM cahiers WHERE user_id = ? AND session_id = ?");
+        $stmt->execute([$userId, $sessionId]);
+    } else {
+        $stmt = $db->prepare("SELECT id FROM cahiers WHERE user_id = ? AND session_id IS NULL");
+        $stmt->execute([$userId]);
+    }
     $existing = $stmt->fetch();
 
     $fields = [
@@ -184,11 +194,14 @@ function saveData($db, $userId) {
         $placeholders = array_fill(0, count($fields), '?');
         $columns[] = 'user_id';
         $placeholders[] = '?';
+        $columns[] = 'session_id';
+        $placeholders[] = '?';
 
         $sql = "INSERT INTO cahiers (" . implode(', ', $columns) . ") VALUES (" . implode(', ', $placeholders) . ")";
         $stmt = $db->prepare($sql);
         $values = array_values($fields);
         $values[] = $userId;
+        $values[] = $sessionId;
         $stmt->execute($values);
         $cahierId = $db->lastInsertId();
     }
@@ -196,67 +209,90 @@ function saveData($db, $userId) {
     echo json_encode([
         'success' => true,
         'id' => $cahierId,
-        'message' => 'Données sauvegardées'
+        'message' => 'Donnees sauvegardees'
     ]);
 }
 
-function toggleShare($db, $userId) {
+function toggleShare($db, $userId, $sessionId) {
     $input = json_decode(file_get_contents('php://input'), true);
     $shared = $input['shared'] ?? false;
 
-    $stmt = $db->prepare("UPDATE cahiers SET is_shared = ? WHERE user_id = ?");
-    $stmt->execute([$shared ? 1 : 0, $userId]);
+    if ($sessionId) {
+        $stmt = $db->prepare("UPDATE cahiers SET is_shared = ? WHERE user_id = ? AND session_id = ?");
+        $stmt->execute([$shared ? 1 : 0, $userId, $sessionId]);
+    } else {
+        $stmt = $db->prepare("UPDATE cahiers SET is_shared = ? WHERE user_id = ?");
+        $stmt->execute([$shared ? 1 : 0, $userId]);
+    }
 
     echo json_encode(['success' => true, 'shared' => $shared]);
 }
 
-function listSharedCahiers($db) {
-    $stmt = $db->query("
-        SELECT c.*, u.username
-        FROM cahiers c
-        JOIN users u ON c.user_id = u.id
-        WHERE c.is_shared = 1
-        ORDER BY c.updated_at DESC
-    ");
+function listSharedCahiers($db, $sessionId) {
+    $sharedDb = getSharedDB();
+    if ($sessionId) {
+        $stmt = $db->prepare("
+            SELECT c.*, c.user_id
+            FROM cahiers c
+            WHERE c.session_id = ?
+            ORDER BY c.updated_at DESC
+        ");
+        $stmt->execute([$sessionId]);
+    } else {
+        $stmt = $db->query("
+            SELECT c.*, c.user_id
+            FROM cahiers c
+            ORDER BY c.updated_at DESC
+        ");
+    }
     $cahiers = $stmt->fetchAll();
 
-    echo json_encode([
-        'success' => true,
-        'cahiers' => array_map(function($c) {
-            return [
-                'id' => $c['id'],
-                'username' => $c['username'],
-                'titreProjet' => $c['titre_projet'],
-                'chefProjet' => $c['chef_projet'],
-                'dateDebut' => $c['date_debut'],
-                'dateFin' => $c['date_fin'],
-                'updatedAt' => $c['updated_at']
-            ];
-        }, $cahiers)
-    ]);
+    // Get usernames from shared DB
+    $result = [];
+    foreach ($cahiers as $c) {
+        $userStmt = $sharedDb->prepare("SELECT username, prenom, nom FROM users WHERE id = ?");
+        $userStmt->execute([$c['user_id']]);
+        $user = $userStmt->fetch();
+        $result[] = [
+            'id' => $c['id'],
+            'username' => $user['username'] ?? 'Inconnu',
+            'prenom' => $user['prenom'] ?? '',
+            'nom' => $user['nom'] ?? '',
+            'titreProjet' => $c['titre_projet'],
+            'chefProjet' => $c['chef_projet'],
+            'dateDebut' => $c['date_debut'],
+            'dateFin' => $c['date_fin'],
+            'updatedAt' => $c['updated_at'],
+            'isShared' => (bool)$c['is_shared']
+        ];
+    }
+
+    echo json_encode(['success' => true, 'cahiers' => $result]);
 }
 
 function viewCahier($db, $cahierId) {
-    $stmt = $db->prepare("
-        SELECT c.*, u.username
-        FROM cahiers c
-        JOIN users u ON c.user_id = u.id
-        WHERE c.id = ?
-    ");
+    $sharedDb = getSharedDB();
+    $stmt = $db->prepare("SELECT * FROM cahiers WHERE id = ?");
     $stmt->execute([$cahierId]);
     $cahier = $stmt->fetch();
 
     if (!$cahier) {
         http_response_code(404);
-        echo json_encode(['error' => 'Cahier non trouvé']);
+        echo json_encode(['error' => 'Cahier non trouve']);
         return;
     }
+
+    $userStmt = $sharedDb->prepare("SELECT username, prenom, nom FROM users WHERE id = ?");
+    $userStmt->execute([$cahier['user_id']]);
+    $user = $userStmt->fetch();
 
     echo json_encode([
         'success' => true,
         'data' => [
             'id' => $cahier['id'],
-            'username' => $cahier['username'],
+            'username' => $user['username'] ?? 'Inconnu',
+            'prenom' => $user['prenom'] ?? '',
+            'nom' => $user['nom'] ?? '',
             'titreProjet' => $cahier['titre_projet'],
             'dateDebut' => $cahier['date_debut'],
             'dateFin' => $cahier['date_fin'],

@@ -1,11 +1,11 @@
 <?php
 /**
- * Page d'inscription - Cahier des Charges
+ * Page d'inscription - Mesure d'Impact Social
  * Utilise le template partage
  */
 
-$appName = 'Cahier des Charges Associatif';
-$appColor = 'blue';
+$appName = 'Mesure d\'Impact Social';
+$appColor = 'indigo';
 
 // Inclure le template d'inscription partage
 require_once __DIR__ . '/../shared-auth/register-template.php';

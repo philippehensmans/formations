@@ -23,8 +23,12 @@ $user = getCurrentUser();
     <!-- Barre utilisateur -->
     <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-3 shadow-lg">
         <div class="max-w-5xl mx-auto flex justify-between items-center flex-wrap gap-3">
-            <span class="font-semibold">Connecte : <strong><?= sanitize($user['username']) ?></strong>
-                <?php if ($user['is_admin']): ?>
+            <span class="font-semibold">
+                <strong><?= sanitize($user['prenom'] ?? $user['username']) ?></strong>
+                <?php if (isset($_SESSION['current_session_code'])): ?>
+                    <span class="ml-2 px-2 py-1 bg-white/20 rounded text-xs">Session: <?= h($_SESSION['current_session_code']) ?></span>
+                <?php endif; ?>
+                <?php if (isFormateur()): ?>
                     <a href="admin.php" class="ml-2 bg-white/20 hover:bg-white/30 px-2 py-1 rounded text-xs">Admin</a>
                 <?php endif; ?>
             </span>
