@@ -3,8 +3,6 @@
  * Page Formateur - Cadre Logique
  * Page personnalisee (n'utilise pas le template partage car schema different)
  */
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
 // Charger shared-auth pour l'authentification formateur
 require_once __DIR__ . '/../shared-auth/config.php';
