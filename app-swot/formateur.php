@@ -1,4 +1,7 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 /**
  * Page Formateur - Analyse SWOT
  */
@@ -101,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $nom = trim($_POST['nom'] ?? '');
                 if (!empty($nom)) {
                     $code = substr(strtoupper(md5(uniqid())), 0, 6);
-                    $stmt = $db->prepare("INSERT INTO sessions (code, name, active, created_at) VALUES (?, ?, 1, CURRENT_TIMESTAMP)");
+                    $stmt = $db->prepare("INSERT INTO sessions (code, nom, is_active, created_at) VALUES (?, ?, 1, CURRENT_TIMESTAMP)");
                     $stmt->execute([$code, $nom]);
                     $success = "Session creee avec le code: $code";
                 }
@@ -109,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             case 'toggle_session':
                 $sessionId = (int)($_POST['session_id'] ?? 0);
-                $stmt = $db->prepare("UPDATE sessions SET active = NOT active WHERE id = ?");
+                $stmt = $db->prepare("UPDATE sessions SET is_active = NOT is_active WHERE id = ?");
                 $stmt->execute([$sessionId]);
                 $success = "Statut de la session modifie.";
                 break;
@@ -149,15 +152,26 @@ if (isset($_GET['session'])) {
     $selectedSession = $stmt->fetch();
 
     if ($selectedSession) {
+        // Recuperer les participants locaux
         $stmt = $db->prepare("
             SELECT p.*, a.submitted, a.swot_data
             FROM participants p
             LEFT JOIN analyses a ON p.id = a.participant_id
             WHERE p.session_id = ?
-            ORDER BY p.nom, p.prenom
         ");
         $stmt->execute([$selectedSession['id']]);
-        $participants = $stmt->fetchAll();
+        $localParticipants = $stmt->fetchAll();
+
+        // Enrichir avec les donnees utilisateur de la base partagee
+        $sharedDb = getSharedDB();
+        foreach ($localParticipants as $p) {
+            $userStmt = $sharedDb->prepare("SELECT username, prenom, nom, organisation FROM users WHERE id = ?");
+            $userStmt->execute([$p['user_id']]);
+            $userData = $userStmt->fetch();
+            if ($userData) {
+                $participants[] = array_merge($p, $userData);
+            }
+        }
     }
 }
 ?>
@@ -228,10 +242,10 @@ if (isset($_GET['session'])) {
                             <div class="flex justify-between items-start">
                                 <a href="?session=<?= $session['id'] ?>" class="flex-1">
                                     <div class="font-mono font-bold text-<?= $appColor ?>-600"><?= h($session['code']) ?></div>
-                                    <div class="text-sm text-gray-600"><?= h($session['name']) ?></div>
+                                    <div class="text-sm text-gray-600"><?= h($session['nom']) ?></div>
                                     <div class="text-xs text-gray-400 mt-1">
                                         <?= date('d/m/Y', strtotime($session['created_at'])) ?>
-                                        <?php if (!$session['active']): ?>
+                                        <?php if (!$session['is_active']): ?>
                                             <span class="ml-2 px-2 py-0.5 bg-gray-200 text-gray-600 rounded">Inactive</span>
                                         <?php endif; ?>
                                     </div>
@@ -240,8 +254,8 @@ if (isset($_GET['session'])) {
                                     <form method="POST" class="inline">
                                         <input type="hidden" name="action" value="toggle_session">
                                         <input type="hidden" name="session_id" value="<?= $session['id'] ?>">
-                                        <button type="submit" class="p-1 text-gray-400 hover:text-gray-600" title="<?= $session['active'] ? 'Desactiver' : 'Activer' ?>">
-                                            <?= $session['active'] ? '⏸' : '▶' ?>
+                                        <button type="submit" class="p-1 text-gray-400 hover:text-gray-600" title="<?= $session['is_active'] ? 'Desactiver' : 'Activer' ?>">
+                                            <?= $session['is_active'] ? '⏸' : '▶' ?>
                                         </button>
                                     </form>
                                     <form method="POST" class="inline" onsubmit="return confirm('Supprimer cette session?')">
