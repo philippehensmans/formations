@@ -60,7 +60,7 @@ function initDatabase($db) {
     $stmt = $db->query("SELECT COUNT(*) as count FROM users WHERE is_admin = 1");
     $result = $stmt->fetch();
     if ($result['count'] == 0) {
-        $adminPassword = password_hash('admin123', PASSWORD_DEFAULT);
+        $adminPassword = password_hash('Formation2024!', PASSWORD_DEFAULT);
         $db->exec("INSERT INTO users (username, password, is_admin) VALUES ('formateur', '$adminPassword', 1)");
     }
 }
