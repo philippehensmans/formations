@@ -9,7 +9,9 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 define('DB_PATH', __DIR__ . '/../data/formation.db');
-define('ADMIN_PASSWORD', 'Formation2024!'); // Mot de passe admin pour gestion des sessions
+if (!defined('ADMIN_PASSWORD')) {
+    define('ADMIN_PASSWORD', 'Formation2024!');
+}
 
 /**
  * Connexion a la base de donnees avec cache statique
