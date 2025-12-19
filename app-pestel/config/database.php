@@ -12,7 +12,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 define('DB_PATH', __DIR__ . '/../data/pestel.db');
-define('ADMIN_PASSWORD', 'formation2024');
+define('ADMIN_PASSWORD', 'Formation2024!');
 
 /**
  * Connexion a la base de donnees avec cache statique
