@@ -124,9 +124,9 @@ function getCurrentUser() {
 }
 
 /**
- * Exiger connexion avec session
+ * Exiger connexion avec session (version specifique a l'app)
  */
-function requireLogin() {
+function requireLoginWithSession() {
     if (!isLoggedIn()) {
         header('Location: login.php');
         exit;
@@ -135,11 +135,4 @@ function requireLogin() {
         header('Location: login.php');
         exit;
     }
-}
-
-/**
- * Exiger droits admin/formateur
- */
-function requireAdmin() {
-    requireFormateur();
 }
