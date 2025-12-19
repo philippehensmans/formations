@@ -222,19 +222,23 @@ $user = getCurrentUser();
                     </div>
 
                     <div class="bg-amber-50 rounded-lg p-3 mb-4 text-sm">
-                        <strong>Legende :</strong> EXPECT = minimum acceptable | LIKE = resultat souhaite | LOVE = resultat optimal
+                        <strong>Legende resultats :</strong> EXPECT = minimum acceptable | LIKE = resultat souhaite | LOVE = resultat optimal
                     </div>
 
                     <div class="overflow-x-auto">
                         <table class="w-full border-collapse text-sm">
                             <thead class="bg-orange-100">
                                 <tr>
-                                    <th class="border border-orange-300 px-2 py-2 text-left">Objectif</th>
-                                    <th class="border border-orange-300 px-2 py-2 text-left">Acteurs</th>
-                                    <th class="border border-orange-300 px-2 py-2 text-left">Indicateurs</th>
-                                    <th class="border border-orange-300 px-2 py-2 text-left">EXPECT</th>
-                                    <th class="border border-orange-300 px-2 py-2 text-left">LIKE</th>
-                                    <th class="border border-orange-300 px-2 py-2 text-left">LOVE</th>
+                                    <th class="border border-orange-300 px-2 py-2 text-left" style="min-width:120px">Objectif specifique</th>
+                                    <th class="border border-orange-300 px-2 py-2 text-left" style="min-width:100px">Acteurs vises</th>
+                                    <th class="border border-orange-300 px-2 py-2 text-left" style="min-width:100px">Indicateurs d'activites</th>
+                                    <th class="border border-orange-300 px-2 py-2 text-left" style="min-width:100px">Delivrables/Moyens</th>
+                                    <th class="border border-orange-300 px-2 py-2 text-left bg-red-50" style="min-width:80px">EXPECT</th>
+                                    <th class="border border-orange-300 px-2 py-2 text-left bg-yellow-50" style="min-width:80px">LIKE</th>
+                                    <th class="border border-orange-300 px-2 py-2 text-left bg-green-50" style="min-width:80px">LOVE</th>
+                                    <th class="border border-orange-300 px-2 py-2 text-left" style="min-width:100px">Moyens verification</th>
+                                    <th class="border border-orange-300 px-2 py-2 text-left" style="min-width:100px">Lecons apprises</th>
+                                    <th class="border border-orange-300 px-2 py-2 text-left" style="min-width:100px">Ajustements</th>
                                     <th class="border border-orange-300 px-2 py-2 w-10"></th>
                                 </tr>
                             </thead>
@@ -559,22 +563,75 @@ $user = getCurrentUser();
             container.appendChild(div);
         }
 
-        function ajouterObjectifSpecifique(v='') { creerChamp('objectifsSpecifiquesContainer', 'Ex: Sensibiliser 400 personnes...', 'objectif-specifique', v); }
+        function ajouterObjectifSpecifique(v='') {
+            const container = document.getElementById('objectifsSpecifiquesContainer');
+            const div = document.createElement('div');
+            div.className = 'flex gap-2';
+            div.innerHTML = `
+                <textarea placeholder="Ex: Sensibiliser 400 personnes..." class="flex-1 px-3 py-2 border-2 border-gray-300 rounded-lg text-sm"
+                       data-type="objectif-specifique" rows="2" oninput="scheduleAutoSave(); updateAllObjectifsDropdowns();">${v}</textarea>
+                <button type="button" onclick="this.parentElement.remove(); scheduleAutoSave(); updateAllObjectifsDropdowns();"
+                        class="bg-red-400 hover:bg-red-500 text-white px-3 py-1 rounded-lg text-xs h-fit">X</button>
+            `;
+            container.appendChild(div);
+        }
         function ajouterContrainte(v='') { creerChamp('contraintesContainer', 'Ex: Budget limite, delais courts...', 'contrainte', v); }
         function ajouterStrategie(v='') { creerChamp('strategiesContainer', 'Ex: Recherche de partenaires...', 'strategie', v); }
         function ajouterEtape(v='') { creerChamp('etapesContainer', 'Ex: Lancement (15/01), Bilan (15/06)...', 'etape', v); }
+
+        function getObjectifsOptions(selectedValue = '') {
+            const objectifs = collecterDonnees('objectif-specifique');
+            let options = '<option value="">-- Choisir un objectif --</option>';
+            objectifs.forEach((obj, i) => {
+                const truncated = obj.length > 50 ? obj.substring(0, 50) + '...' : obj;
+                const selected = obj === selectedValue ? 'selected' : '';
+                options += `<option value="${obj.replace(/"/g, '&quot;')}" ${selected}>${i+1}. ${truncated}</option>`;
+            });
+            options += '<option value="__autre__">Autre (saisie libre)</option>';
+            return options;
+        }
+
+        function updateAllObjectifsDropdowns() {
+            document.querySelectorAll('[data-type="resultat-objectif-select"]').forEach(select => {
+                const currentValue = select.value;
+                select.innerHTML = getObjectifsOptions(currentValue);
+            });
+        }
+
+        function handleObjectifChange(select, id) {
+            const textareaContainer = document.getElementById(`objectif-libre-${id}`);
+            if (select.value === '__autre__') {
+                textareaContainer.style.display = 'block';
+            } else {
+                textareaContainer.style.display = 'none';
+                textareaContainer.querySelector('textarea').value = '';
+            }
+            scheduleAutoSave();
+        }
 
         function ajouterLigneResultat(data = null) {
             const tbody = document.getElementById('resultatsTableBody');
             const id = ++compteurResultats;
             const tr = document.createElement('tr');
+            const isAutre = data?.objectif && !collecterDonnees('objectif-specifique').includes(data.objectif);
             tr.innerHTML = `
-                <td class="border border-orange-300 p-1"><input type="text" data-type="resultat-objectif" data-id="${id}" value="${data?.objectif || ''}" placeholder="Objectif" class="w-full px-2 py-1 border rounded text-xs" oninput="scheduleAutoSave()"></td>
-                <td class="border border-orange-300 p-1"><input type="text" data-type="resultat-acteurs" data-id="${id}" value="${data?.acteurs || ''}" placeholder="Acteurs" class="w-full px-2 py-1 border rounded text-xs" oninput="scheduleAutoSave()"></td>
-                <td class="border border-orange-300 p-1"><input type="text" data-type="resultat-indicateurs" data-id="${id}" value="${data?.indicateurs || ''}" placeholder="Indicateurs" class="w-full px-2 py-1 border rounded text-xs" oninput="scheduleAutoSave()"></td>
-                <td class="border border-orange-300 p-1"><input type="text" data-type="resultat-expect" data-id="${id}" value="${data?.expect || ''}" placeholder="Min" class="w-full px-2 py-1 border rounded text-xs" oninput="scheduleAutoSave()"></td>
-                <td class="border border-orange-300 p-1"><input type="text" data-type="resultat-like" data-id="${id}" value="${data?.like || ''}" placeholder="Souhaite" class="w-full px-2 py-1 border rounded text-xs" oninput="scheduleAutoSave()"></td>
-                <td class="border border-orange-300 p-1"><input type="text" data-type="resultat-love" data-id="${id}" value="${data?.love || ''}" placeholder="Optimal" class="w-full px-2 py-1 border rounded text-xs" oninput="scheduleAutoSave()"></td>
+                <td class="border border-orange-300 p-1">
+                    <select data-type="resultat-objectif-select" data-id="${id}" class="w-full px-2 py-1 border rounded text-xs mb-1" onchange="handleObjectifChange(this, ${id}); scheduleAutoSave()">
+                        ${getObjectifsOptions(isAutre ? '__autre__' : (data?.objectif || ''))}
+                    </select>
+                    <div id="objectif-libre-${id}" style="display: ${isAutre ? 'block' : 'none'}">
+                        <textarea data-type="resultat-objectif-libre" data-id="${id}" placeholder="Saisie libre..." class="w-full px-2 py-1 border rounded text-xs" rows="2" oninput="scheduleAutoSave()">${isAutre ? data?.objectif || '' : ''}</textarea>
+                    </div>
+                </td>
+                <td class="border border-orange-300 p-1"><textarea data-type="resultat-acteurs" data-id="${id}" placeholder="Un acteur par ligne" class="w-full px-2 py-1 border rounded text-xs" rows="2" oninput="scheduleAutoSave()">${data?.acteurs || ''}</textarea></td>
+                <td class="border border-orange-300 p-1"><textarea data-type="resultat-indicateurs" data-id="${id}" placeholder="Indicateurs d'activites" class="w-full px-2 py-1 border rounded text-xs" rows="2" oninput="scheduleAutoSave()">${data?.indicateurs || ''}</textarea></td>
+                <td class="border border-orange-300 p-1"><textarea data-type="resultat-delivrables" data-id="${id}" placeholder="Delivrables/Moyens" class="w-full px-2 py-1 border rounded text-xs" rows="2" oninput="scheduleAutoSave()">${data?.delivrables || ''}</textarea></td>
+                <td class="border border-orange-300 p-1 bg-red-50"><textarea data-type="resultat-expect" data-id="${id}" placeholder="Min acceptable" class="w-full px-2 py-1 border rounded text-xs bg-red-50" rows="2" oninput="scheduleAutoSave()">${data?.expect || ''}</textarea></td>
+                <td class="border border-orange-300 p-1 bg-yellow-50"><textarea data-type="resultat-like" data-id="${id}" placeholder="Souhaite" class="w-full px-2 py-1 border rounded text-xs bg-yellow-50" rows="2" oninput="scheduleAutoSave()">${data?.like || ''}</textarea></td>
+                <td class="border border-orange-300 p-1 bg-green-50"><textarea data-type="resultat-love" data-id="${id}" placeholder="Optimal" class="w-full px-2 py-1 border rounded text-xs bg-green-50" rows="2" oninput="scheduleAutoSave()">${data?.love || ''}</textarea></td>
+                <td class="border border-orange-300 p-1"><textarea data-type="resultat-verification" data-id="${id}" placeholder="Sources d'info pour evaluer" class="w-full px-2 py-1 border rounded text-xs" rows="2" oninput="scheduleAutoSave()">${data?.verification || ''}</textarea></td>
+                <td class="border border-orange-300 p-1"><textarea data-type="resultat-lecons" data-id="${id}" placeholder="Lecons apprises" class="w-full px-2 py-1 border rounded text-xs" rows="2" oninput="scheduleAutoSave()">${data?.lecons || ''}</textarea></td>
+                <td class="border border-orange-300 p-1"><textarea data-type="resultat-ajustements" data-id="${id}" placeholder="Ajustements" class="w-full px-2 py-1 border rounded text-xs" rows="2" oninput="scheduleAutoSave()">${data?.ajustements || ''}</textarea></td>
                 <td class="border border-orange-300 p-1 text-center"><button type="button" onclick="this.closest('tr').remove(); scheduleAutoSave();" class="bg-red-400 hover:bg-red-500 text-white px-2 py-1 rounded text-xs">X</button></td>
             `;
             tbody.appendChild(tr);
@@ -587,13 +644,21 @@ $user = getCurrentUser();
         function collecterResultats() {
             const res = [];
             for (let i = 1; i <= compteurResultats; i++) {
-                const obj = document.querySelector(`[data-type="resultat-objectif"][data-id="${i}"]`)?.value || '';
+                const selectVal = document.querySelector(`[data-type="resultat-objectif-select"][data-id="${i}"]`)?.value || '';
+                const libreVal = document.querySelector(`[data-type="resultat-objectif-libre"][data-id="${i}"]`)?.value || '';
+                const obj = selectVal === '__autre__' ? libreVal : selectVal;
                 const act = document.querySelector(`[data-type="resultat-acteurs"][data-id="${i}"]`)?.value || '';
                 const ind = document.querySelector(`[data-type="resultat-indicateurs"][data-id="${i}"]`)?.value || '';
+                const del = document.querySelector(`[data-type="resultat-delivrables"][data-id="${i}"]`)?.value || '';
                 const exp = document.querySelector(`[data-type="resultat-expect"][data-id="${i}"]`)?.value || '';
                 const lik = document.querySelector(`[data-type="resultat-like"][data-id="${i}"]`)?.value || '';
                 const lov = document.querySelector(`[data-type="resultat-love"][data-id="${i}"]`)?.value || '';
-                if (obj || act || ind || exp || lik || lov) res.push({ objectif: obj, acteurs: act, indicateurs: ind, expect: exp, like: lik, love: lov });
+                const ver = document.querySelector(`[data-type="resultat-verification"][data-id="${i}"]`)?.value || '';
+                const lec = document.querySelector(`[data-type="resultat-lecons"][data-id="${i}"]`)?.value || '';
+                const aju = document.querySelector(`[data-type="resultat-ajustements"][data-id="${i}"]`)?.value || '';
+                if (obj || act || ind || del || exp || lik || lov || ver || lec || aju) {
+                    res.push({ objectif: obj, acteurs: act, indicateurs: ind, delivrables: del, expect: exp, like: lik, love: lov, verification: ver, lecons: lec, ajustements: aju });
+                }
             }
             return res;
         }

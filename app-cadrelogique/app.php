@@ -8,6 +8,13 @@ requireParticipant();
 $db = getDB();
 $participant = getCurrentParticipant();
 
+// Verifier que le participant existe
+if (!$participant) {
+    session_destroy();
+    header('Location: index.php');
+    exit;
+}
+
 // Charger le cadre logique
 $stmt = $db->prepare("SELECT * FROM cadre_logique WHERE participant_id = ?");
 $stmt->execute([$participant['id']]);
@@ -23,7 +30,7 @@ if (!$cadre) {
 }
 
 $matrice = json_decode($cadre['matrice_data'], true) ?: getEmptyMatrice();
-$isSubmitted = $participant['is_submitted'] == 1;
+$isSubmitted = $cadre['is_submitted'] == 1;
 ?>
 <!DOCTYPE html>
 <html lang="fr">
