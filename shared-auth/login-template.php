@@ -102,6 +102,9 @@ $sessions = getActiveSessions($db);
                 <div class="mb-4 p-4 bg-amber-50 border border-amber-200 text-amber-700 rounded-lg text-sm text-center">
                     <p class="font-semibold">Aucune session disponible</p>
                     <p class="text-xs mt-1">Le formateur doit d'abord creer une session.</p>
+                    <a href="formateur.php" class="inline-block mt-2 text-<?= $appColor ?>-600 hover:text-<?= $appColor ?>-800 font-medium underline">
+                        Creer une session
+                    </a>
                 </div>
             <?php endif; ?>
 
