@@ -138,9 +138,9 @@ function requireParticipant() {
 }
 
 /**
- * Redirige si non connecte comme formateur
+ * Redirige si non connecte comme formateur (local)
  */
-function requireFormateur() {
+function requireLocalFormateur() {
     if (!isFormateurLoggedIn()) {
         header('Location: index.php?mode=formateur');
         exit;
