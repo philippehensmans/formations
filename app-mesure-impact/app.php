@@ -1,18 +1,30 @@
 <?php
-session_start();
 require_once 'config/database.php';
 
-$db = getDB();
-$participant = getCurrentParticipant();
-
-// Vérifier que le participant existe
-if (!$participant) {
-    session_destroy();
-    header('Location: index.php');
+// Verifier authentification
+if (!isLoggedIn() || !isset($_SESSION['current_session_id'])) {
+    header('Location: login.php');
     exit;
 }
 
-// Récupérer ou créer les données de mesure d'impact
+$db = getDB();
+$sharedDb = getSharedDB();
+$user = getLoggedUser();
+$sessionId = $_SESSION['current_session_id'];
+
+// Recuperer les infos du participant
+$participant = [
+    'id' => $_SESSION['participant_id'],
+    'user_id' => $user['id'],
+    'session_id' => $sessionId,
+    'prenom' => $user['prenom'] ?? $user['username'],
+    'nom' => $user['nom'] ?? '',
+    'organisation' => $user['organisation'] ?? '',
+    'session_code' => $_SESSION['current_session_code'] ?? '',
+    'session_nom' => $_SESSION['current_session_nom'] ?? ''
+];
+
+// Recuperer ou creer les donnees de mesure d'impact
 $mesure = getOrCreateMesureImpact($participant['id'], $participant['session_id']);
 $isSubmitted = $mesure['is_submitted'] == 1;
 
