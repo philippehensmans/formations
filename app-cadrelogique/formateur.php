@@ -3,10 +3,11 @@
  * Page Formateur - Cadre Logique
  * Page personnalisee (n'utilise pas le template partage car schema different)
  */
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
-require_once 'config.php';
+// Charger shared-auth pour l'authentification formateur
+require_once __DIR__ . '/../shared-auth/config.php';
+
+// Charger la config locale pour les donnees (formation.db)
 require_once 'config/database.php';
 
 $appName = 'Cadre Logique';
