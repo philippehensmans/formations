@@ -5,12 +5,14 @@
  */
 
 $appName = 'Analyse SWOT';
-$appColor = 'red';
+$appColor = 'blue';
 $redirectAfterLogin = 'index.php';
 $showRegister = true;
 
-// Charger la config locale pour avoir acces a la base des sessions
-require_once __DIR__ . '/config.php';
+// Charger shared-auth pour l'authentification
+require_once __DIR__ . '/../shared-auth/config.php';
+// Charger la config locale pour les sessions (meme base que formateur.php)
+require_once __DIR__ . '/config/database.php';
 $db = getDB();
 
 // Inclure le template de connexion partage
