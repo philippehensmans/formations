@@ -1,4 +1,7 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 require_once 'config/database.php';
 
 // Verifier authentification
@@ -7,26 +10,30 @@ if (!isLoggedIn() || !isset($_SESSION['current_session_id'])) {
     exit;
 }
 
-$db = getDB();
-$sharedDb = getSharedDB();
-$user = getLoggedUser();
-$sessionId = $_SESSION['current_session_id'];
+try {
+    $db = getDB();
+    $sharedDb = getSharedDB();
+    $user = getLoggedUser();
+    $sessionId = $_SESSION['current_session_id'];
 
-// Recuperer les infos du participant
-$participant = [
-    'id' => $_SESSION['participant_id'],
-    'user_id' => $user['id'],
-    'session_id' => $sessionId,
-    'prenom' => $user['prenom'] ?? $user['username'],
-    'nom' => $user['nom'] ?? '',
-    'organisation' => $user['organisation'] ?? '',
-    'session_code' => $_SESSION['current_session_code'] ?? '',
-    'session_nom' => $_SESSION['current_session_nom'] ?? ''
-];
+    // Recuperer les infos du participant
+    $participant = [
+        'id' => $_SESSION['participant_id'] ?? 0,
+        'user_id' => $user['id'],
+        'session_id' => $sessionId,
+        'prenom' => $user['prenom'] ?? $user['username'],
+        'nom' => $user['nom'] ?? '',
+        'organisation' => $user['organisation'] ?? '',
+        'session_code' => $_SESSION['current_session_code'] ?? '',
+        'session_nom' => $_SESSION['current_session_nom'] ?? ''
+    ];
 
-// Recuperer ou creer les donnees de mesure d'impact
-$mesure = getOrCreateMesureImpact($participant['id'], $participant['session_id']);
-$isSubmitted = $mesure['is_submitted'] == 1;
+    // Recuperer ou creer les donnees de mesure d'impact
+    $mesure = getOrCreateMesureImpact($participant['id'], $participant['session_id']);
+    $isSubmitted = ($mesure['is_submitted'] ?? 0) == 1;
+} catch (Exception $e) {
+    die("Erreur: " . $e->getMessage());
+}
 
 // Récupérer les énoncés pour l'étape 1
 $enonces = getEnonces($participant['session_id']);
