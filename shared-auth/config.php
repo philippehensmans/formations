@@ -132,6 +132,14 @@ function isFormateur() {
 }
 
 /**
+ * Verifier si l'utilisateur est admin
+ */
+function isAdmin() {
+    $user = getLoggedUser();
+    return $user && $user['is_admin'];
+}
+
+/**
  * Deconnexion
  */
 function logout() {
