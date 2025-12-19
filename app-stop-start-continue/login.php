@@ -1,11 +1,11 @@
 <?php
 /**
- * Page de connexion - Methode Agile
+ * Page de connexion - Stop Start Continue
  * Utilise le template partage
  */
 
-$appName = 'Formation Methode Agile';
-$appColor = 'green';
+$appName = 'Stop Start Continue';
+$appColor = 'pink';
 $redirectAfterLogin = 'index.php';
 $showRegister = true;
 

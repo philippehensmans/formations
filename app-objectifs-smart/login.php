@@ -1,11 +1,11 @@
 <?php
 /**
- * Page de connexion - Methode Agile
+ * Page de connexion - Objectifs SMART
  * Utilise le template partage
  */
 
-$appName = 'Formation Methode Agile';
-$appColor = 'green';
+$appName = 'Objectifs SMART';
+$appColor = 'cyan';
 $redirectAfterLogin = 'index.php';
 $showRegister = true;
 

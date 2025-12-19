@@ -1,11 +1,11 @@
 <?php
 /**
- * Page de connexion - Methode Agile
+ * Page de connexion - Analyse PESTEL
  * Utilise le template partage
  */
 
-$appName = 'Formation Methode Agile';
-$appColor = 'green';
+$appName = 'Analyse PESTEL';
+$appColor = 'orange';
 $redirectAfterLogin = 'index.php';
 $showRegister = true;
 

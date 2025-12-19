@@ -1,6 +1,6 @@
 <?php
 /**
- * Configuration Methode Agile
+ * Configuration Cadre Logique
  * Utilise le systeme d'authentification partage
  */
 
@@ -8,9 +8,9 @@
 require_once __DIR__ . '/../shared-auth/config.php';
 require_once __DIR__ . '/../shared-auth/sessions.php';
 
-define('APP_NAME', 'Formation Methode Agile');
-define('APP_COLOR', 'green');
-define('DB_PATH', __DIR__ . '/data/agile.db');
+define('APP_NAME', 'Cadre Logique');
+define('APP_COLOR', 'indigo');
+define('DB_PATH', __DIR__ . '/data/cadre_logique.db');
 
 /**
  * Connexion a la base de donnees locale de l'application
@@ -59,17 +59,17 @@ function initDatabase($db) {
         UNIQUE(session_id, user_id)
     )");
 
-    // Table des projets
-    $db->exec("CREATE TABLE IF NOT EXISTS projects (
+    // Table des cadres logiques
+    $db->exec("CREATE TABLE IF NOT EXISTS cadre_logique (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
         session_id INTEGER,
-        project_name TEXT DEFAULT '',
-        team_name TEXT DEFAULT '',
-        cards TEXT DEFAULT '[]',
-        user_stories TEXT DEFAULT '[]',
-        retrospective TEXT DEFAULT '{\"good\":[],\"improve\":[],\"actions\":[]}',
-        sprint TEXT DEFAULT '{\"number\":1,\"start\":\"\",\"end\":\"\",\"goal\":\"\"}',
+        titre_projet TEXT DEFAULT '',
+        organisation TEXT DEFAULT '',
+        zone_geo TEXT DEFAULT '',
+        duree TEXT DEFAULT '',
+        matrice_data TEXT DEFAULT '{}',
+        completion_percent INTEGER DEFAULT 0,
         is_shared INTEGER DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -77,10 +77,53 @@ function initDatabase($db) {
 
     // Migration: ajouter session_id si la colonne n'existe pas
     try {
-        $db->exec("ALTER TABLE projects ADD COLUMN session_id INTEGER");
+        $db->exec("ALTER TABLE cadre_logique ADD COLUMN session_id INTEGER");
     } catch (Exception $e) {
         // Colonne existe deja
     }
+    try {
+        $db->exec("ALTER TABLE cadre_logique ADD COLUMN is_shared INTEGER DEFAULT 0");
+    } catch (Exception $e) {
+        // Colonne existe deja
+    }
+}
+
+/**
+ * Structure vide d'un cadre logique
+ */
+function getEmptyMatrice() {
+    return [
+        'objectif_global' => [
+            'description' => '',
+            'indicateurs' => '',
+            'sources' => '',
+            'hypotheses' => ''
+        ],
+        'objectif_specifique' => [
+            'description' => '',
+            'indicateurs' => '',
+            'sources' => '',
+            'hypotheses' => ''
+        ],
+        'resultats' => [
+            [
+                'id' => 'R1',
+                'description' => '',
+                'indicateurs' => '',
+                'sources' => '',
+                'hypotheses' => '',
+                'activites' => [
+                    [
+                        'id' => 'A1.1',
+                        'description' => '',
+                        'ressources' => '',
+                        'budget' => '',
+                        'preconditions' => ''
+                    ]
+                ]
+            ]
+        ]
+    ];
 }
 
 /**

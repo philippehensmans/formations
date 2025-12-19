@@ -1,11 +1,11 @@
 <?php
 /**
- * Page Formateur - Stop Start Continue
+ * Page Formateur - Arbre a Problemes
  * Utilise le template partage
  */
 
-$appName = 'Stop Start Continue';
-$appColor = 'pink';
+$appName = 'Arbre a Problemes';
+$appColor = 'amber';
 
 // Charger la config locale pour avoir acces a la base des sessions
 require_once __DIR__ . '/config.php';
