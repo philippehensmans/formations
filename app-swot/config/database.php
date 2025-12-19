@@ -43,12 +43,12 @@ class Database {
         $this->pdo->exec("
             CREATE TABLE IF NOT EXISTS sessions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name VARCHAR(255) NOT NULL,
+                nom VARCHAR(255) NOT NULL,
                 code VARCHAR(50) UNIQUE NOT NULL,
                 description TEXT,
-                formateur_password VARCHAR(255),
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                active INTEGER DEFAULT 1
+                formateur_id INTEGER,
+                is_active INTEGER DEFAULT 1,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         ");
 
@@ -57,12 +57,10 @@ class Database {
             CREATE TABLE IF NOT EXISTS participants (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 session_id INTEGER NOT NULL,
-                nom VARCHAR(100) NOT NULL,
-                prenom VARCHAR(100) NOT NULL,
-                organisation VARCHAR(255),
+                user_id INTEGER NOT NULL,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (session_id) REFERENCES sessions(id),
-                UNIQUE(session_id, nom, prenom)
+                UNIQUE(session_id, user_id)
             )
         ");
 
