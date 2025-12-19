@@ -3,7 +3,11 @@
  * Vue en lecture seule du cadre logique d'un participant
  * Accessible par le formateur
  */
-require_once 'config.php';
+
+// Charger shared-auth pour l'authentification formateur
+require_once __DIR__ . '/../shared-auth/config.php';
+
+// Charger la config locale pour les donnees
 require_once 'config/database.php';
 
 // Verifier que c'est un formateur
