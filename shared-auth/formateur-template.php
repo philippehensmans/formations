@@ -138,15 +138,21 @@ $participants = [];
 if (isset($_GET['session'])) {
     $selectedSession = getSessionById($db, (int)$_GET['session']);
     if ($selectedSession) {
-        $stmt = $db->prepare("
-            SELECT p.*, u.username, u.prenom, u.nom, u.organisation
-            FROM participants p
-            JOIN users u ON p.user_id = u.id
-            WHERE p.session_id = ?
-            ORDER BY u.nom, u.prenom
-        ");
+        // Recuperer les participants de la base locale
+        $stmt = $db->prepare("SELECT * FROM participants WHERE session_id = ?");
         $stmt->execute([$selectedSession['id']]);
-        $participants = $stmt->fetchAll();
+        $localParticipants = $stmt->fetchAll();
+
+        // Enrichir avec les donnees utilisateur de la base partagee
+        $sharedDb = getSharedDB();
+        foreach ($localParticipants as $p) {
+            $userStmt = $sharedDb->prepare("SELECT username, prenom, nom, organisation FROM users WHERE id = ?");
+            $userStmt->execute([$p['user_id']]);
+            $userData = $userStmt->fetch();
+            if ($userData) {
+                $participants[] = array_merge($p, $userData);
+            }
+        }
     }
 }
 ?>
