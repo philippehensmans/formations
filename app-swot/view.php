@@ -24,9 +24,9 @@ if (!$participantId) {
 
 $db = getDB();
 
-// Recuperer le participant
+// Recuperer le participant local
 $stmt = $db->prepare("
-    SELECT p.*, s.code as session_code, s.name as session_name
+    SELECT p.*, s.code as session_code, s.nom as session_name
     FROM participants p
     JOIN sessions s ON p.session_id = s.id
     WHERE p.id = ?
@@ -36,6 +36,15 @@ $participant = $stmt->fetch();
 
 if (!$participant) {
     die("Participant non trouve");
+}
+
+// Enrichir avec les donnees utilisateur de la base partagee
+$sharedDb = getSharedDB();
+$userStmt = $sharedDb->prepare("SELECT prenom, nom, organisation FROM users WHERE id = ?");
+$userStmt->execute([$participant['user_id']]);
+$userData = $userStmt->fetch();
+if ($userData) {
+    $participant = array_merge($participant, $userData);
 }
 
 // Recuperer l'analyse SWOT
