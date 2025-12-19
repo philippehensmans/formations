@@ -160,14 +160,14 @@ function requireParticipant() {
     }
 }
 
-function requireFormateur() {
+function requireLocalFormateur() {
     if (!isFormateurLoggedIn()) {
         header('Location: index.php');
         exit;
     }
 }
 
-function requireAdmin() {
+function requireLocalAdmin() {
     if (!isAdminLoggedIn()) {
         header('Location: admin_sessions.php');
         exit;
