@@ -3,6 +3,9 @@
  * Page Formateur - Cadre Logique
  * Page personnalisee (n'utilise pas le template partage car schema different)
  */
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 require_once 'config.php';
 require_once 'config/database.php';
 
