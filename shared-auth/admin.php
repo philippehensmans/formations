@@ -1,4 +1,7 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 /**
  * Administration de la base shared-auth
  * Gestion des utilisateurs
