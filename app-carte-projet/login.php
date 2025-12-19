@@ -1,11 +1,11 @@
 <?php
 /**
- * Page de connexion - Methode Agile
+ * Page de connexion - Carte du Projet
  * Utilise le template partage
  */
 
-$appName = 'Formation Methode Agile';
-$appColor = 'green';
+$appName = 'Carte du Projet';
+$appColor = 'teal';
 $redirectAfterLogin = 'index.php';
 $showRegister = true;
 

@@ -1,6 +1,6 @@
 <?php
 /**
- * Configuration Methode Agile
+ * Configuration Stop Start Continue
  * Utilise le systeme d'authentification partage
  */
 
@@ -8,9 +8,9 @@
 require_once __DIR__ . '/../shared-auth/config.php';
 require_once __DIR__ . '/../shared-auth/sessions.php';
 
-define('APP_NAME', 'Formation Methode Agile');
-define('APP_COLOR', 'green');
-define('DB_PATH', __DIR__ . '/data/agile.db');
+define('APP_NAME', 'Stop Start Continue');
+define('APP_COLOR', 'pink');
+define('DB_PATH', __DIR__ . '/data/stop_start_continue.db');
 
 /**
  * Connexion a la base de donnees locale de l'application
@@ -59,17 +59,15 @@ function initDatabase($db) {
         UNIQUE(session_id, user_id)
     )");
 
-    // Table des projets
-    $db->exec("CREATE TABLE IF NOT EXISTS projects (
+    // Table des retrospectives
+    $db->exec("CREATE TABLE IF NOT EXISTS retrospectives (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
         session_id INTEGER,
-        project_name TEXT DEFAULT '',
-        team_name TEXT DEFAULT '',
-        cards TEXT DEFAULT '[]',
-        user_stories TEXT DEFAULT '[]',
-        retrospective TEXT DEFAULT '{\"good\":[],\"improve\":[],\"actions\":[]}',
-        sprint TEXT DEFAULT '{\"number\":1,\"start\":\"\",\"end\":\"\",\"goal\":\"\"}',
+        titre TEXT,
+        stop_items TEXT DEFAULT '[]',
+        start_items TEXT DEFAULT '[]',
+        continue_items TEXT DEFAULT '[]',
         is_shared INTEGER DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -77,7 +75,12 @@ function initDatabase($db) {
 
     // Migration: ajouter session_id si la colonne n'existe pas
     try {
-        $db->exec("ALTER TABLE projects ADD COLUMN session_id INTEGER");
+        $db->exec("ALTER TABLE retrospectives ADD COLUMN session_id INTEGER");
+    } catch (Exception $e) {
+        // Colonne existe deja
+    }
+    try {
+        $db->exec("ALTER TABLE retrospectives ADD COLUMN is_shared INTEGER DEFAULT 0");
     } catch (Exception $e) {
         // Colonne existe deja
     }
