@@ -150,7 +150,7 @@ function getCurrentUser() {
 /**
  * Exiger connexion avec session
  */
-function requireLogin() {
+function requireLoginWithSession() {
     if (!isLoggedIn()) {
         header('Location: login.php');
         exit;

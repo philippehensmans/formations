@@ -1,6 +1,6 @@
 <?php
 require_once 'config.php';
-requireLogin();
+requireLoginWithSession();
 requireAdmin();
 
 $db = getDB();

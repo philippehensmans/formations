@@ -1,6 +1,6 @@
 <?php
 require_once 'config.php';
-requireLogin();
+requireLoginWithSession();
 
 $db = getDB();
 $userId = $_SESSION['user_id'];

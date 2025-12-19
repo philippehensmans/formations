@@ -4,9 +4,6 @@
  * Utilise le template partage
  */
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
 $appName = 'Arbre a Problemes';
 $appColor = 'amber';
 $redirectAfterLogin = 'index.php';
