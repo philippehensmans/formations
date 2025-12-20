@@ -5,6 +5,7 @@
  * Variables a definir avant d'inclure ce template:
  * - $appName : Nom de l'application
  * - $appColor : Couleur principale
+ * - $appKey : Cle de l'application pour les affectations (ex: 'app-swot')
  * - $db : Connexion a la base de l'application
  * - $getParticipantData : Fonction pour recuperer les donnees d'un participant (optionnel)
  */
@@ -13,6 +14,8 @@ require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/sessions.php';
 
 $appColor = $appColor ?? 'blue';
+// Detecter automatiquement la cle de l'application si non definie
+$appKey = $appKey ?? basename(dirname($_SERVER['SCRIPT_FILENAME']));
 $error = '';
 $success = '';
 
@@ -96,11 +99,19 @@ if (!isFormateur()) {
 
 $user = getLoggedUser();
 
+// Recuperer les IDs des sessions autorisees pour ce formateur
+$allowedSessionIds = getFormateurSessionIds($appKey);
+$canCreateSessions = ($allowedSessionIds === null); // Seulement si pas de restriction
+
 // Gestion des actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action'])) {
         switch ($_POST['action']) {
             case 'create_session':
+                if (!$canCreateSessions) {
+                    $error = "Vous n'avez pas les droits pour creer des sessions.";
+                    break;
+                }
                 $nom = trim($_POST['nom'] ?? '');
                 if (!empty($nom)) {
                     $code = generateSessionCode();
@@ -112,12 +123,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             case 'toggle_session':
                 $sessionId = (int)($_POST['session_id'] ?? 0);
+                if (!canAccessSession($appKey, $sessionId)) {
+                    $error = "Acces refuse a cette session.";
+                    break;
+                }
                 toggleSession($db, $sessionId);
                 $success = "Statut de la session modifie.";
                 break;
 
             case 'delete_session':
                 $sessionId = (int)($_POST['session_id'] ?? 0);
+                if (!canAccessSession($appKey, $sessionId)) {
+                    $error = "Acces refuse a cette session.";
+                    break;
+                }
                 deleteSession($db, $sessionId);
                 $success = "Session supprimee.";
                 break;
@@ -130,14 +149,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Recuperer les sessions
-$sessions = $db->query("SELECT * FROM sessions ORDER BY created_at DESC")->fetchAll();
+// Recuperer les sessions (filtrees si le formateur a des restrictions)
+if ($allowedSessionIds === null) {
+    // Pas de restriction = toutes les sessions
+    $sessions = $db->query("SELECT * FROM sessions ORDER BY created_at DESC")->fetchAll();
+} else {
+    // Filtrer par les sessions autorisees
+    if (empty($allowedSessionIds)) {
+        $sessions = [];
+    } else {
+        $placeholders = implode(',', array_fill(0, count($allowedSessionIds), '?'));
+        $stmt = $db->prepare("SELECT * FROM sessions WHERE id IN ($placeholders) ORDER BY created_at DESC");
+        $stmt->execute($allowedSessionIds);
+        $sessions = $stmt->fetchAll();
+    }
+}
 
 // Recuperer les participants si une session est selectionnee
 $selectedSession = null;
 $participants = [];
 if (isset($_GET['session'])) {
-    $selectedSession = getSessionById($db, (int)$_GET['session']);
+    $sessionId = (int)$_GET['session'];
+    // Verifier l'acces a cette session
+    if (!canAccessSession($appKey, $sessionId)) {
+        $error = "Acces refuse a cette session.";
+    } else {
+        $selectedSession = getSessionById($db, $sessionId);
+    }
     if ($selectedSession) {
         // Recuperer les participants de la base locale
         $stmt = $db->prepare("SELECT * FROM participants WHERE session_id = ?");
@@ -199,6 +237,7 @@ if (isset($_GET['session'])) {
             </div>
         <?php endif; ?>
 
+        <?php if ($canCreateSessions): ?>
         <!-- Creer une session -->
         <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
             <h2 class="font-semibold text-gray-800 mb-4">Creer une nouvelle session</h2>
@@ -211,6 +250,15 @@ if (isset($_GET['session'])) {
                 </button>
             </form>
         </div>
+        <?php else: ?>
+        <!-- Info acces restreint -->
+        <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
+            <p class="text-yellow-800 text-sm">
+                <span class="font-medium">Acces restreint:</span>
+                Vous avez acces uniquement aux sessions qui vous ont ete affectees.
+            </p>
+        </div>
+        <?php endif; ?>
 
         <div class="grid md:grid-cols-3 gap-6">
             <!-- Liste des sessions -->

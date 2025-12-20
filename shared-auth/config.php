@@ -48,17 +48,41 @@ function initSharedDB($db) {
         organisation VARCHAR(255),
         is_admin INTEGER DEFAULT 0,
         is_formateur INTEGER DEFAULT 0,
+        is_super_admin INTEGER DEFAULT 0,
+        email_consent INTEGER DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         last_login DATETIME
     )");
 
-    // Creer le compte formateur par defaut s'il n'existe pas
+    // Table d'affectation formateurs aux sessions
+    $db->exec("CREATE TABLE IF NOT EXISTS formateur_sessions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        formateur_id INTEGER NOT NULL,
+        app_name VARCHAR(100) NOT NULL,
+        session_id INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(formateur_id, app_name, session_id)
+    )");
+
+    // Migrations pour ajouter les nouvelles colonnes
+    try {
+        $db->exec("ALTER TABLE users ADD COLUMN is_super_admin INTEGER DEFAULT 0");
+    } catch (Exception $e) { /* Colonne existe deja */ }
+
+    try {
+        $db->exec("ALTER TABLE users ADD COLUMN email_consent INTEGER DEFAULT 0");
+    } catch (Exception $e) { /* Colonne existe deja */ }
+
+    // Creer le compte super-admin par defaut s'il n'existe pas
     $stmt = $db->query("SELECT COUNT(*) FROM users WHERE username = 'formateur'");
     if ($stmt->fetchColumn() == 0) {
         $hash = password_hash(ADMIN_PASSWORD, PASSWORD_DEFAULT);
-        $db->exec("INSERT INTO users (username, password, is_admin, is_formateur, prenom, nom)
-                   VALUES ('formateur', '$hash', 1, 1, 'Formateur', 'Principal')");
+        $db->exec("INSERT INTO users (username, password, is_admin, is_formateur, is_super_admin, prenom, nom)
+                   VALUES ('formateur', '$hash', 1, 1, 1, 'Formateur', 'Principal')");
     }
+
+    // Mettre a jour l'utilisateur formateur existant pour qu'il soit super_admin
+    $db->exec("UPDATE users SET is_super_admin = 1 WHERE username = 'formateur'");
 }
 
 /**
@@ -82,7 +106,7 @@ function authenticateUser($username, $password) {
 /**
  * Inscription d'un nouvel utilisateur
  */
-function registerUser($username, $password, $prenom = '', $nom = '', $organisation = '', $email = '') {
+function registerUser($username, $password, $prenom = '', $nom = '', $organisation = '', $email = '', $emailConsent = 0) {
     $db = getSharedDB();
 
     // Verifier si l'utilisateur existe deja
@@ -93,10 +117,10 @@ function registerUser($username, $password, $prenom = '', $nom = '', $organisati
     }
 
     $hash = password_hash($password, PASSWORD_DEFAULT);
-    $stmt = $db->prepare("INSERT INTO users (username, password, prenom, nom, organisation, email) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt = $db->prepare("INSERT INTO users (username, password, prenom, nom, organisation, email, email_consent) VALUES (?, ?, ?, ?, ?, ?, ?)");
 
     try {
-        $stmt->execute([$username, $hash, $prenom, $nom, $organisation, $email]);
+        $stmt->execute([$username, $hash, $prenom, $nom, $organisation, $email, $emailConsent ? 1 : 0]);
         return ['success' => true, 'user_id' => $db->lastInsertId()];
     } catch (Exception $e) {
         return ['success' => false, 'error' => $e->getMessage()];
@@ -199,4 +223,117 @@ function deleteUser($userId) {
  */
 function h($str) {
     return htmlspecialchars($str ?? '', ENT_QUOTES, 'UTF-8');
+}
+
+/**
+ * Verifier si l'utilisateur est super-admin
+ */
+function isSuperAdmin() {
+    $user = getLoggedUser();
+    return $user && $user['is_super_admin'];
+}
+
+/**
+ * Protection de page super-admin
+ */
+function requireSuperAdmin($redirectUrl = 'login.php') {
+    if (!isSuperAdmin()) {
+        header('Location: ' . $redirectUrl);
+        exit;
+    }
+}
+
+/**
+ * Affecter un formateur a une session
+ */
+function assignFormateurToSession($formateurId, $appName, $sessionId) {
+    $db = getSharedDB();
+    try {
+        $stmt = $db->prepare("INSERT OR IGNORE INTO formateur_sessions (formateur_id, app_name, session_id) VALUES (?, ?, ?)");
+        $stmt->execute([$formateurId, $appName, $sessionId]);
+        return true;
+    } catch (Exception $e) {
+        return false;
+    }
+}
+
+/**
+ * Retirer un formateur d'une session
+ */
+function removeFormateurFromSession($formateurId, $appName, $sessionId) {
+    $db = getSharedDB();
+    $stmt = $db->prepare("DELETE FROM formateur_sessions WHERE formateur_id = ? AND app_name = ? AND session_id = ?");
+    return $stmt->execute([$formateurId, $appName, $sessionId]);
+}
+
+/**
+ * Verifier si un formateur a acces a une session specifique
+ * Les super-admins ont acces a toutes les sessions
+ */
+function canAccessSession($appName, $sessionId) {
+    $user = getLoggedUser();
+    if (!$user) return false;
+
+    // Super-admin a acces a tout
+    if ($user['is_super_admin']) return true;
+
+    // Formateur sans restriction = acces a tout (mode legacy)
+    $db = getSharedDB();
+    $stmt = $db->prepare("SELECT COUNT(*) FROM formateur_sessions WHERE formateur_id = ?");
+    $stmt->execute([$user['id']]);
+    $hasRestrictions = $stmt->fetchColumn() > 0;
+
+    if (!$hasRestrictions && $user['is_formateur']) {
+        return true; // Formateur sans affectation = acces total (mode compatibilite)
+    }
+
+    // Verifier l'affectation specifique
+    $stmt = $db->prepare("SELECT COUNT(*) FROM formateur_sessions WHERE formateur_id = ? AND app_name = ? AND session_id = ?");
+    $stmt->execute([$user['id'], $appName, $sessionId]);
+    return $stmt->fetchColumn() > 0;
+}
+
+/**
+ * Recuperer les sessions auxquelles un formateur a acces
+ * Retourne null si acces a toutes les sessions (super-admin ou formateur sans restriction)
+ */
+function getFormateurSessionIds($appName) {
+    $user = getLoggedUser();
+    if (!$user) return [];
+
+    // Super-admin = acces a tout
+    if ($user['is_super_admin']) return null;
+
+    // Verifier si le formateur a des restrictions
+    $db = getSharedDB();
+    $stmt = $db->prepare("SELECT COUNT(*) FROM formateur_sessions WHERE formateur_id = ?");
+    $stmt->execute([$user['id']]);
+    $hasRestrictions = $stmt->fetchColumn() > 0;
+
+    if (!$hasRestrictions && $user['is_formateur']) {
+        return null; // Pas de restriction
+    }
+
+    // Retourner les IDs de sessions autorisees
+    $stmt = $db->prepare("SELECT session_id FROM formateur_sessions WHERE formateur_id = ? AND app_name = ?");
+    $stmt->execute([$user['id'], $appName]);
+    return array_column($stmt->fetchAll(), 'session_id');
+}
+
+/**
+ * Recuperer tous les formateurs (pour affectation)
+ */
+function getAllFormateurs() {
+    $db = getSharedDB();
+    return $db->query("SELECT id, username, prenom, nom, organisation, is_formateur, is_super_admin FROM users WHERE is_formateur = 1 ORDER BY nom, prenom")->fetchAll();
+}
+
+/**
+ * Recuperer les sessions affectees a un formateur
+ */
+function getFormateurAssignments($formateurId) {
+    $db = getSharedDB();
+    $stmt = $db->prepare("SELECT app_name, session_id FROM formateur_sessions WHERE formateur_id = ?");
+    $stmt->execute([$formateurId]);
+    return $stmt->fetchAll();
 }
