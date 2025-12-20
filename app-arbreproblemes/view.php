@@ -3,12 +3,7 @@
  * Vue en lecture seule de l'arbre a problemes d'un participant
  * Accessible par le formateur
  */
-
-// Charger shared-auth pour l'authentification formateur
-require_once __DIR__ . '/../shared-auth/config.php';
-
-// Charger la config locale pour les donnees
-require_once 'config.php';
+require_once __DIR__ . '/config.php';
 
 // Verifier que c'est un formateur
 if (!isFormateur()) {
@@ -16,12 +11,19 @@ if (!isFormateur()) {
     exit;
 }
 
+$appKey = 'app-arbreproblemes';
+
 $userId = (int)($_GET['user_id'] ?? 0);
 $sessionId = (int)($_GET['session_id'] ?? 0);
 
 if (!$userId || !$sessionId) {
     header('Location: formateur.php');
     exit;
+}
+
+// Verifier l'acces a cette session
+if (!canAccessSession($appKey, $sessionId)) {
+    die("Acces refuse a cette session.");
 }
 
 $db = getDB();
