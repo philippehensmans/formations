@@ -136,3 +136,10 @@ function requireLoginWithSession() {
         exit;
     }
 }
+
+/**
+ * Exiger droits admin/formateur
+ */
+function requireAdmin() {
+    requireFormateur();
+}
