@@ -3,18 +3,15 @@
  * Vue en lecture seule du cadre logique d'un participant
  * Accessible par le formateur
  */
+require_once __DIR__ . '/config.php';
 
-// Charger shared-auth pour l'authentification formateur
-require_once __DIR__ . '/../shared-auth/config.php';
-
-// Charger la config locale pour les donnees
-require_once 'config/database.php';
-
-// Verifier que c'est un formateur
+// Verifier acces formateur
 if (!isFormateur()) {
     header('Location: login.php');
     exit;
 }
+
+$appKey = 'app-cadrelogique';
 
 $participantId = (int)($_GET['id'] ?? 0);
 if (!$participantId) {
@@ -26,7 +23,7 @@ $db = getDB();
 
 // Recuperer le participant
 $stmt = $db->prepare("
-    SELECT p.*, s.code as session_code, s.nom as session_nom
+    SELECT p.*, s.code as session_code, s.nom as session_nom, s.id as session_id
     FROM participants p
     JOIN sessions s ON p.session_id = s.id
     WHERE p.id = ?
@@ -36,6 +33,11 @@ $participant = $stmt->fetch();
 
 if (!$participant) {
     die("Participant non trouve");
+}
+
+// Verifier l'acces a cette session
+if (!canAccessSession($appKey, $participant['session_id'])) {
+    die("Acces refuse a cette session.");
 }
 
 // Recuperer le cadre logique
