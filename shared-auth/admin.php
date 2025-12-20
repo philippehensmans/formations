@@ -1,11 +1,12 @@
 <?php
 /**
  * Administration de la base shared-auth
- * Gestion des utilisateurs
+ * Gestion des utilisateurs et affectation des formateurs aux sessions
+ * Accessible uniquement par les super-admins
  */
 require_once __DIR__ . '/config.php';
 
-// Verifier admin
+// Verifier super-admin (ou admin pour login initial)
 if (!isLoggedIn() || !isAdmin()) {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'login') {
         $username = trim($_POST['username'] ?? '');
@@ -58,6 +59,8 @@ if (!isLoggedIn() || !isAdmin()) {
 $db = getSharedDB();
 $success = '';
 $error = '';
+$currentUser = getLoggedUser();
+$isSuperAdmin = isSuperAdmin();
 
 // Actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -67,19 +70,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         case 'create_user':
             $username = trim($_POST['username'] ?? '');
             $password = $_POST['password'] ?? '';
+            $email = trim($_POST['email'] ?? '');
             $prenom = trim($_POST['prenom'] ?? '');
             $nom = trim($_POST['nom'] ?? '');
             $organisation = trim($_POST['organisation'] ?? '');
             $is_formateur = isset($_POST['is_formateur']) ? 1 : 0;
-            $is_admin = isset($_POST['is_admin']) ? 1 : 0;
+            $is_admin = ($isSuperAdmin && isset($_POST['is_admin'])) ? 1 : 0;
 
             if (empty($username) || empty($password)) {
                 $error = 'Username et mot de passe requis.';
             } else {
                 try {
                     $hash = password_hash($password, PASSWORD_DEFAULT);
-                    $stmt = $db->prepare("INSERT INTO users (username, password, prenom, nom, organisation, is_formateur, is_admin) VALUES (?, ?, ?, ?, ?, ?, ?)");
-                    $stmt->execute([$username, $hash, $prenom, $nom, $organisation, $is_formateur, $is_admin]);
+                    $stmt = $db->prepare("INSERT INTO users (username, password, email, prenom, nom, organisation, is_formateur, is_admin) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                    $stmt->execute([$username, $hash, $email, $prenom, $nom, $organisation, $is_formateur, $is_admin]);
                     $success = "Utilisateur '$username' cree.";
                 } catch (PDOException $e) {
                     $error = "Erreur: " . ($e->getCode() == 23000 ? "Username deja utilise." : $e->getMessage());
@@ -89,33 +93,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         case 'update_user':
             $userId = (int)($_POST['user_id'] ?? 0);
+            $email = trim($_POST['email'] ?? '');
             $prenom = trim($_POST['prenom'] ?? '');
             $nom = trim($_POST['nom'] ?? '');
             $organisation = trim($_POST['organisation'] ?? '');
             $is_formateur = isset($_POST['is_formateur']) ? 1 : 0;
-            $is_admin = isset($_POST['is_admin']) ? 1 : 0;
+            $is_admin = ($isSuperAdmin && isset($_POST['is_admin'])) ? 1 : 0;
             $newPassword = $_POST['new_password'] ?? '';
+
+            // Non super-admin ne peut pas modifier is_admin
+            if (!$isSuperAdmin) {
+                $stmt = $db->prepare("SELECT is_admin FROM users WHERE id = ?");
+                $stmt->execute([$userId]);
+                $existingUser = $stmt->fetch();
+                $is_admin = $existingUser['is_admin'] ?? 0;
+            }
 
             if ($newPassword) {
                 $hash = password_hash($newPassword, PASSWORD_DEFAULT);
-                $stmt = $db->prepare("UPDATE users SET prenom = ?, nom = ?, organisation = ?, is_formateur = ?, is_admin = ?, password = ? WHERE id = ?");
-                $stmt->execute([$prenom, $nom, $organisation, $is_formateur, $is_admin, $hash, $userId]);
+                $stmt = $db->prepare("UPDATE users SET email = ?, prenom = ?, nom = ?, organisation = ?, is_formateur = ?, is_admin = ?, password = ? WHERE id = ?");
+                $stmt->execute([$email, $prenom, $nom, $organisation, $is_formateur, $is_admin, $hash, $userId]);
             } else {
-                $stmt = $db->prepare("UPDATE users SET prenom = ?, nom = ?, organisation = ?, is_formateur = ?, is_admin = ? WHERE id = ?");
-                $stmt->execute([$prenom, $nom, $organisation, $is_formateur, $is_admin, $userId]);
+                $stmt = $db->prepare("UPDATE users SET email = ?, prenom = ?, nom = ?, organisation = ?, is_formateur = ?, is_admin = ? WHERE id = ?");
+                $stmt->execute([$email, $prenom, $nom, $organisation, $is_formateur, $is_admin, $userId]);
             }
             $success = "Utilisateur mis a jour.";
             break;
 
         case 'delete_user':
             $userId = (int)($_POST['user_id'] ?? 0);
-            $currentUser = getLoggedUser();
             if ($userId == $currentUser['id']) {
                 $error = "Impossible de supprimer votre propre compte.";
             } else {
+                // Supprimer aussi les affectations de sessions
+                $db->prepare("DELETE FROM formateur_sessions WHERE formateur_id = ?")->execute([$userId]);
                 $stmt = $db->prepare("DELETE FROM users WHERE id = ?");
                 $stmt->execute([$userId]);
                 $success = "Utilisateur supprime.";
+            }
+            break;
+
+        case 'assign_session':
+            if ($isSuperAdmin) {
+                $formateurId = (int)($_POST['formateur_id'] ?? 0);
+                $appName = $_POST['app_name'] ?? '';
+                $sessionId = (int)($_POST['session_id'] ?? 0);
+                if ($formateurId && $appName && $sessionId) {
+                    if (assignFormateurToSession($formateurId, $appName, $sessionId)) {
+                        $success = "Session affectee.";
+                    } else {
+                        $error = "Erreur lors de l'affectation.";
+                    }
+                }
+            }
+            break;
+
+        case 'remove_session':
+            if ($isSuperAdmin) {
+                $formateurId = (int)($_POST['formateur_id'] ?? 0);
+                $appName = $_POST['app_name'] ?? '';
+                $sessionId = (int)($_POST['session_id'] ?? 0);
+                if (removeFormateurFromSession($formateurId, $appName, $sessionId)) {
+                    $success = "Affectation retiree.";
+                }
             }
             break;
 
@@ -128,7 +168,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Recuperer les utilisateurs
 $users = $db->query("SELECT * FROM users ORDER BY username")->fetchAll();
-$currentUser = getLoggedUser();
+
+// Liste des applications
+$apps = [
+    'app-swot' => 'Analyse SWOT',
+    'app-cahier-charges' => 'Cahier des Charges',
+    'app-objectifs-smart' => 'Objectifs SMART',
+    'app-pestel' => 'Analyse PESTEL',
+    'app-stop-start-continue' => 'Stop Start Continue',
+    'app-parties-prenantes' => 'Parties Prenantes',
+    'app-carte-projet' => 'Carte Projet',
+    'app-cadre-logique' => 'Cadre Logique',
+    'app-budget' => 'Budget',
+    'app-planification' => 'Planification',
+    'app-risques' => 'Risques'
+];
+
+// Recuperer les affectations de sessions pour l'affichage
+$formateurAssignments = [];
+if ($isSuperAdmin) {
+    $allAssignments = $db->query("SELECT * FROM formateur_sessions ORDER BY formateur_id, app_name, session_id")->fetchAll();
+    foreach ($allAssignments as $a) {
+        $formateurAssignments[$a['formateur_id']][] = $a;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -140,12 +203,17 @@ $currentUser = getLoggedUser();
 </head>
 <body class="min-h-screen bg-gray-100">
     <header class="bg-gray-800 text-white p-4">
-        <div class="max-w-6xl mx-auto flex justify-between items-center">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-4">
                 <img src="../logo.png" alt="Logo" class="h-10">
                 <div>
                     <h1 class="text-xl font-bold">Administration Shared-Auth</h1>
-                    <p class="text-sm text-gray-400">Connecte: <?= h($currentUser['username']) ?></p>
+                    <p class="text-sm text-gray-400">
+                        Connecte: <?= h($currentUser['username']) ?>
+                        <?php if ($isSuperAdmin): ?>
+                            <span class="ml-2 px-2 py-0.5 bg-purple-600 rounded text-xs">Super-Admin</span>
+                        <?php endif; ?>
+                    </p>
                 </div>
             </div>
             <form method="POST" class="inline">
@@ -155,7 +223,7 @@ $currentUser = getLoggedUser();
         </div>
     </header>
 
-    <main class="max-w-6xl mx-auto p-6">
+    <main class="max-w-7xl mx-auto p-6">
         <?php if ($success): ?>
             <div class="mb-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg"><?= h($success) ?></div>
         <?php endif; ?>
@@ -166,27 +234,30 @@ $currentUser = getLoggedUser();
         <!-- Creer utilisateur -->
         <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
             <h2 class="font-semibold text-gray-800 mb-4">Creer un utilisateur</h2>
-            <form method="POST" class="grid md:grid-cols-6 gap-4">
+            <form method="POST" class="grid md:grid-cols-7 gap-4 items-end">
                 <input type="hidden" name="action" value="create_user">
                 <input type="text" name="username" placeholder="Username *" required class="px-3 py-2 border rounded-lg">
                 <input type="password" name="password" placeholder="Mot de passe *" required class="px-3 py-2 border rounded-lg">
+                <input type="email" name="email" placeholder="Email" class="px-3 py-2 border rounded-lg">
                 <input type="text" name="prenom" placeholder="Prenom" class="px-3 py-2 border rounded-lg">
                 <input type="text" name="nom" placeholder="Nom" class="px-3 py-2 border rounded-lg">
                 <input type="text" name="organisation" placeholder="Organisation" class="px-3 py-2 border rounded-lg">
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-3">
                     <label class="flex items-center gap-1 text-sm">
                         <input type="checkbox" name="is_formateur"> Formateur
                     </label>
+                    <?php if ($isSuperAdmin): ?>
                     <label class="flex items-center gap-1 text-sm">
                         <input type="checkbox" name="is_admin"> Admin
                     </label>
+                    <?php endif; ?>
                     <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Creer</button>
                 </div>
             </form>
         </div>
 
         <!-- Liste utilisateurs -->
-        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
             <div class="bg-gray-50 p-4 border-b font-semibold text-gray-700">
                 Utilisateurs (<?= count($users) ?>)
             </div>
@@ -196,11 +267,15 @@ $currentUser = getLoggedUser();
                         <tr>
                             <th class="text-left p-3">ID</th>
                             <th class="text-left p-3">Username</th>
+                            <th class="text-left p-3">Email</th>
                             <th class="text-left p-3">Prenom</th>
                             <th class="text-left p-3">Nom</th>
                             <th class="text-left p-3">Organisation</th>
                             <th class="text-center p-3">Formateur</th>
+                            <?php if ($isSuperAdmin): ?>
                             <th class="text-center p-3">Admin</th>
+                            <?php endif; ?>
+                            <th class="text-center p-3">Consent</th>
                             <th class="text-left p-3">Cree le</th>
                             <th class="text-center p-3">Actions</th>
                         </tr>
@@ -211,23 +286,40 @@ $currentUser = getLoggedUser();
                             <form method="POST">
                                 <input type="hidden" name="action" value="update_user">
                                 <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
-                                <td class="p-3 text-gray-500"><?= $user['id'] ?></td>
+                                <td class="p-3 text-gray-500">
+                                    <?= $user['id'] ?>
+                                    <?php if (!empty($user['is_super_admin'])): ?>
+                                        <span class="ml-1 text-purple-600" title="Super-Admin">SA</span>
+                                    <?php endif; ?>
+                                </td>
                                 <td class="p-3 font-medium"><?= h($user['username']) ?></td>
+                                <td class="p-3"><input type="email" name="email" value="<?= h($user['email'] ?? '') ?>" class="w-full px-2 py-1 border rounded text-sm" placeholder="email@..."></td>
                                 <td class="p-3"><input type="text" name="prenom" value="<?= h($user['prenom'] ?? '') ?>" class="w-full px-2 py-1 border rounded text-sm"></td>
                                 <td class="p-3"><input type="text" name="nom" value="<?= h($user['nom'] ?? '') ?>" class="w-full px-2 py-1 border rounded text-sm"></td>
                                 <td class="p-3"><input type="text" name="organisation" value="<?= h($user['organisation'] ?? '') ?>" class="w-full px-2 py-1 border rounded text-sm"></td>
                                 <td class="p-3 text-center"><input type="checkbox" name="is_formateur" <?= $user['is_formateur'] ? 'checked' : '' ?>></td>
-                                <td class="p-3 text-center"><input type="checkbox" name="is_admin" <?= $user['is_admin'] ? 'checked' : '' ?>></td>
+                                <?php if ($isSuperAdmin): ?>
+                                <td class="p-3 text-center">
+                                    <input type="checkbox" name="is_admin" <?= $user['is_admin'] ? 'checked' : '' ?> <?= $user['is_super_admin'] ? 'disabled title="Super-admin"' : '' ?>>
+                                </td>
+                                <?php endif; ?>
+                                <td class="p-3 text-center">
+                                    <?php if (!empty($user['email_consent'])): ?>
+                                        <span class="text-green-600" title="Consentement email">Oui</span>
+                                    <?php else: ?>
+                                        <span class="text-gray-400">Non</span>
+                                    <?php endif; ?>
+                                </td>
                                 <td class="p-3 text-gray-500 text-xs"><?= date('d/m/Y', strtotime($user['created_at'])) ?></td>
                                 <td class="p-3 text-center">
-                                    <div class="flex gap-1 justify-center">
-                                        <input type="password" name="new_password" placeholder="Nouveau mdp" class="w-24 px-2 py-1 border rounded text-xs">
+                                    <div class="flex gap-1 justify-center flex-wrap">
+                                        <input type="password" name="new_password" placeholder="Nouveau mdp" class="w-20 px-2 py-1 border rounded text-xs">
                                         <button type="submit" class="px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700">Sauver</button>
                             </form>
                                         <form method="POST" class="inline" onsubmit="return confirm('Supprimer cet utilisateur?')">
                                             <input type="hidden" name="action" value="delete_user">
                                             <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
-                                            <button type="submit" class="px-2 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700" <?= $user['id'] == $currentUser['id'] ? 'disabled title="Impossible de supprimer votre compte"' : '' ?>>Suppr</button>
+                                            <button type="submit" class="px-2 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700" <?= ($user['id'] == $currentUser['id'] || $user['is_super_admin']) ? 'disabled title="Impossible"' : '' ?>>Suppr</button>
                                         </form>
                                     </div>
                                 </td>
@@ -238,9 +330,72 @@ $currentUser = getLoggedUser();
             </div>
         </div>
 
+        <?php if ($isSuperAdmin): ?>
+        <!-- Affectation des formateurs aux sessions -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <h2 class="font-semibold text-gray-800 mb-4">Affectation Formateurs aux Sessions</h2>
+            <p class="text-sm text-gray-600 mb-4">
+                Par defaut, les formateurs ont acces a toutes les sessions. En leur affectant des sessions specifiques, ils ne verront que celles-ci.
+            </p>
+
+            <?php
+            $formateurs = array_filter($users, function($u) { return $u['is_formateur'] && !$u['is_super_admin']; });
+            ?>
+
+            <?php if (empty($formateurs)): ?>
+                <p class="text-gray-500 italic">Aucun formateur a configurer.</p>
+            <?php else: ?>
+                <?php foreach ($formateurs as $formateur): ?>
+                <div class="border rounded-lg p-4 mb-4">
+                    <h3 class="font-medium text-gray-800 mb-2">
+                        <?= h($formateur['prenom'] . ' ' . $formateur['nom']) ?>
+                        <span class="text-gray-500 font-normal">(<?= h($formateur['username']) ?>)</span>
+                    </h3>
+
+                    <!-- Affectations actuelles -->
+                    <?php if (!empty($formateurAssignments[$formateur['id']])): ?>
+                    <div class="mb-3">
+                        <span class="text-sm text-gray-600">Sessions affectees:</span>
+                        <div class="flex flex-wrap gap-2 mt-1">
+                            <?php foreach ($formateurAssignments[$formateur['id']] as $assignment): ?>
+                            <form method="POST" class="inline">
+                                <input type="hidden" name="action" value="remove_session">
+                                <input type="hidden" name="formateur_id" value="<?= $formateur['id'] ?>">
+                                <input type="hidden" name="app_name" value="<?= h($assignment['app_name']) ?>">
+                                <input type="hidden" name="session_id" value="<?= $assignment['session_id'] ?>">
+                                <button type="submit" class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs hover:bg-red-100 hover:text-red-800" title="Cliquer pour retirer">
+                                    <?= h($apps[$assignment['app_name']] ?? $assignment['app_name']) ?> #<?= $assignment['session_id'] ?>
+                                    <span class="ml-1">x</span>
+                                </button>
+                            </form>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                    <?php else: ?>
+                    <p class="text-sm text-green-600 mb-3">Acces a toutes les sessions (aucune restriction)</p>
+                    <?php endif; ?>
+
+                    <!-- Ajouter une affectation -->
+                    <form method="POST" class="flex gap-2 items-center">
+                        <input type="hidden" name="action" value="assign_session">
+                        <input type="hidden" name="formateur_id" value="<?= $formateur['id'] ?>">
+                        <select name="app_name" class="px-3 py-1 border rounded text-sm">
+                            <?php foreach ($apps as $appKey => $appLabel): ?>
+                            <option value="<?= h($appKey) ?>"><?= h($appLabel) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <input type="number" name="session_id" placeholder="ID Session" required class="w-24 px-2 py-1 border rounded text-sm">
+                        <button type="submit" class="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">Affecter</button>
+                    </form>
+                </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+        <?php endif; ?>
+
         <!-- Info base de donnees -->
-        <div class="mt-6 text-sm text-gray-500">
-            <p>Base de donnees: <?= realpath(__DIR__ . '/data/users.sqlite') ?></p>
+        <div class="text-sm text-gray-500">
+            <p>Base de donnees: <?= realpath(__DIR__ . '/data/users.sqlite') ?: __DIR__ . '/data/users.sqlite' ?></p>
         </div>
     </main>
 </body>

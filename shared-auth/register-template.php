@@ -27,6 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $prenom = trim($_POST['prenom'] ?? '');
     $nom = trim($_POST['nom'] ?? '');
     $organisation = trim($_POST['organisation'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $emailConsent = isset($_POST['email_consent']) ? 1 : 0;
 
     if (empty($username) || empty($password)) {
         $error = 'Veuillez remplir tous les champs obligatoires.';
@@ -36,8 +38,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Le mot de passe doit contenir au moins 4 caracteres.';
     } elseif ($password !== $confirm) {
         $error = 'Les mots de passe ne correspondent pas.';
+    } elseif (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = 'Adresse email invalide.';
     } else {
-        $result = registerUser($username, $password, $prenom, $nom, $organisation);
+        $result = registerUser($username, $password, $prenom, $nom, $organisation, $email, $emailConsent);
         if ($result['success']) {
             $success = 'Compte cree avec succes ! Vous pouvez maintenant vous connecter.';
         } else {
@@ -106,6 +110,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Adresse email</label>
+                    <input type="email" name="email"
+                           class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-<?= $appColor ?>-500"
+                           placeholder="votre@email.com"
+                           value="<?= h($_POST['email'] ?? '') ?>">
+                    <p class="text-xs text-gray-500 mt-1">Facultatif - pour recevoir des informations</p>
+                </div>
+
+                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">
                         Nom d'utilisateur <span class="text-red-500">*</span>
                     </label>
@@ -131,6 +144,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="password" name="confirm" required
                            class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-<?= $appColor ?>-500"
                            placeholder="Retapez le mot de passe">
+                </div>
+
+                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    <label class="flex items-start gap-3 cursor-pointer">
+                        <input type="checkbox" name="email_consent"
+                               class="mt-1 w-4 h-4 text-<?= $appColor ?>-600 border-gray-300 rounded focus:ring-<?= $appColor ?>-500"
+                               <?= isset($_POST['email_consent']) ? 'checked' : '' ?>>
+                        <span class="text-sm text-gray-600">
+                            J'accepte de recevoir des communications par email dans le cadre de cette formation.
+                            <span class="block text-xs text-gray-500 mt-1">
+                                Conformement au RGPD, vos donnees sont utilisees uniquement pour les outils de formation.
+                                Vous pouvez retirer votre consentement a tout moment.
+                            </span>
+                        </span>
+                    </label>
                 </div>
 
                 <button type="submit"
