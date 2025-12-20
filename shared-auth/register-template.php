@@ -59,6 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body class="min-h-screen bg-gradient-to-br from-<?= $appColor ?>-600 to-<?= $appColor ?>-800 flex items-center justify-center p-4">
     <div class="w-full max-w-md">
         <div class="text-center mb-8">
+            <img src="../logo.png" alt="Logo" class="h-16 mx-auto mb-4">
             <h1 class="text-3xl font-bold text-white mb-2"><?= h($appName) ?></h1>
             <p class="text-<?= $appColor ?>-200">Creer un compte</p>
         </div>

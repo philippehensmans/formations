@@ -44,6 +44,7 @@ if (!isLoggedIn()) {
     <body class="min-h-screen bg-gray-100 flex items-center justify-center p-4">
         <div class="w-full max-w-md">
             <div class="text-center mb-6">
+                <img src="../logo.png" alt="Logo" class="h-16 mx-auto mb-4">
                 <h1 class="text-2xl font-bold text-gray-800">Espace Formateur</h1>
                 <p class="text-gray-600"><?= h($appName) ?></p>
             </div>
