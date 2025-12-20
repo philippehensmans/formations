@@ -64,14 +64,12 @@ if (!isLoggedIn()) {
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Identifiant</label>
                         <input type="text" name="username" required
-                               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-<?= $appColor ?>-500"
-                               placeholder="formateur">
+                               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-<?= $appColor ?>-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
                         <input type="password" name="password" required
-                               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-<?= $appColor ?>-500"
-                               placeholder="Formation2024!">
+                               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-<?= $appColor ?>-500">
                     </div>
                     <button type="submit" class="w-full py-2 bg-<?= $appColor ?>-600 text-white rounded-lg hover:bg-<?= $appColor ?>-700">
                         Connexion
