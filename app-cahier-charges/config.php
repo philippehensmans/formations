@@ -112,7 +112,7 @@ function sanitize($input) {
 /**
  * Verification admin (utilise isFormateur du shared-auth)
  */
-function isAdmin() {
+function isLocalAdmin() {
     return isFormateur();
 }
 
