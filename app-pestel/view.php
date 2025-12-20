@@ -1,17 +1,25 @@
 <?php
-require_once __DIR__ . '/../shared-auth/config.php';
-require_once 'config/database.php';
+require_once __DIR__ . '/config.php';
 
+// Verifier acces formateur
 if (!isFormateur()) { header('Location: index.php'); exit; }
+
+// Verifier l'acces a la session (pour les formateurs avec restrictions)
+$appKey = 'app-pestel';
 
 $participantId = (int)($_GET['id'] ?? 0);
 if (!$participantId) { header('Location: formateur.php'); exit; }
 
 $db = getDB();
-$stmt = $db->prepare("SELECT p.*, s.code as session_code, s.nom as session_nom FROM participants p JOIN sessions s ON p.session_id = s.id WHERE p.id = ?");
+$stmt = $db->prepare("SELECT p.*, s.code as session_code, s.nom as session_nom, s.id as session_id FROM participants p JOIN sessions s ON p.session_id = s.id WHERE p.id = ?");
 $stmt->execute([$participantId]);
 $participant = $stmt->fetch();
 if (!$participant) { die("Participant non trouve"); }
+
+// Verifier l'acces a cette session
+if (!canAccessSession($appKey, $participant['session_id'])) {
+    die("Acces refuse a cette session.");
+}
 
 $stmt = $db->prepare("SELECT * FROM analyse_pestel WHERE participant_id = ?");
 $stmt->execute([$participantId]);
