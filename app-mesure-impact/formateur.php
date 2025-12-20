@@ -366,6 +366,7 @@ $methodes = getMethodesCollecte();
                                         <th class="text-center py-2">Etape</th>
                                         <th class="text-center py-2">Score E1</th>
                                         <th class="text-center py-2">Statut</th>
+                                        <th class="text-center py-2">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -389,10 +390,17 @@ $methodes = getMethodesCollecte();
                                                 <span class="px-2 py-1 bg-amber-100 text-amber-700 rounded-full text-xs">En cours</span>
                                             <?php endif; ?>
                                         </td>
+                                        <td class="py-2 text-center">
+                                            <a href="view.php?id=<?= $p['id'] ?>"
+                                               class="inline-block px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-xs"
+                                               target="_blank">
+                                                Voir
+                                            </a>
+                                        </td>
                                     </tr>
                                     <?php endforeach; ?>
                                     <?php if (empty($participants)): ?>
-                                    <tr><td colspan="5" class="py-8 text-center text-gray-500">Aucun participant</td></tr>
+                                    <tr><td colspan="6" class="py-8 text-center text-gray-500">Aucun participant</td></tr>
                                     <?php endif; ?>
                                 </tbody>
                             </table>

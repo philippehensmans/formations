@@ -321,6 +321,7 @@ if (isset($_GET['session'])) {
                                         <th class="text-left py-2">Participant</th>
                                         <th class="text-left py-2">Organisation</th>
                                         <th class="text-left py-2">Inscription</th>
+                                        <th class="text-center py-2">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -332,6 +333,13 @@ if (isset($_GET['session'])) {
                                             </td>
                                             <td class="py-2 text-gray-600"><?= h($p['organisation'] ?? '-') ?></td>
                                             <td class="py-2 text-gray-500"><?= date('d/m H:i', strtotime($p['created_at'])) ?></td>
+                                            <td class="py-2 text-center">
+                                                <a href="view.php?id=<?= $p['id'] ?>"
+                                                   class="inline-block px-3 py-1 bg-<?= $appColor ?>-600 text-white rounded hover:bg-<?= $appColor ?>-700 text-xs"
+                                                   target="_blank">
+                                                    Voir
+                                                </a>
+                                            </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
