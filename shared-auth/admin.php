@@ -1,7 +1,4 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
 /**
  * Administration de la base shared-auth
  * Gestion des utilisateurs
@@ -32,7 +29,10 @@ if (!isLoggedIn() || !isAdmin()) {
     </head>
     <body class="min-h-screen bg-gray-900 flex items-center justify-center p-4">
         <div class="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
-            <h1 class="text-2xl font-bold text-gray-800 mb-6 text-center">Administration</h1>
+            <div class="text-center mb-6">
+                <img src="../logo.png" alt="Logo" class="h-16 mx-auto mb-4">
+                <h1 class="text-2xl font-bold text-gray-800">Administration</h1>
+            </div>
             <?php if (!empty($error)): ?>
                 <div class="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm"><?= h($error) ?></div>
             <?php endif; ?>
@@ -141,9 +141,12 @@ $currentUser = getLoggedUser();
 <body class="min-h-screen bg-gray-100">
     <header class="bg-gray-800 text-white p-4">
         <div class="max-w-6xl mx-auto flex justify-between items-center">
-            <div>
-                <h1 class="text-xl font-bold">Administration Shared-Auth</h1>
-                <p class="text-sm text-gray-400">Connecte: <?= h($currentUser['username']) ?></p>
+            <div class="flex items-center gap-4">
+                <img src="../logo.png" alt="Logo" class="h-10">
+                <div>
+                    <h1 class="text-xl font-bold">Administration Shared-Auth</h1>
+                    <p class="text-sm text-gray-400">Connecte: <?= h($currentUser['username']) ?></p>
+                </div>
             </div>
             <form method="POST" class="inline">
                 <input type="hidden" name="action" value="logout">
