@@ -331,6 +331,10 @@ foreach ($participantIds as $pid) {
 
         // Dessiner une connexion
         function drawConnection(parent, child) {
+            const childColor = getColorClasses(child.color || 'blue');
+
+            // Ligne d'ombre pour effet de profondeur
+            const shadow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
 
             const x1 = parseFloat(parent.pos_x) + 60;
@@ -342,12 +346,36 @@ foreach ($participantIds as $pid) {
             const midX = (x1 + x2) / 2;
             const d = `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`;
 
-            line.setAttribute('d', d);
-            line.setAttribute('stroke', '#cbd5e1');
-            line.setAttribute('stroke-width', '3');
-            line.setAttribute('fill', 'none');
+            // Ombre
+            shadow.setAttribute('d', d);
+            shadow.setAttribute('stroke', 'rgba(0,0,0,0.1)');
+            shadow.setAttribute('stroke-width', '8');
+            shadow.setAttribute('fill', 'none');
+            svg.appendChild(shadow);
 
+            // Ligne principale coloree
+            line.setAttribute('d', d);
+            line.setAttribute('stroke', childColor.border);
+            line.setAttribute('stroke-width', '4');
+            line.setAttribute('fill', 'none');
+            line.setAttribute('stroke-linecap', 'round');
             svg.appendChild(line);
+
+            // Fleche au milieu du chemin
+            const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            const midY = (y1 + y2) / 2;
+            const angle = Math.atan2(y2 - y1, x2 - x1);
+            const arrowSize = 8;
+            const ax = midX;
+            const ay = midY;
+            const points = [
+                [ax + arrowSize * Math.cos(angle), ay + arrowSize * Math.sin(angle)],
+                [ax + arrowSize * Math.cos(angle + 2.5), ay + arrowSize * Math.sin(angle + 2.5)],
+                [ax + arrowSize * Math.cos(angle - 2.5), ay + arrowSize * Math.sin(angle - 2.5)]
+            ];
+            arrow.setAttribute('points', points.map(p => p.join(',')).join(' '));
+            arrow.setAttribute('fill', childColor.border);
+            svg.appendChild(arrow);
         }
 
         // Setup drag & drop

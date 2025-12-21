@@ -137,23 +137,55 @@ $icons = getIcons();
             return div.innerHTML;
         }
 
+        function drawConnection(parent, child) {
+            const childColor = getColorClasses(child.color || 'blue');
+
+            const x1 = parseFloat(parent.pos_x) + 60;
+            const y1 = parseFloat(parent.pos_y) + 20;
+            const x2 = parseFloat(child.pos_x) + 60;
+            const y2 = parseFloat(child.pos_y) + 20;
+            const midX = (x1 + x2) / 2;
+            const d = `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`;
+
+            // Ombre
+            const shadow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            shadow.setAttribute('d', d);
+            shadow.setAttribute('stroke', 'rgba(0,0,0,0.1)');
+            shadow.setAttribute('stroke-width', '8');
+            shadow.setAttribute('fill', 'none');
+            svg.appendChild(shadow);
+
+            // Ligne coloree
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            line.setAttribute('d', d);
+            line.setAttribute('stroke', childColor.border);
+            line.setAttribute('stroke-width', '4');
+            line.setAttribute('fill', 'none');
+            line.setAttribute('stroke-linecap', 'round');
+            svg.appendChild(line);
+
+            // Fleche
+            const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            const midY = (y1 + y2) / 2;
+            const angle = Math.atan2(y2 - y1, x2 - x1);
+            const arrowSize = 8;
+            const points = [
+                [midX + arrowSize * Math.cos(angle), midY + arrowSize * Math.sin(angle)],
+                [midX + arrowSize * Math.cos(angle + 2.5), midY + arrowSize * Math.sin(angle + 2.5)],
+                [midX + arrowSize * Math.cos(angle - 2.5), midY + arrowSize * Math.sin(angle - 2.5)]
+            ];
+            arrow.setAttribute('points', points.map(p => p.join(',')).join(' '));
+            arrow.setAttribute('fill', childColor.border);
+            svg.appendChild(arrow);
+        }
+
         function render() {
             // Dessiner les liens
             nodes.forEach(node => {
                 if (node.parent_id) {
                     const parent = nodes.find(n => n.id == node.parent_id);
                     if (parent) {
-                        const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                        const x1 = parseFloat(parent.pos_x) + 60;
-                        const y1 = parseFloat(parent.pos_y) + 20;
-                        const x2 = parseFloat(node.pos_x) + 60;
-                        const y2 = parseFloat(node.pos_y) + 20;
-                        const midX = (x1 + x2) / 2;
-                        line.setAttribute('d', `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`);
-                        line.setAttribute('stroke', '#cbd5e1');
-                        line.setAttribute('stroke-width', '3');
-                        line.setAttribute('fill', 'none');
-                        svg.appendChild(line);
+                        drawConnection(parent, node);
                     }
                 }
             });
