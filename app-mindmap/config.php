@@ -67,6 +67,8 @@ function initDB($db) {
         mindmap_id INTEGER NOT NULL,
         parent_id INTEGER DEFAULT NULL,
         text VARCHAR(255) NOT NULL,
+        note TEXT DEFAULT NULL,
+        file_url VARCHAR(500) DEFAULT NULL,
         color VARCHAR(20) DEFAULT 'blue',
         icon VARCHAR(50) DEFAULT NULL,
         pos_x REAL DEFAULT 0,
@@ -79,6 +81,10 @@ function initDB($db) {
         FOREIGN KEY (mindmap_id) REFERENCES mindmaps(id) ON DELETE CASCADE,
         FOREIGN KEY (parent_id) REFERENCES nodes(id) ON DELETE CASCADE
     )");
+
+    // Migration: ajouter note et file_url si elles n'existent pas
+    try { $db->exec("ALTER TABLE nodes ADD COLUMN note TEXT DEFAULT NULL"); } catch (Exception $e) {}
+    try { $db->exec("ALTER TABLE nodes ADD COLUMN file_url VARCHAR(500) DEFAULT NULL"); } catch (Exception $e) {}
 
     // Index pour performances
     $db->exec("CREATE INDEX IF NOT EXISTS idx_nodes_mindmap ON nodes(mindmap_id)");

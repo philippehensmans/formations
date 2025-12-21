@@ -180,7 +180,8 @@ foreach ($participantIds as $pid) {
         <?php endforeach; ?>
         <button onclick="setCurrentIcon(null)" class="toolbar-btn bg-gray-100 hover:bg-gray-200" title="Sans icone">🚫</button>
         <div class="flex-1"></div>
-        <button onclick="exportImage()" class="toolbar-btn bg-violet-100 text-violet-700 hover:bg-violet-200">📷 Exporter</button>
+        <button onclick="exportRTF()" class="toolbar-btn bg-violet-100 text-violet-700 hover:bg-violet-200">📄 Export RTF</button>
+        <button onclick="exportPDF()" class="toolbar-btn bg-violet-100 text-violet-700 hover:bg-violet-200">📑 Export PDF</button>
     </div>
 
     <!-- Mindmap Container -->
@@ -191,12 +192,20 @@ foreach ($participantIds as $pid) {
 
     <!-- Modal Edition -->
     <div id="editModal" class="modal hidden">
-        <div class="bg-white rounded-xl shadow-xl p-6 w-96">
+        <div class="bg-white rounded-xl shadow-xl p-6 w-[480px] max-h-[90vh] overflow-y-auto">
             <h3 class="text-lg font-bold mb-4">Modifier le noeud</h3>
             <input type="hidden" id="editNodeId">
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Texte</label>
                 <input type="text" id="editNodeText" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500" maxlength="100">
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Note (description)</label>
+                <textarea id="editNodeNote" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 h-20" placeholder="Description detaillee..."></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Lien vers fichier (URL)</label>
+                <input type="url" id="editNodeFileUrl" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500" placeholder="https://...">
             </div>
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Couleur</label>
@@ -297,16 +306,29 @@ foreach ($participantIds as $pid) {
             el.style.color = colorClass.text;
             el.style.borderColor = colorClass.border;
 
+            // Indicateurs note et lien
+            const hasNote = node.note && node.note.trim();
+            const hasFile = node.file_url && node.file_url.trim();
+            const indicators = [];
+            if (hasNote) indicators.push('<span title="A une note" style="cursor:help">📝</span>');
+            if (hasFile) indicators.push(`<a href="${escapeHtml(node.file_url)}" target="_blank" title="Ouvrir le lien" onclick="event.stopPropagation()" style="text-decoration:none">🔗</a>`);
+            const indicatorHtml = indicators.length ? `<span class="node-indicators" style="margin-left:4px;font-size:12px">${indicators.join('')}</span>` : '';
+
             // Contenu
             const iconHtml = node.icon && icons[node.icon] ? `<span class="node-icon">${icons[node.icon].emoji}</span>` : '';
             el.innerHTML = `
-                ${iconHtml}<span class="node-text">${escapeHtml(node.text)}</span>
+                ${iconHtml}<span class="node-text">${escapeHtml(node.text)}</span>${indicatorHtml}
                 <div class="node-actions">
                     <button class="node-btn bg-green-500 text-white" onclick="addChild(${node.id})" title="Ajouter enfant">+</button>
                     <button class="node-btn bg-blue-500 text-white" onclick="editNode(${node.id})" title="Modifier">✏️</button>
                     ${!node.is_root ? `<button class="node-btn bg-red-500 text-white" onclick="deleteNode(${node.id})" title="Supprimer">×</button>` : ''}
                 </div>
             `;
+
+            // Tooltip pour la note
+            if (hasNote) {
+                el.title = node.note;
+            }
 
             // Drag & drop
             setupDrag(el, node);
@@ -496,6 +518,8 @@ foreach ($participantIds as $pid) {
             const node = nodes.find(n => n.id == nodeId);
             document.getElementById('editNodeId').value = nodeId;
             document.getElementById('editNodeText').value = node.text;
+            document.getElementById('editNodeNote').value = node.note || '';
+            document.getElementById('editNodeFileUrl').value = node.file_url || '';
             editColor = node.color || 'blue';
             editIcon = node.icon || null;
 
@@ -531,9 +555,11 @@ foreach ($participantIds as $pid) {
         function saveNodeEdit() {
             const id = document.getElementById('editNodeId').value;
             const text = document.getElementById('editNodeText').value.trim();
+            const note = document.getElementById('editNodeNote').value.trim();
+            const fileUrl = document.getElementById('editNodeFileUrl').value.trim();
             if (!text) return;
 
-            apiCall('update', {id: id, text: text, color: editColor, icon: editIcon});
+            apiCall('update', {id: id, text: text, note: note, file_url: fileUrl, color: editColor, icon: editIcon});
             closeEditModal();
         }
 
@@ -595,9 +621,132 @@ foreach ($participantIds as $pid) {
             }, 2000);
         }
 
-        // Export image
-        function exportImage() {
-            alert('Pour exporter: utilisez la fonction capture d\'ecran de votre navigateur (Ctrl+Shift+S sur Firefox, ou extension)');
+        // Construire l'arbre hierarchique
+        function buildTree() {
+            const root = nodes.find(n => n.is_root);
+            if (!root) return null;
+
+            function getChildren(parentId) {
+                return nodes.filter(n => n.parent_id == parentId).map(n => ({
+                    ...n,
+                    children: getChildren(n.id)
+                }));
+            }
+
+            return {
+                ...root,
+                children: getChildren(root.id)
+            };
+        }
+
+        // Export RTF (telechargement direct)
+        function exportRTF() {
+            const tree = buildTree();
+            if (!tree) return alert('Aucune donnee a exporter');
+
+            let rtf = '{\\rtf1\\ansi\\deff0 {\\fonttbl{\\f0 Arial;}}\n';
+            rtf += '{\\colortbl;\\red0\\green0\\blue0;\\red100\\green100\\blue100;}\n';
+            rtf += '\\f0\\fs24\n';
+            rtf += '\\b Carte Mentale\\b0\\par\\par\n';
+
+            function addNode(node, level) {
+                const indent = '\\tab '.repeat(level);
+                const icon = node.icon && icons[node.icon] ? icons[node.icon].emoji + ' ' : '';
+                const bullet = level === 0 ? '\\b ' : '• ';
+                const endBold = level === 0 ? '\\b0' : '';
+
+                rtf += `${indent}${bullet}${icon}${node.text}${endBold}\\par\n`;
+
+                if (node.note) {
+                    rtf += `${indent}\\tab {\\i\\cf2 ${node.note}}\\par\n`;
+                }
+                if (node.file_url) {
+                    rtf += `${indent}\\tab {\\cf2 Lien: ${node.file_url}}\\par\n`;
+                }
+
+                if (node.children) {
+                    node.children.forEach(child => addNode(child, level + 1));
+                }
+            }
+
+            addNode(tree, 0);
+            rtf += '}';
+
+            // Telecharger
+            const blob = new Blob([rtf], {type: 'application/rtf'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'carte-mentale.rtf';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Export PDF (via fenetre d'impression)
+        function exportPDF() {
+            const tree = buildTree();
+            if (!tree) return alert('Aucune donnee a exporter');
+
+            // Creer le contenu HTML pour l'impression
+            let html = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Carte Mentale - Export</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 40px; }
+                        h1 { color: #8b5cf6; margin-bottom: 20px; }
+                        ul { list-style-type: none; padding-left: 25px; }
+                        li { margin: 8px 0; }
+                        .node-text { font-weight: 500; }
+                        .node-root { font-size: 18px; font-weight: bold; color: #8b5cf6; }
+                        .node-note { color: #666; font-style: italic; font-size: 0.9em; margin-left: 20px; display: block; }
+                        .node-link { color: #3b82f6; font-size: 0.85em; margin-left: 20px; display: block; }
+                        .node-icon { margin-right: 5px; }
+                        @media print {
+                            body { margin: 20px; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h1>Carte Mentale</h1>
+            `;
+
+            function renderNode(node, isRoot = false) {
+                const icon = node.icon && icons[node.icon] ? `<span class="node-icon">${icons[node.icon].emoji}</span>` : '';
+                const textClass = isRoot ? 'node-root' : 'node-text';
+                let nodeHtml = `<li><span class="${textClass}">${icon}${escapeHtml(node.text)}</span>`;
+
+                if (node.note) {
+                    nodeHtml += `<span class="node-note">📝 ${escapeHtml(node.note)}</span>`;
+                }
+                if (node.file_url) {
+                    nodeHtml += `<span class="node-link">🔗 <a href="${escapeHtml(node.file_url)}">${escapeHtml(node.file_url)}</a></span>`;
+                }
+
+                if (node.children && node.children.length > 0) {
+                    nodeHtml += '<ul>';
+                    node.children.forEach(child => {
+                        nodeHtml += renderNode(child, false);
+                    });
+                    nodeHtml += '</ul>';
+                }
+
+                nodeHtml += '</li>';
+                return nodeHtml;
+            }
+
+            html += '<ul>' + renderNode(tree, true) + '</ul>';
+            html += '</body></html>';
+
+            // Ouvrir dans nouvelle fenetre pour impression
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(html);
+            printWindow.document.close();
+            printWindow.onload = function() {
+                printWindow.print();
+            };
         }
 
         // Utils

@@ -59,6 +59,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Ajouter un noeud
                 $parentId = (int)($input['parent_id'] ?? 0);
                 $text = trim($input['text'] ?? '');
+                $note = trim($input['note'] ?? '');
+                $fileUrl = trim($input['file_url'] ?? '');
                 $color = $input['color'] ?? 'blue';
                 $icon = $input['icon'] ?? null;
                 $x = (float)($input['x'] ?? 0);
@@ -69,8 +71,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     exit;
                 }
 
-                $stmt = $db->prepare("INSERT INTO nodes (mindmap_id, parent_id, text, color, icon, pos_x, pos_y, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                $stmt->execute([$mindmapId, $parentId ?: null, $text, $color, $icon, $x, $y, $user['id'], $user['id']]);
+                $stmt = $db->prepare("INSERT INTO nodes (mindmap_id, parent_id, text, note, file_url, color, icon, pos_x, pos_y, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                $stmt->execute([$mindmapId, $parentId ?: null, $text, $note ?: null, $fileUrl ?: null, $color, $icon, $x, $y, $user['id'], $user['id']]);
 
                 updateMindmapTimestamp($mindmapId);
 
@@ -86,6 +88,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Modifier un noeud
                 $nodeId = (int)($input['id'] ?? 0);
                 $text = trim($input['text'] ?? '');
+                $note = trim($input['note'] ?? '');
+                $fileUrl = trim($input['file_url'] ?? '');
                 $color = $input['color'] ?? 'blue';
                 $icon = $input['icon'] ?? null;
 
@@ -94,8 +98,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     exit;
                 }
 
-                $stmt = $db->prepare("UPDATE nodes SET text = ?, color = ?, icon = ?, updated_by = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND mindmap_id = ?");
-                $stmt->execute([$text, $color, $icon, $user['id'], $nodeId, $mindmapId]);
+                $stmt = $db->prepare("UPDATE nodes SET text = ?, note = ?, file_url = ?, color = ?, icon = ?, updated_by = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND mindmap_id = ?");
+                $stmt->execute([$text, $note ?: null, $fileUrl ?: null, $color, $icon, $user['id'], $nodeId, $mindmapId]);
 
                 updateMindmapTimestamp($mindmapId);
 
