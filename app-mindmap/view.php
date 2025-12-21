@@ -200,8 +200,20 @@ $icons = getIcons();
                 el.style.backgroundColor = colorClass.bg;
                 el.style.color = colorClass.text;
                 el.style.borderColor = colorClass.border;
+
+                // Indicateurs note et lien
+                const hasNote = node.note && node.note.trim();
+                const hasFile = node.file_url && node.file_url.trim();
+                const indicators = [];
+                if (hasNote) indicators.push('<span title="A une note">📝</span>');
+                if (hasFile) indicators.push(`<a href="${escapeHtml(node.file_url)}" target="_blank" title="Ouvrir le lien">🔗</a>`);
+                const indicatorHtml = indicators.length ? `<span style="margin-left:4px;font-size:12px">${indicators.join('')}</span>` : '';
+
                 const iconHtml = node.icon && icons[node.icon] ? `<span class="node-icon">${icons[node.icon].emoji}</span>` : '';
-                el.innerHTML = `${iconHtml}<span>${escapeHtml(node.text)}</span>`;
+                el.innerHTML = `${iconHtml}<span>${escapeHtml(node.text)}</span>${indicatorHtml}`;
+
+                if (hasNote) el.title = node.note;
+
                 canvas.appendChild(el);
             });
         }
