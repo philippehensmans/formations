@@ -88,6 +88,7 @@ $icons = getIcons();
             top: 0;
             left: 0;
             pointer-events: none;
+            transform-origin: 0 0;
         }
     </style>
 </head>

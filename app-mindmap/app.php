@@ -114,6 +114,7 @@ foreach ($participantIds as $pid) {
             top: 0;
             left: 0;
             pointer-events: none;
+            transform-origin: 0 0;
         }
         .sync-indicator {
             animation: pulse 1s infinite;
