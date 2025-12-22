@@ -66,6 +66,8 @@ foreach ($participantIds as $pid) {
         .mindmap-container.grabbing { cursor: grabbing; }
         .mindmap-canvas {
             position: absolute;
+            top: 0;
+            left: 0;
             transform-origin: 0 0;
         }
         .node {
