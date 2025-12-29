@@ -6,6 +6,25 @@ function getDB() {
     $db = new PDO('sqlite:' . $dbPath);
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+    // Table des sessions
+    $db->exec("CREATE TABLE IF NOT EXISTS sessions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        code VARCHAR(10) UNIQUE NOT NULL,
+        nom VARCHAR(255) NOT NULL,
+        formateur_id INTEGER,
+        is_active INTEGER DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )");
+
+    // Table des participants
+    $db->exec("CREATE TABLE IF NOT EXISTS participants (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        session_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        joined_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(session_id, user_id)
+    )");
+
     // Table des scénarios (un par session, défini par le formateur)
     $db->exec("CREATE TABLE IF NOT EXISTS scenarios (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
