@@ -1,0 +1,444 @@
+{
+    "_metadata": {
+        "version": "1.0",
+        "last_updated": "2025-01-15",
+        "source": "Estimations basees sur EcoLogits et donnees constructeurs",
+        "notes": "Valeurs en grammes de CO2 par utilisation unique"
+    },
+    "categories": {
+        "communication": {
+            "nom": "Communication & Marketing",
+            "icon": "📢",
+            "color": "blue"
+        },
+        "redaction": {
+            "nom": "Rédaction & Documentation",
+            "icon": "📝",
+            "color": "purple"
+        },
+        "fundraising": {
+            "nom": "Fundraising & Donateurs",
+            "icon": "💰",
+            "color": "yellow"
+        },
+        "formation": {
+            "nom": "Formation & Sensibilisation",
+            "icon": "🎓",
+            "color": "green"
+        },
+        "analyse": {
+            "nom": "Analyse & Stratégie",
+            "icon": "📊",
+            "color": "red"
+        },
+        "beneficiaires": {
+            "nom": "Gestion des Bénéficiaires",
+            "icon": "👥",
+            "color": "teal"
+        },
+        "rh": {
+            "nom": "Ressources Humaines",
+            "icon": "👔",
+            "color": "indigo"
+        },
+        "admin": {
+            "nom": "Administration & Gestion",
+            "icon": "🏢",
+            "color": "gray"
+        },
+        "visuel": {
+            "nom": "Création Visuelle",
+            "icon": "🎨",
+            "color": "pink"
+        }
+    },
+    "use_cases": {
+        "newsletter_redaction": {
+            "categorie": "communication",
+            "nom": "Rédiger une newsletter",
+            "description": "Génération du contenu d'une newsletter mensuelle",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 2000,
+            "co2_grammes": 8.5,
+            "equivalent": "40 emails envoyés"
+        },
+        "post_linkedin": {
+            "categorie": "communication",
+            "nom": "Créer un post LinkedIn",
+            "description": "Rédaction d'un post professionnel avec accroche",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 500,
+            "co2_grammes": 2.1,
+            "equivalent": "10 emails envoyés"
+        },
+        "post_facebook": {
+            "categorie": "communication",
+            "nom": "Créer un post Facebook",
+            "description": "Rédaction d'un post engageant pour Facebook",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 400,
+            "co2_grammes": 1.7,
+            "equivalent": "8 emails envoyés"
+        },
+        "post_instagram": {
+            "categorie": "communication",
+            "nom": "Légende Instagram",
+            "description": "Rédaction d'une légende avec hashtags",
+            "modele_type": "GPT-3.5/Claude Haiku",
+            "tokens_estimes": 300,
+            "co2_grammes": 0.8,
+            "equivalent": "4 emails envoyés"
+        },
+        "communique_presse": {
+            "categorie": "communication",
+            "nom": "Communiqué de presse",
+            "description": "Rédaction d'un communiqué de presse complet",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 1500,
+            "co2_grammes": 6.4,
+            "equivalent": "30 emails envoyés"
+        },
+        "reponse_media": {
+            "categorie": "communication",
+            "nom": "Réponse aux médias",
+            "description": "Préparer des éléments de langage pour interview",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 1000,
+            "co2_grammes": 4.3,
+            "equivalent": "20 emails envoyés"
+        },
+        "rapport_activite": {
+            "categorie": "redaction",
+            "nom": "Rapport d'activité annuel",
+            "description": "Rédaction complète d'un rapport d'activité",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 8000,
+            "co2_grammes": 34.0,
+            "equivalent": "16 km en voiture"
+        },
+        "dossier_subvention": {
+            "categorie": "redaction",
+            "nom": "Dossier de subvention",
+            "description": "Aide à la rédaction d'une demande de financement",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 5000,
+            "co2_grammes": 21.3,
+            "equivalent": "10 km en voiture"
+        },
+        "compte_rendu_reunion": {
+            "categorie": "redaction",
+            "nom": "Compte-rendu de réunion",
+            "description": "Synthèse structurée d'une réunion",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 1500,
+            "co2_grammes": 6.4,
+            "equivalent": "30 emails envoyés"
+        },
+        "proces_verbal": {
+            "categorie": "redaction",
+            "nom": "PV d'assemblée générale",
+            "description": "Rédaction formelle d'un procès-verbal",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 3000,
+            "co2_grammes": 12.8,
+            "equivalent": "6 km en voiture"
+        },
+        "statuts_association": {
+            "categorie": "redaction",
+            "nom": "Révision des statuts",
+            "description": "Aide à la rédaction/modification des statuts",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 4000,
+            "co2_grammes": 17.0,
+            "equivalent": "8 km en voiture"
+        },
+        "lettre_remerciement": {
+            "categorie": "fundraising",
+            "nom": "Lettre de remerciement donateur",
+            "description": "Rédaction personnalisée de remerciements",
+            "modele_type": "GPT-3.5/Claude Haiku",
+            "tokens_estimes": 400,
+            "co2_grammes": 1.0,
+            "equivalent": "5 emails envoyés"
+        },
+        "appel_dons": {
+            "categorie": "fundraising",
+            "nom": "Appel aux dons",
+            "description": "Création d'un message d'appel aux dons",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 1000,
+            "co2_grammes": 4.3,
+            "equivalent": "20 emails envoyés"
+        },
+        "presentation_mecenat": {
+            "categorie": "fundraising",
+            "nom": "Dossier mécénat",
+            "description": "Création d'un dossier de présentation pour mécènes",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 4000,
+            "co2_grammes": 17.0,
+            "equivalent": "8 km en voiture"
+        },
+        "relance_donateur": {
+            "categorie": "fundraising",
+            "nom": "Email de relance donateur",
+            "description": "Rédaction d'un email de fidélisation",
+            "modele_type": "GPT-3.5/Claude Haiku",
+            "tokens_estimes": 300,
+            "co2_grammes": 0.8,
+            "equivalent": "4 emails envoyés"
+        },
+        "analyse_donateurs": {
+            "categorie": "fundraising",
+            "nom": "Analyse base donateurs",
+            "description": "Segmentation et analyse des données donateurs",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 3000,
+            "co2_grammes": 12.8,
+            "equivalent": "6 km en voiture"
+        },
+        "module_formation": {
+            "categorie": "formation",
+            "nom": "Créer un module de formation",
+            "description": "Conception d'un module pédagogique complet",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 5000,
+            "co2_grammes": 21.3,
+            "equivalent": "10 km en voiture"
+        },
+        "quiz_evaluation": {
+            "categorie": "formation",
+            "nom": "Quiz d'évaluation",
+            "description": "Création de questions et réponses",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 1500,
+            "co2_grammes": 6.4,
+            "equivalent": "30 emails envoyés"
+        },
+        "support_pedagogique": {
+            "categorie": "formation",
+            "nom": "Support pédagogique",
+            "description": "Création de fiches et supports de cours",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 3000,
+            "co2_grammes": 12.8,
+            "equivalent": "6 km en voiture"
+        },
+        "adaptation_public": {
+            "categorie": "formation",
+            "nom": "Adapter contenu au public",
+            "description": "Simplification ou adaptation de contenus existants",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 2000,
+            "co2_grammes": 8.5,
+            "equivalent": "40 emails envoyés"
+        },
+        "traduction_contenu": {
+            "categorie": "formation",
+            "nom": "Traduction de contenu",
+            "description": "Traduction d'un document de formation",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 2000,
+            "co2_grammes": 8.5,
+            "equivalent": "40 emails envoyés"
+        },
+        "analyse_impact": {
+            "categorie": "analyse",
+            "nom": "Analyse d'impact social",
+            "description": "Évaluation et mesure de l'impact des actions",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 4000,
+            "co2_grammes": 17.0,
+            "equivalent": "8 km en voiture"
+        },
+        "veille_sectorielle": {
+            "categorie": "analyse",
+            "nom": "Veille sectorielle",
+            "description": "Synthèse des actualités du secteur",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 2000,
+            "co2_grammes": 8.5,
+            "equivalent": "40 emails envoyés"
+        },
+        "benchmark_associations": {
+            "categorie": "analyse",
+            "nom": "Benchmark associations",
+            "description": "Analyse comparative avec d'autres structures",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 3000,
+            "co2_grammes": 12.8,
+            "equivalent": "6 km en voiture"
+        },
+        "plan_strategique": {
+            "categorie": "analyse",
+            "nom": "Plan stratégique",
+            "description": "Aide à l'élaboration du plan stratégique",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 6000,
+            "co2_grammes": 25.5,
+            "equivalent": "12 km en voiture"
+        },
+        "analyse_questionnaire": {
+            "categorie": "analyse",
+            "nom": "Analyse de questionnaires",
+            "description": "Synthèse des réponses à une enquête",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 3000,
+            "co2_grammes": 12.8,
+            "equivalent": "6 km en voiture"
+        },
+        "suivi_beneficiaire": {
+            "categorie": "beneficiaires",
+            "nom": "Fiche de suivi",
+            "description": "Création d'une fiche de suivi individuel",
+            "modele_type": "GPT-3.5/Claude Haiku",
+            "tokens_estimes": 500,
+            "co2_grammes": 1.3,
+            "equivalent": "6 emails envoyés"
+        },
+        "orientation_beneficiaire": {
+            "categorie": "beneficiaires",
+            "nom": "Conseils d'orientation",
+            "description": "Aide à l'orientation d'un bénéficiaire",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 1500,
+            "co2_grammes": 6.4,
+            "equivalent": "30 emails envoyés"
+        },
+        "bilan_parcours": {
+            "categorie": "beneficiaires",
+            "nom": "Bilan de parcours",
+            "description": "Synthèse du parcours d'accompagnement",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 2000,
+            "co2_grammes": 8.5,
+            "equivalent": "40 emails envoyés"
+        },
+        "courrier_administratif": {
+            "categorie": "beneficiaires",
+            "nom": "Courrier administratif",
+            "description": "Aide à la rédaction de courriers officiels",
+            "modele_type": "GPT-3.5/Claude Haiku",
+            "tokens_estimes": 600,
+            "co2_grammes": 1.5,
+            "equivalent": "7 emails envoyés"
+        },
+        "offre_emploi": {
+            "categorie": "rh",
+            "nom": "Rédiger une offre d'emploi",
+            "description": "Création d'une annonce de recrutement",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 800,
+            "co2_grammes": 3.4,
+            "equivalent": "16 emails envoyés"
+        },
+        "tri_candidatures": {
+            "categorie": "rh",
+            "nom": "Analyse de candidatures",
+            "description": "Aide au tri et à l'analyse des CV",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 1500,
+            "co2_grammes": 6.4,
+            "equivalent": "30 emails envoyés"
+        },
+        "guide_benevoles": {
+            "categorie": "rh",
+            "nom": "Guide d'accueil bénévoles",
+            "description": "Création d'un livret d'accueil",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 3000,
+            "co2_grammes": 12.8,
+            "equivalent": "6 km en voiture"
+        },
+        "evaluation_salarie": {
+            "categorie": "rh",
+            "nom": "Préparation entretien annuel",
+            "description": "Aide à la préparation d'une évaluation",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 1500,
+            "co2_grammes": 6.4,
+            "equivalent": "30 emails envoyés"
+        },
+        "email_professionnel": {
+            "categorie": "admin",
+            "nom": "Email professionnel",
+            "description": "Rédaction d'un email formel",
+            "modele_type": "GPT-3.5/Claude Haiku",
+            "tokens_estimes": 300,
+            "co2_grammes": 0.8,
+            "equivalent": "4 emails envoyés"
+        },
+        "reponse_partenaire": {
+            "categorie": "admin",
+            "nom": "Réponse à un partenaire",
+            "description": "Rédaction d'une réponse officielle",
+            "modele_type": "GPT-3.5/Claude Haiku",
+            "tokens_estimes": 500,
+            "co2_grammes": 1.3,
+            "equivalent": "6 emails envoyés"
+        },
+        "contrat_partenariat": {
+            "categorie": "admin",
+            "nom": "Convention de partenariat",
+            "description": "Aide à la rédaction d'une convention",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 2500,
+            "co2_grammes": 10.6,
+            "equivalent": "5 km en voiture"
+        },
+        "budget_previsionnel": {
+            "categorie": "admin",
+            "nom": "Budget prévisionnel",
+            "description": "Aide à la construction d'un budget",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 2000,
+            "co2_grammes": 8.5,
+            "equivalent": "40 emails envoyés"
+        },
+        "image_rs": {
+            "categorie": "visuel",
+            "nom": "Image pour réseaux sociaux",
+            "description": "Génération d'une image avec DALL-E/Midjourney",
+            "modele_type": "DALL-E 3",
+            "tokens_estimes": 0,
+            "co2_grammes": 35.0,
+            "equivalent": "17 km en voiture"
+        },
+        "illustration_rapport": {
+            "categorie": "visuel",
+            "nom": "Illustration pour rapport",
+            "description": "Création d'une illustration personnalisée",
+            "modele_type": "DALL-E 3",
+            "tokens_estimes": 0,
+            "co2_grammes": 35.0,
+            "equivalent": "17 km en voiture"
+        },
+        "logo_projet": {
+            "categorie": "visuel",
+            "nom": "Logo de projet",
+            "description": "Génération de propositions de logo",
+            "modele_type": "DALL-E 3",
+            "tokens_estimes": 0,
+            "co2_grammes": 45.0,
+            "equivalent": "21 km en voiture"
+        },
+        "infographie": {
+            "categorie": "visuel",
+            "nom": "Infographie",
+            "description": "Création d'une infographie avec aide IA",
+            "modele_type": "GPT-4 + DALL-E",
+            "tokens_estimes": 1000,
+            "co2_grammes": 40.0,
+            "equivalent": "19 km en voiture"
+        },
+        "chatbot_simple": {
+            "categorie": "beneficiaires",
+            "nom": "Question simple au chatbot",
+            "description": "Réponse courte à une question basique",
+            "modele_type": "GPT-3.5/Claude Haiku",
+            "tokens_estimes": 200,
+            "co2_grammes": 0.5,
+            "equivalent": "2 emails envoyés"
+        }
+    }
+}
