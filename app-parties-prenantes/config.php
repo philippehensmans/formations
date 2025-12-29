@@ -117,6 +117,13 @@ function initDatabase($db) {
     } catch (Exception $e) {
         // participant_id n'existe pas, c'est normal pour les nouvelles installations
     }
+
+    // Migration: ajouter user_id a participants si elle n'existe pas
+    try {
+        $db->exec("ALTER TABLE participants ADD COLUMN user_id INTEGER");
+    } catch (Exception $e) {
+        // Colonne existe deja
+    }
 }
 
 /**
