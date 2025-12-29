@@ -12,15 +12,31 @@ if (!isLoggedIn() || !isset($_SESSION['current_session_id'])) {
 
 $db = getDB();
 $user = getLoggedUser();
-$participantId = $_SESSION['participant_id'] ?? null;
-$sessionId = $_SESSION['current_session_id'];
-$sessionNom = $_SESSION['current_session_nom'] ?? '';
 
-// Vérifier que le participant existe
-if (!$participantId) {
+// Vérifier que l'utilisateur existe en base
+if (!$user) {
+    session_destroy();
     header('Location: login.php');
     exit;
 }
+
+$sessionId = $_SESSION['current_session_id'];
+$sessionNom = $_SESSION['current_session_nom'] ?? '';
+
+// Récupérer ou créer le participant pour cette session
+$stmt = $db->prepare("SELECT id FROM participants WHERE session_id = ? AND user_id = ?");
+$stmt->execute([$sessionId, $user['id']]);
+$participant = $stmt->fetch();
+
+if (!$participant) {
+    $stmt = $db->prepare("INSERT INTO participants (session_id, user_id, created_at) VALUES (?, ?, CURRENT_TIMESTAMP)");
+    $stmt->execute([$sessionId, $user['id']]);
+    $_SESSION['participant_id'] = $db->lastInsertId();
+} else {
+    $_SESSION['participant_id'] = $participant['id'];
+}
+
+$participantId = $_SESSION['participant_id'];
 
 // Charger l'analyse PESTEL
 $stmt = $db->prepare("SELECT * FROM analyses WHERE user_id = ? AND session_id = ?");
