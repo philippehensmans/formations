@@ -7,6 +7,9 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Load language support
+require_once __DIR__ . '/../../shared-auth/lang.php';
+
 define('DB_PATH', __DIR__ . '/../data/database.sqlite');
 
 /**

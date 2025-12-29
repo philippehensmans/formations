@@ -4,11 +4,11 @@ requireLoginWithSession();
 $user = getCurrentUser();
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="<?= getCurrentLanguage() ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cahier des Charges - <?= sanitize($user['username']) ?></title>
+    <title><?= t('cahier.title') ?> - <?= sanitize($user['username']) ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -33,21 +33,23 @@ $user = getCurrentUser();
                 <?php endif; ?>
             </span>
             <div class="flex items-center gap-3">
+                <?= renderLanguageSelector('lang-select') ?>
                 <label class="flex items-center gap-2 cursor-pointer text-sm">
                     <input type="checkbox" id="shareToggle" onchange="toggleShare()" class="w-4 h-4">
-                    Partager
+                    <?= t('cahier.share') ?>
                 </label>
                 <span id="saveStatus" class="text-xs opacity-80">...</span>
-                <a href="logout.php" class="bg-white/20 hover:bg-white/30 px-2 py-1 rounded text-xs">Deconnexion</a>
+                <a href="logout.php" class="bg-white/20 hover:bg-white/30 px-2 py-1 rounded text-xs"><?= t('app.logout') ?></a>
             </div>
         </div>
     </div>
+    <?= renderLanguageScript() ?>
 
     <div class="max-w-5xl mx-auto p-4 sm:p-6">
         <!-- En-tete -->
         <div class="bg-white rounded-xl shadow-lg p-6 mb-6 text-center">
-            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Cahier des Charges Associatif</h1>
-            <p class="text-gray-600">Completez votre cahier des charges etape par etape</p>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-2"><?= t('cahier.title') ?></h1>
+            <p class="text-gray-600"><?= t('cahier.subtitle') ?></p>
         </div>
 
         <!-- Indicateurs d'etapes -->
@@ -55,37 +57,37 @@ $user = getCurrentUser();
             <div class="flex justify-between items-center overflow-x-auto gap-2" id="stepIndicators">
                 <button onclick="goToStep(1)" class="step-indicator current flex flex-col items-center p-2 rounded-lg min-w-[80px]">
                     <span class="text-lg font-bold">1</span>
-                    <span class="text-xs">Projet</span>
+                    <span class="text-xs"><?= t('cahier.step_project') ?></span>
                 </button>
                 <div class="flex-1 h-1 bg-gray-200 min-w-[20px]"></div>
                 <button onclick="goToStep(2)" class="step-indicator flex flex-col items-center p-2 rounded-lg bg-gray-100 min-w-[80px]">
                     <span class="text-lg font-bold">2</span>
-                    <span class="text-xs">Vision</span>
+                    <span class="text-xs"><?= t('cahier.step_vision') ?></span>
                 </button>
                 <div class="flex-1 h-1 bg-gray-200 min-w-[20px]"></div>
                 <button onclick="goToStep(3)" class="step-indicator flex flex-col items-center p-2 rounded-lg bg-gray-100 min-w-[80px]">
                     <span class="text-lg font-bold">3</span>
-                    <span class="text-xs">Objectifs</span>
+                    <span class="text-xs"><?= t('cahier.step_objectives') ?></span>
                 </button>
                 <div class="flex-1 h-1 bg-gray-200 min-w-[20px]"></div>
                 <button onclick="goToStep(4)" class="step-indicator flex flex-col items-center p-2 rounded-lg bg-gray-100 min-w-[80px]">
                     <span class="text-lg font-bold">4</span>
-                    <span class="text-xs">Resultats</span>
+                    <span class="text-xs"><?= t('cahier.step_results') ?></span>
                 </button>
                 <div class="flex-1 h-1 bg-gray-200 min-w-[20px]"></div>
                 <button onclick="goToStep(5)" class="step-indicator flex flex-col items-center p-2 rounded-lg bg-gray-100 min-w-[80px]">
                     <span class="text-lg font-bold">5</span>
-                    <span class="text-xs">Risques</span>
+                    <span class="text-xs"><?= t('cahier.step_risks') ?></span>
                 </button>
                 <div class="flex-1 h-1 bg-gray-200 min-w-[20px]"></div>
                 <button onclick="goToStep(6)" class="step-indicator flex flex-col items-center p-2 rounded-lg bg-gray-100 min-w-[80px]">
                     <span class="text-lg font-bold">6</span>
-                    <span class="text-xs">Ressources</span>
+                    <span class="text-xs"><?= t('cahier.step_resources') ?></span>
                 </button>
                 <div class="flex-1 h-1 bg-gray-200 min-w-[20px]"></div>
                 <button onclick="goToStep(7)" class="step-indicator flex flex-col items-center p-2 rounded-lg bg-gray-100 min-w-[80px]">
                     <span class="text-lg font-bold">7</span>
-                    <span class="text-xs">Pilotage</span>
+                    <span class="text-xs"><?= t('cahier.step_steering') ?></span>
                 </button>
             </div>
         </div>
@@ -362,15 +364,30 @@ $user = getCurrentUser();
         <!-- Navigation -->
         <div class="flex justify-between mt-6">
             <button onclick="previousStep()" id="btnPrev" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-8 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                Precedent
+                <?= t('cahier.previous') ?>
             </button>
             <button onclick="nextStep()" id="btnNext" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg">
-                Suivant
+                <?= t('cahier.next') ?>
             </button>
         </div>
     </div>
 
     <script>
+        // Translations
+        const trans = {
+            saving: '<?= t('app.saving') ?>',
+            saved: '<?= t('app.saved') ?>',
+            error: '<?= t('app.error') ?>',
+            loaded: '<?= t('cahier.loaded') ?>',
+            shared: '<?= t('cahier.shared') ?>',
+            private: '<?= t('cahier.private') ?>',
+            next: '<?= t('cahier.next') ?>',
+            finish: '<?= t('cahier.finish') ?>',
+            resetConfirm: '<?= t('cahier.reset_confirm') ?>',
+            chooseObjective: '<?= t('cahier.choose_objective') ?>',
+            otherFree: '<?= t('cahier.other_free') ?>'
+        };
+
         let currentStep = 1;
         const totalSteps = 7;
         let compteurResultats = 0;
@@ -419,7 +436,7 @@ $user = getCurrentUser();
 
             // Mettre a jour les boutons
             document.getElementById('btnPrev').disabled = (currentStep === 1);
-            document.getElementById('btnNext').textContent = (currentStep === totalSteps) ? 'Terminer' : 'Suivant';
+            document.getElementById('btnNext').textContent = (currentStep === totalSteps) ? trans.finish : trans.next;
 
             // Scroll en haut
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -474,10 +491,10 @@ $user = getCurrentUser();
                     for(let i=0;i<3;i++) ajouterEtape();
                     ajouterLigneResultat();
                 }
-                updateSaveStatus('Charge');
+                updateSaveStatus(trans.loaded);
             } catch (error) {
                 console.error('Erreur:', error);
-                updateSaveStatus('Erreur');
+                updateSaveStatus(trans.error);
                 for(let i=0;i<2;i++) ajouterObjectifSpecifique();
                 for(let i=0;i<2;i++) ajouterContrainte();
                 for(let i=0;i<2;i++) ajouterStrategie();
@@ -493,7 +510,7 @@ $user = getCurrentUser();
         }
 
         async function saveToServer() {
-            updateSaveStatus('Sauvegarde...');
+            updateSaveStatus(trans.saving);
             try {
                 const data = collectAllData();
                 const response = await fetch('api.php?action=save', {
@@ -502,9 +519,9 @@ $user = getCurrentUser();
                     body: JSON.stringify(data)
                 });
                 const result = await response.json();
-                updateSaveStatus(result.success ? 'Sauvegarde' : 'Erreur');
+                updateSaveStatus(result.success ? trans.saved : trans.error);
             } catch (error) {
-                updateSaveStatus('Erreur');
+                updateSaveStatus(trans.error);
             }
         }
 
@@ -516,7 +533,7 @@ $user = getCurrentUser();
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ shared: isShared })
                 });
-                updateSaveStatus(isShared ? 'Partage' : 'Prive');
+                updateSaveStatus(isShared ? trans.shared : trans.private);
             } catch (error) {}
         }
 
@@ -585,13 +602,13 @@ $user = getCurrentUser();
 
         function getObjectifsOptions(selectedValue = '') {
             const objectifs = collecterDonnees('objectif-specifique');
-            let options = '<option value="">-- Choisir un objectif --</option>';
+            let options = `<option value="">${trans.chooseObjective}</option>`;
             objectifs.forEach((obj, i) => {
                 const truncated = obj.length > 50 ? obj.substring(0, 50) + '...' : obj;
                 const selected = obj === selectedValue ? 'selected' : '';
                 options += `<option value="${obj.replace(/"/g, '&quot;')}" ${selected}>${i+1}. ${truncated}</option>`;
             });
-            options += '<option value="__autre__">Autre (saisie libre)</option>';
+            options += `<option value="__autre__">${trans.otherFree}</option>`;
             return options;
         }
 
@@ -668,7 +685,7 @@ $user = getCurrentUser();
         }
 
         function reinitialiser() {
-            if (confirm('Reinitialiser le formulaire ?')) {
+            if (confirm(trans.resetConfirm)) {
                 document.getElementById('cahierForm').reset();
                 ['objectifsSpecifiquesContainer', 'contraintesContainer', 'strategiesContainer', 'etapesContainer'].forEach(id => document.getElementById(id).innerHTML = '');
                 document.getElementById('resultatsTableBody').innerHTML = '';

@@ -32,11 +32,11 @@ $partenaires = json_decode($carte['partenaires'] ?: '[]', true);
 $isSubmitted = $carte['is_submitted'] == 1;
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="<?= getCurrentLanguage() ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carte d'identite - <?= sanitize($participant['prenom']) ?> <?= sanitize($participant['nom']) ?></title>
+    <title><?= t('carte.title') ?> - <?= sanitize($participant['prenom']) ?> <?= sanitize($participant['nom']) ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -52,36 +52,38 @@ $isSubmitted = $carte['is_submitted'] == 1;
     <header class="no-print max-w-4xl mx-auto mb-4">
         <div class="bg-purple-900 text-white rounded-lg p-4 flex flex-wrap justify-between items-center gap-4">
             <div>
-                <h1 class="font-bold">Carte d'identite du projet</h1>
+                <h1 class="font-bold"><?= t('carte.title') ?></h1>
                 <p class="text-purple-200 text-sm">
                     <?= sanitize($participant['prenom']) ?> <?= sanitize($participant['nom']) ?>
                     | Session: <?= sanitize($participant['session_code']) ?>
                 </p>
             </div>
             <div class="flex items-center gap-3">
+                <?= renderLanguageSelector('lang-select') ?>
                 <span id="saveStatus" class="text-sm text-purple-200"></span>
                 <button onclick="manualSave()" class="bg-purple-700 hover:bg-purple-600 px-4 py-2 rounded text-sm">
-                    Sauvegarder
+                    <?= t('app.save') ?>
                 </button>
                 <a href="logout.php" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm">
-                    Deconnexion
+                    <?= t('app.logout') ?>
                 </a>
             </div>
         </div>
     </header>
+    <?= renderLanguageScript() ?>
 
     <?php if ($isSubmitted): ?>
         <div class="max-w-4xl mx-auto mb-4">
             <div class="bg-green-100 border-l-4 border-green-500 p-4 rounded">
-                <p class="text-green-700 font-medium">Travail marque comme termine (modifications toujours possibles)</p>
+                <p class="text-green-700 font-medium"><?= t('carte.work_submitted') ?></p>
             </div>
         </div>
     <?php endif; ?>
 
     <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-2xl p-6 md:p-8">
         <div class="mb-8 text-center">
-            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Carte d'identite du projet</h1>
-            <p class="text-gray-600 italic">Fiche outil - A completer par le porteur du projet</p>
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2"><?= t('carte.title') ?></h1>
+            <p class="text-gray-600 italic"><?= t('carte.subtitle') ?></p>
         </div>
 
         <form id="projectForm" class="space-y-6">

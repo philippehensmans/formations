@@ -34,11 +34,11 @@ $itemsContinuer = json_decode($retro['items_continuer'], true) ?: [];
 $isSubmitted = $retro['is_submitted'] == 1;
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="<?= getCurrentLanguage() ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stop Start Continue - <?= sanitize($participant['prenom']) ?> <?= sanitize($participant['nom']) ?></title>
+    <title><?= t('ssc.title') ?> - <?= sanitize($participant['prenom']) ?> <?= sanitize($participant['nom']) ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -61,24 +61,25 @@ $isSubmitted = $retro['is_submitted'] == 1;
         <div class="max-w-7xl mx-auto px-4 py-4">
             <div class="flex flex-wrap justify-between items-center gap-4">
                 <div>
-                    <h1 class="text-xl font-bold">Stop Start Continue</h1>
+                    <h1 class="text-xl font-bold"><?= t('ssc.title') ?></h1>
                     <p class="text-blue-200 text-sm">
                         <?= sanitize($participant['prenom']) ?> <?= sanitize($participant['nom']) ?>
                         <?php if ($participant['organisation']): ?>
                             - <?= sanitize($participant['organisation']) ?>
                         <?php endif; ?>
-                        | Session: <?= sanitize($participant['session_code']) ?>
+                        | <?= t('ssc.session') ?>: <?= sanitize($participant['session_code']) ?>
                     </p>
                 </div>
                 <div class="flex items-center gap-3">
+                    <?= renderLanguageSelector('lang-select') ?>
                     <span id="saveStatus" class="text-sm text-blue-200"></span>
                     <?php if (!$isSubmitted): ?>
                         <button onclick="manualSave()" class="bg-blue-700 hover:bg-blue-600 px-4 py-2 rounded text-sm">
-                            Sauvegarder
+                            <?= t('ssc.save') ?>
                         </button>
                     <?php endif; ?>
                     <a href="logout.php" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm">
-                        Deconnexion
+                        <?= t('ssc.logout') ?>
                     </a>
                 </div>
             </div>
@@ -87,7 +88,7 @@ $isSubmitted = $retro['is_submitted'] == 1;
 
     <?php if ($isSubmitted): ?>
         <div class="bg-green-100 border-l-4 border-green-500 p-4 max-w-7xl mx-auto mt-4">
-            <p class="text-green-700 font-medium">Travail marque comme termine (modifications toujours possibles)</p>
+            <p class="text-green-700 font-medium"><?= t('ssc.work_complete') ?></p>
         </div>
     <?php endif; ?>
 
@@ -593,5 +594,6 @@ $isSubmitted = $retro['is_submitted'] == 1;
             return div.innerHTML;
         }
     </script>
+    <?= renderLanguageScript() ?>
 </body>
 </html>
