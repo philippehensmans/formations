@@ -12,11 +12,13 @@
 
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/sessions.php';
+require_once __DIR__ . '/lang.php';
 
 $error = '';
 $showRegister = $showRegister ?? true;
 $appColor = $appColor ?? 'blue';
 $redirectAfterLogin = $redirectAfterLogin ?? 'index.php';
+$lang = getCurrentLanguage();
 
 // Si deja connecte, rediriger
 if (isLoggedIn() && isset($_SESSION['current_session_id'])) {
@@ -31,14 +33,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $sessionCode = strtoupper(trim($_POST['session_code'] ?? ''));
 
     if (empty($username) || empty($password)) {
-        $error = 'Veuillez remplir tous les champs.';
+        $error = t('auth.fill_required');
     } elseif (empty($sessionCode)) {
-        $error = 'Veuillez selectionner une session.';
+        $error = t('auth.session_error');
     } else {
         // Verifier la session
         $session = getSessionByCode($db, $sessionCode);
         if (!$session) {
-            $error = 'Session invalide ou inactive.';
+            $error = t('auth.session_error');
         } else {
             // Authentifier l'utilisateur
             $user = authenticateUser($username, $password);
@@ -64,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header('Location: ' . $redirectAfterLogin);
                 exit;
             } else {
-                $error = 'Identifiants incorrects.';
+                $error = t('auth.login_error');
             }
         }
     }
@@ -73,11 +75,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $sessions = getActiveSessions($db);
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="<?= $lang ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion - <?= h($appName) ?></title>
+    <title><?= t('auth.login') ?> - <?= h($appName) ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>body { font-family: 'Inter', sans-serif; }</style>
@@ -87,11 +89,16 @@ $sessions = getActiveSessions($db);
         <div class="text-center mb-8">
             <img src="../logo.png" alt="Logo" class="h-16 mx-auto mb-4">
             <h1 class="text-3xl font-bold text-white mb-2"><?= h($appName) ?></h1>
-            <p class="text-<?= $appColor ?>-200">Formation interactive</p>
+            <p class="text-<?= $appColor ?>-200"><?= t('common.interactive_training') ?></p>
         </div>
 
         <div class="bg-white rounded-2xl shadow-xl p-8">
-            <h2 class="text-xl font-semibold text-gray-800 mb-6 text-center">Connexion</h2>
+            <!-- Selecteur de langue -->
+            <div class="flex justify-end mb-4">
+                <?= renderLanguageSelector('text-sm border rounded px-2 py-1') ?>
+            </div>
+
+            <h2 class="text-xl font-semibold text-gray-800 mb-6 text-center"><?= t('auth.login') ?></h2>
 
             <?php if ($error): ?>
                 <div class="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
@@ -101,63 +108,64 @@ $sessions = getActiveSessions($db);
 
             <?php if (empty($sessions)): ?>
                 <div class="mb-4 p-4 bg-amber-50 border border-amber-200 text-amber-700 rounded-lg text-sm text-center">
-                    <p class="font-semibold">Aucune session disponible</p>
-                    <p class="text-xs mt-1">Le formateur doit d'abord creer une session.</p>
+                    <p class="font-semibold"><?= t('auth.no_session') ?></p>
+                    <p class="text-xs mt-1"><?= t('auth.no_session_detail') ?></p>
                     <a href="formateur.php" class="inline-block mt-2 text-<?= $appColor ?>-600 hover:text-<?= $appColor ?>-800 font-medium underline">
-                        Creer une session
+                        <?= t('trainer.create_session') ?>
                     </a>
                 </div>
             <?php endif; ?>
 
             <form method="POST" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Session de formation</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"><?= t('auth.training_session') ?></label>
                     <?= renderSessionDropdown($db, $_POST['session_code'] ?? '') ?>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nom d'utilisateur</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"><?= t('auth.username') ?></label>
                     <input type="text" name="username" required
                            class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-<?= $appColor ?>-500 focus:ring-2 focus:ring-<?= $appColor ?>-200"
-                           placeholder="Votre identifiant"
+                           placeholder="<?= t('auth.your_username') ?>"
                            value="<?= h($_POST['username'] ?? '') ?>">
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"><?= t('auth.password') ?></label>
                     <input type="password" name="password" required
                            class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-<?= $appColor ?>-500 focus:ring-2 focus:ring-<?= $appColor ?>-200"
-                           placeholder="Votre mot de passe">
+                           placeholder="<?= t('auth.your_password') ?>">
                 </div>
 
                 <button type="submit" <?= empty($sessions) ? 'disabled' : '' ?>
                         class="w-full py-3 px-4 bg-<?= $appColor ?>-600 hover:bg-<?= $appColor ?>-700 disabled:bg-gray-400 text-white font-semibold rounded-lg transition-colors">
-                    Se connecter
+                    <?= t('auth.connect') ?>
                 </button>
             </form>
 
             <?php if ($showRegister): ?>
             <div class="mt-6 text-center text-sm text-gray-600">
-                Pas encore de compte ?
+                <?= t('auth.no_account') ?>
                 <a href="register.php" class="text-<?= $appColor ?>-600 hover:text-<?= $appColor ?>-800 font-medium">
-                    S'inscrire
+                    <?= t('auth.sign_up') ?>
                 </a>
             </div>
             <?php endif; ?>
 
             <div class="mt-4 pt-4 border-t border-gray-200 text-center text-sm text-gray-600">
-                Vous souhaitez une session ?
+                <?= t('auth.want_session') ?>
                 <a href="https://k1m.be/contact/" target="_blank" class="text-<?= $appColor ?>-600 hover:text-<?= $appColor ?>-800 font-medium">
-                    Cliquez ici pour prendre contact avec nous.
+                    <?= t('auth.contact_us') ?>
                 </a>
             </div>
         </div>
 
         <div class="mt-6 text-center">
             <a href="formateur.php" class="text-<?= $appColor ?>-200 hover:text-white text-sm">
-                Acces formateur
+                <?= t('auth.trainer_access') ?>
             </a>
         </div>
     </div>
+    <?= renderLanguageScript() ?>
 </body>
 </html>

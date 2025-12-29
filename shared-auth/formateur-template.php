@@ -12,12 +12,14 @@
 
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/sessions.php';
+require_once __DIR__ . '/lang.php';
 
 $appColor = $appColor ?? 'blue';
 // Detecter automatiquement la cle de l'application si non definie
 $appKey = $appKey ?? basename(dirname($_SERVER['SCRIPT_FILENAME']));
 $error = '';
 $success = '';
+$lang = getCurrentLanguage();
 
 // Verifier si formateur connecte
 if (!isLoggedIn()) {
@@ -32,23 +34,23 @@ if (!isLoggedIn()) {
             header('Location: ' . $_SERVER['PHP_SELF']);
             exit;
         } else {
-            $error = 'Identifiants incorrects ou compte non formateur.';
+            $error = t('auth.login_error_trainer');
         }
     }
     ?>
     <!DOCTYPE html>
-    <html lang="fr">
+    <html lang="<?= $lang ?>">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Formateur - <?= h($appName) ?></title>
+        <title><?= t('trainer.title') ?> - <?= h($appName) ?></title>
         <script src="https://cdn.tailwindcss.com"></script>
     </head>
     <body class="min-h-screen bg-gray-100 flex items-center justify-center p-4">
         <div class="w-full max-w-md">
             <div class="text-center mb-6">
                 <img src="../logo.png" alt="Logo" class="h-16 mx-auto mb-4">
-                <h1 class="text-2xl font-bold text-gray-800">Espace Formateur</h1>
+                <h1 class="text-2xl font-bold text-gray-800"><?= t('trainer.title') ?></h1>
                 <p class="text-gray-600"><?= h($appName) ?></p>
             </div>
 
@@ -59,30 +61,36 @@ if (!isLoggedIn()) {
             <?php endif; ?>
 
             <div class="bg-white rounded-xl shadow-sm p-6">
+                <!-- Selecteur de langue -->
+                <div class="flex justify-end mb-4">
+                    <?= renderLanguageSelector('text-sm border rounded px-2 py-1') ?>
+                </div>
+
                 <form method="POST" class="space-y-4">
                     <input type="hidden" name="action" value="login">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Identifiant</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1"><?= t('auth.username') ?></label>
                         <input type="text" name="username" required
                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-<?= $appColor ?>-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1"><?= t('auth.password') ?></label>
                         <input type="password" name="password" required
                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-<?= $appColor ?>-500">
                     </div>
                     <button type="submit" class="w-full py-2 bg-<?= $appColor ?>-600 text-white rounded-lg hover:bg-<?= $appColor ?>-700">
-                        Connexion
+                        <?= t('auth.login') ?>
                     </button>
                 </form>
             </div>
 
             <div class="mt-4 text-center">
                 <a href="login.php" class="text-<?= $appColor ?>-600 hover:text-<?= $appColor ?>-800 text-sm">
-                    Retour a l'application
+                    <?= t('auth.back_to_app') ?>
                 </a>
             </div>
         </div>
+        <?= renderLanguageScript() ?>
     </body>
     </html>
     <?php
@@ -107,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         switch ($_POST['action']) {
             case 'create_session':
                 if (!$canCreateSessions) {
-                    $error = "Vous n'avez pas les droits pour creer des sessions.";
+                    $error = t('trainer.no_create_rights');
                     break;
                 }
                 $nom = trim($_POST['nom'] ?? '');
@@ -115,28 +123,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $code = generateSessionCode();
                     $stmt = $db->prepare("INSERT INTO sessions (code, nom, formateur_id, is_active, created_at) VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)");
                     $stmt->execute([$code, $nom, $user['id']]);
-                    $success = "Session creee avec le code: $code";
+                    $success = t('trainer.session_created', ['code' => $code]);
                 }
                 break;
 
             case 'toggle_session':
                 $sessionId = (int)($_POST['session_id'] ?? 0);
                 if (!canAccessSession($appKey, $sessionId)) {
-                    $error = "Acces refuse a cette session.";
+                    $error = t('trainer.access_denied');
                     break;
                 }
                 toggleSession($db, $sessionId);
-                $success = "Statut de la session modifie.";
+                $success = t('trainer.session_status_changed');
                 break;
 
             case 'delete_session':
                 $sessionId = (int)($_POST['session_id'] ?? 0);
                 if (!canAccessSession($appKey, $sessionId)) {
-                    $error = "Acces refuse a cette session.";
+                    $error = t('trainer.access_denied');
                     break;
                 }
                 deleteSession($db, $sessionId);
-                $success = "Session supprimee.";
+                $success = t('trainer.session_deleted');
                 break;
 
             case 'logout':
@@ -170,7 +178,7 @@ if (isset($_GET['session'])) {
     $sessionId = (int)$_GET['session'];
     // Verifier l'acces a cette session
     if (!canAccessSession($appKey, $sessionId)) {
-        $error = "Acces refuse a cette session.";
+        $error = t('trainer.access_denied');
     } else {
         $selectedSession = getSessionById($db, $sessionId);
     }
@@ -194,11 +202,11 @@ if (isset($_GET['session'])) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="<?= $lang ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formateur - <?= h($appName) ?></title>
+    <title><?= t('trainer.title') ?> - <?= h($appName) ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="min-h-screen bg-gray-100">
@@ -206,15 +214,16 @@ if (isset($_GET['session'])) {
         <div class="max-w-7xl mx-auto px-4 py-4">
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-xl font-bold text-gray-900">Espace Formateur</h1>
+                    <h1 class="text-xl font-bold text-gray-900"><?= t('trainer.title') ?></h1>
                     <p class="text-sm text-gray-500"><?= h($appName) ?> - <?= h($user['username']) ?></p>
                 </div>
-                <div class="flex gap-3">
-                    <a href="login.php" class="px-4 py-2 text-gray-600 hover:text-gray-800">Application</a>
+                <div class="flex gap-3 items-center">
+                    <?= renderLanguageSelector('text-sm border rounded px-2 py-1') ?>
+                    <a href="login.php" class="px-4 py-2 text-gray-600 hover:text-gray-800"><?= t('trainer.application') ?></a>
                     <form method="POST" class="inline">
                         <input type="hidden" name="action" value="logout">
                         <button type="submit" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
-                            Deconnexion
+                            <?= t('auth.logout') ?>
                         </button>
                     </form>
                 </div>
@@ -238,13 +247,13 @@ if (isset($_GET['session'])) {
         <?php if ($canCreateSessions): ?>
         <!-- Creer une session -->
         <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
-            <h2 class="font-semibold text-gray-800 mb-4">Creer une nouvelle session</h2>
+            <h2 class="font-semibold text-gray-800 mb-4"><?= t('trainer.create_new_session') ?></h2>
             <form method="POST" class="flex gap-4">
                 <input type="hidden" name="action" value="create_session">
-                <input type="text" name="nom" placeholder="Nom de la session (ex: Formation Mars 2025)" required
+                <input type="text" name="nom" placeholder="<?= t('trainer.session_name_placeholder') ?>" required
                        class="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-<?= $appColor ?>-500">
                 <button type="submit" class="px-6 py-2 bg-<?= $appColor ?>-600 text-white rounded-lg hover:bg-<?= $appColor ?>-700">
-                    Creer
+                    <?= t('trainer.create') ?>
                 </button>
             </form>
         </div>
@@ -252,8 +261,8 @@ if (isset($_GET['session'])) {
         <!-- Info acces restreint -->
         <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
             <p class="text-yellow-800 text-sm">
-                <span class="font-medium">Acces restreint:</span>
-                Vous avez acces uniquement aux sessions qui vous ont ete affectees.
+                <span class="font-medium"><?= t('trainer.restricted_access') ?>:</span>
+                <?= t('trainer.restricted_access_msg') ?>
             </p>
         </div>
         <?php endif; ?>
@@ -262,7 +271,7 @@ if (isset($_GET['session'])) {
             <!-- Liste des sessions -->
             <div class="bg-white rounded-xl shadow-sm overflow-hidden">
                 <div class="bg-gray-50 p-4 border-b font-semibold text-gray-700">
-                    Sessions (<?= count($sessions) ?>)
+                    <?= t('trainer.sessions') ?> (<?= count($sessions) ?>)
                 </div>
                 <div class="divide-y max-h-96 overflow-y-auto">
                     <?php foreach ($sessions as $session): ?>
@@ -274,7 +283,7 @@ if (isset($_GET['session'])) {
                                     <div class="text-xs text-gray-400 mt-1">
                                         <?= date('d/m/Y', strtotime($session['created_at'])) ?>
                                         <?php if (!$session['is_active']): ?>
-                                            <span class="ml-2 px-2 py-0.5 bg-gray-200 text-gray-600 rounded">Inactive</span>
+                                            <span class="ml-2 px-2 py-0.5 bg-gray-200 text-gray-600 rounded"><?= t('trainer.inactive') ?></span>
                                         <?php endif; ?>
                                     </div>
                                 </a>
@@ -282,11 +291,11 @@ if (isset($_GET['session'])) {
                                     <form method="POST" class="inline">
                                         <input type="hidden" name="action" value="toggle_session">
                                         <input type="hidden" name="session_id" value="<?= $session['id'] ?>">
-                                        <button type="submit" class="p-1 text-gray-400 hover:text-gray-600" title="<?= $session['is_active'] ? 'Desactiver' : 'Activer' ?>">
+                                        <button type="submit" class="p-1 text-gray-400 hover:text-gray-600" title="<?= $session['is_active'] ? t('trainer.deactivate') : t('trainer.activate') ?>">
                                             <?= $session['is_active'] ? '⏸' : '▶' ?>
                                         </button>
                                     </form>
-                                    <form method="POST" class="inline" onsubmit="return confirm('Supprimer cette session?')">
+                                    <form method="POST" class="inline" onsubmit="return confirm('<?= t('trainer.delete_confirm') ?>')">
                                         <input type="hidden" name="action" value="delete_session">
                                         <input type="hidden" name="session_id" value="<?= $session['id'] ?>">
                                         <button type="submit" class="p-1 text-red-400 hover:text-red-600">🗑</button>
@@ -297,7 +306,7 @@ if (isset($_GET['session'])) {
                     <?php endforeach; ?>
                     <?php if (empty($sessions)): ?>
                         <div class="p-8 text-center text-gray-500">
-                            Aucune session
+                            <?= t('trainer.no_sessions') ?>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -307,21 +316,21 @@ if (isset($_GET['session'])) {
             <div class="md:col-span-2 bg-white rounded-xl shadow-sm overflow-hidden">
                 <?php if ($selectedSession): ?>
                     <div class="bg-gray-50 p-4 border-b">
-                        <span class="font-semibold text-gray-700">Participants</span>
+                        <span class="font-semibold text-gray-700"><?= t('trainer.participants') ?></span>
                         <span class="text-gray-500">- Session <?= h($selectedSession['code']) ?></span>
                         <span class="ml-2 px-2 py-1 bg-<?= $appColor ?>-100 text-<?= $appColor ?>-700 rounded text-sm"><?= count($participants) ?></span>
                     </div>
                     <div class="p-4">
                         <?php if (empty($participants)): ?>
-                            <p class="text-gray-500 text-center py-8">Aucun participant dans cette session</p>
+                            <p class="text-gray-500 text-center py-8"><?= t('trainer.no_participant_in_session') ?></p>
                         <?php else: ?>
                             <table class="w-full text-sm">
                                 <thead>
                                     <tr class="border-b">
-                                        <th class="text-left py-2">Participant</th>
-                                        <th class="text-left py-2">Organisation</th>
-                                        <th class="text-left py-2">Inscription</th>
-                                        <th class="text-center py-2">Actions</th>
+                                        <th class="text-left py-2"><?= t('trainer.participant') ?></th>
+                                        <th class="text-left py-2"><?= t('auth.organisation') ?></th>
+                                        <th class="text-left py-2"><?= t('trainer.registration_date') ?></th>
+                                        <th class="text-center py-2"><?= t('common.actions') ?></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -337,7 +346,7 @@ if (isset($_GET['session'])) {
                                                 <a href="view.php?id=<?= $p['id'] ?>"
                                                    class="inline-block px-3 py-1 bg-<?= $appColor ?>-600 text-white rounded hover:bg-<?= $appColor ?>-700 text-xs"
                                                    target="_blank">
-                                                    Voir
+                                                    <?= t('common.view') ?>
                                                 </a>
                                             </td>
                                         </tr>
@@ -348,11 +357,12 @@ if (isset($_GET['session'])) {
                     </div>
                 <?php else: ?>
                     <div class="flex items-center justify-center h-64 text-gray-400">
-                        Selectionnez une session pour voir les participants
+                        <?= t('trainer.select_session_view') ?>
                     </div>
                 <?php endif; ?>
             </div>
         </div>
     </main>
+    <?= renderLanguageScript() ?>
 </body>
 </html>
