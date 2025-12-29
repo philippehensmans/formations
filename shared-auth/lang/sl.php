@@ -206,6 +206,7 @@ return [
         'submit' => 'Oddaj',
         'submit_confirm' => 'Potrditi oddajo?',
         'mark_complete' => 'Oznaci kot dokoncano',
+        'marked_complete' => 'Delo oznaceno kot dokoncano!',
         'export_excel' => 'Izvozi Excel',
         'export_word' => 'Izvozi Word',
         'export_json' => 'JSON',

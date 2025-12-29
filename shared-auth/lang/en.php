@@ -206,6 +206,7 @@ return [
         'submit' => 'Submit',
         'submit_confirm' => 'Confirm submission?',
         'mark_complete' => 'Mark complete',
+        'marked_complete' => 'Work marked as complete!',
         'export_excel' => 'Export Excel',
         'export_word' => 'Export Word',
         'export_json' => 'JSON',
