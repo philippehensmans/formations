@@ -293,6 +293,8 @@ return [
     // SWOT
     'swot' => [
         'title' => 'SWOT/TOWS Analysis',
+        'swot_title' => 'SWOT Analysis',
+        'tows_title' => 'TOWS Analysis',
         'strengths' => 'Strengths',
         'weaknesses' => 'Weaknesses',
         'opportunities' => 'Opportunities',
@@ -301,6 +303,114 @@ return [
         'external' => 'External',
         'positive' => 'Positive',
         'negative' => 'Negative',
+        'subtitle' => 'Strategic analysis tool for associations and non-profit organizations',
+        'tows_subtitle' => 'Strategic matrix: Transform your SWOT into concrete action plans',
+
+        // Status
+        'draft' => 'Draft',
+        'submitted' => 'Submitted',
+        'logout' => 'Logout',
+
+        // Save indicator
+        'saving' => 'Saving...',
+        'save_ok' => 'Saved',
+        'save_error' => 'Save error',
+
+        // Buttons
+        'export_analysis' => 'Export analysis',
+        'clear_all' => 'Clear all',
+        'submit_analysis' => 'Submit my analysis',
+        'add' => 'Add',
+        'back_to_swot' => 'Back to SWOT',
+        'go_to_tows' => 'Go to TOWS analysis',
+        'export_tows' => 'Export TOWS',
+        'clear_tows' => 'Clear TOWS',
+        'auto_suggestions' => 'Auto suggestions',
+        'print' => 'Print',
+        'export_pdf' => 'Export PDF',
+        'copy_text' => 'Copy text',
+
+        // Placeholders
+        'add_strength' => 'Add a strength...',
+        'add_weakness' => 'Add a weakness...',
+        'add_opportunity' => 'Add an opportunity...',
+        'add_threat' => 'Add a threat...',
+        'strategy_so' => 'Strengths + Opportunities strategy...',
+        'strategy_wo' => 'Weaknesses + Opportunities strategy...',
+        'strategy_st' => 'Strengths + Threats strategy...',
+        'strategy_wt' => 'Weaknesses + Threats strategy...',
+
+        // NGO Suggestions
+        'tips_for_ngo' => 'Tips for associations:',
+        'tips_general' => 'Consider your human resources (volunteers, employees), your social mission, your partnerships, your funding, your local presence, and the evolving regulatory context.',
+        'examples_for_ngo' => 'Examples for associations:',
+        'examples_strengths' => 'Engaged team, professional expertise, partner network, legitimacy with beneficiaries, local presence',
+        'examples_weaknesses' => 'Limited financial resources, grant dependency, lack of visibility, outdated digital tools',
+        'examples_opportunities' => 'New European funding, digitalization, public-private partnerships, evolving social needs',
+        'examples_threats' => 'Public subsidy cuts, competition from other actors, administrative complexity, economic crisis',
+
+        // Ready section
+        'ready_for_strategic' => 'Ready for strategic analysis?',
+        'complete_swot_first' => 'Once your SWOT is complete, move to TOWS analysis to define your action strategies.',
+        'action_plan' => 'Strategic action plan',
+        'prioritize_strategies' => 'Now prioritize your TOWS strategies and define an action plan with deadlines and responsible parties.',
+
+        // TOWS
+        'strategies_so' => 'SO Strategies',
+        'strategies_wo' => 'WO Strategies',
+        'strategies_st' => 'ST Strategies',
+        'strategies_wt' => 'WT Strategies',
+        'so_desc' => 'Strengths + Opportunities',
+        'wo_desc' => 'Weaknesses + Opportunities',
+        'st_desc' => 'Strengths + Threats',
+        'wt_desc' => 'Weaknesses + Threats',
+        'maxi_maxi' => 'Maxi-Maxi Strategy:',
+        'mini_maxi' => 'Mini-Maxi Strategy:',
+        'maxi_mini' => 'Maxi-Mini Strategy:',
+        'mini_mini' => 'Mini-Mini Strategy:',
+        'how_use_strengths_opp' => 'How to use your strengths to seize opportunities?',
+        'how_overcome_weaknesses' => 'How to overcome weaknesses to seize opportunities?',
+        'how_use_strengths_threats' => 'How to use your strengths to counter threats?',
+        'how_minimize_weaknesses' => 'How to minimize weaknesses in the face of threats?',
+        'tows_method' => 'TOWS method for associations:',
+        'tows_method_desc' => 'Cross your SWOT elements to identify 4 types of strategies: Maxi-Maxi (Strengths+Opportunities), Mini-Maxi (Weaknesses+Opportunities), Maxi-Mini (Strengths+Threats), Mini-Mini (Weaknesses+Threats).',
+        'based_on_strengths' => 'Based on your Strengths:',
+        'based_on_weaknesses' => 'Based on your Weaknesses:',
+        'based_on_opportunities' => 'Based on your Opportunities:',
+        'based_on_threats' => 'Based on your Threats:',
+        'add_swot_first' => 'Add elements to SWOT first',
+        'no_strength_defined' => 'No strength defined',
+        'no_weakness_defined' => 'No weakness defined',
+        'no_opportunity_defined' => 'No opportunity defined',
+        'no_threat_defined' => 'No threat defined',
+
+        // Export
+        'swot_export' => 'SWOT Analysis - Export',
+        'tows_export' => 'TOWS Analysis - Export',
+        'by' => 'By',
+        'date' => 'Date',
+        'no_element_added' => 'No element added',
+        'no_strategy_defined' => 'No strategy defined',
+
+        // Alerts
+        'enter_text_first' => 'Please enter text before adding an element.',
+        'enter_strategy_first' => 'Please enter text before adding a strategy.',
+        'confirm_clear_swot' => 'Are you sure you want to clear the entire SWOT analysis?',
+        'confirm_clear_tows' => 'Are you sure you want to clear the entire TOWS analysis?',
+        'complete_swot_quadrants' => 'Please complete your SWOT analysis with at least one element in each quadrant first.',
+        'complete_before_submit' => 'Please complete at least one element in each SWOT quadrant before submitting.',
+        'confirm_submit' => 'Do you want to submit your analysis? You can still modify it afterwards.',
+        'submit_success' => 'Your analysis has been submitted successfully!',
+        'suggestions_added' => 'Suggestions added! Customize them according to your context.',
+        'enough_strategies' => 'You already have enough strategies in each quadrant.',
+        'swot_copied' => 'SWOT analysis copied to clipboard!',
+        'tows_copied' => 'TOWS analysis copied to clipboard!',
+        'copy_error' => 'Error copying.',
+        'pdf_success' => 'PDF generated successfully!',
+        'pdf_tows_success' => 'TOWS PDF generated successfully!',
+        'pdf_error' => 'Error generating PDF.',
+        'pdf_tows_error' => 'Error generating TOWS PDF.',
+        'network_error' => 'Network error during submission.',
     ],
 
     // SMART Objectives

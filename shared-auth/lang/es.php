@@ -293,6 +293,8 @@ return [
     // SWOT
     'swot' => [
         'title' => 'Analisis SWOT/DAFO',
+        'swot_title' => 'Analisis DAFO',
+        'tows_title' => 'Analisis TOWS',
         'strengths' => 'Fortalezas',
         'weaknesses' => 'Debilidades',
         'opportunities' => 'Oportunidades',
@@ -301,6 +303,114 @@ return [
         'external' => 'Externo',
         'positive' => 'Positivo',
         'negative' => 'Negativo',
+        'subtitle' => 'Herramienta de analisis estrategico para asociaciones y organizaciones sin animo de lucro',
+        'tows_subtitle' => 'Matriz estrategica: Transforme su DAFO en planes de accion concretos',
+
+        // Status
+        'draft' => 'Borrador',
+        'submitted' => 'Enviado',
+        'logout' => 'Cerrar sesion',
+
+        // Save indicator
+        'saving' => 'Guardando...',
+        'save_ok' => 'Guardado',
+        'save_error' => 'Error al guardar',
+
+        // Buttons
+        'export_analysis' => 'Exportar analisis',
+        'clear_all' => 'Borrar todo',
+        'submit_analysis' => 'Enviar mi analisis',
+        'add' => 'Anadir',
+        'back_to_swot' => 'Volver al DAFO',
+        'go_to_tows' => 'Ir al analisis TOWS',
+        'export_tows' => 'Exportar TOWS',
+        'clear_tows' => 'Borrar TOWS',
+        'auto_suggestions' => 'Sugerencias automaticas',
+        'print' => 'Imprimir',
+        'export_pdf' => 'Exportar PDF',
+        'copy_text' => 'Copiar texto',
+
+        // Placeholders
+        'add_strength' => 'Anada una fortaleza...',
+        'add_weakness' => 'Anada una debilidad...',
+        'add_opportunity' => 'Anada una oportunidad...',
+        'add_threat' => 'Anada una amenaza...',
+        'strategy_so' => 'Estrategia Fortalezas + Oportunidades...',
+        'strategy_wo' => 'Estrategia Debilidades + Oportunidades...',
+        'strategy_st' => 'Estrategia Fortalezas + Amenazas...',
+        'strategy_wt' => 'Estrategia Debilidades + Amenazas...',
+
+        // NGO Suggestions
+        'tips_for_ngo' => 'Consejos para asociaciones:',
+        'tips_general' => 'Piense en sus recursos humanos (voluntarios, empleados), su mision social, sus alianzas, su financiacion, su presencia local y la evolucion del contexto normativo.',
+        'examples_for_ngo' => 'Ejemplos para asociaciones:',
+        'examples_strengths' => 'Equipo comprometido, experiencia profesional, red de socios, legitimidad ante los beneficiarios, presencia local',
+        'examples_weaknesses' => 'Recursos financieros limitados, dependencia de subvenciones, falta de visibilidad, herramientas digitales obsoletas',
+        'examples_opportunities' => 'Nuevos financiamientos europeos, digitalizacion, alianzas publico-privadas, evolucion de las necesidades sociales',
+        'examples_threats' => 'Reduccion de subsidios publicos, competencia de otros actores, complejidad administrativa, crisis economica',
+
+        // Ready section
+        'ready_for_strategic' => 'Listo para el analisis estrategico?',
+        'complete_swot_first' => 'Una vez completado su DAFO, pase al analisis TOWS para definir sus estrategias de accion.',
+        'action_plan' => 'Plan de accion estrategico',
+        'prioritize_strategies' => 'Ahora priorice sus estrategias TOWS y defina un plan de accion con plazos y responsables.',
+
+        // TOWS
+        'strategies_so' => 'Estrategias FO',
+        'strategies_wo' => 'Estrategias DO',
+        'strategies_st' => 'Estrategias FA',
+        'strategies_wt' => 'Estrategias DA',
+        'so_desc' => 'Fortalezas + Oportunidades',
+        'wo_desc' => 'Debilidades + Oportunidades',
+        'st_desc' => 'Fortalezas + Amenazas',
+        'wt_desc' => 'Debilidades + Amenazas',
+        'maxi_maxi' => 'Estrategia Maxi-Maxi:',
+        'mini_maxi' => 'Estrategia Mini-Maxi:',
+        'maxi_mini' => 'Estrategia Maxi-Mini:',
+        'mini_mini' => 'Estrategia Mini-Mini:',
+        'how_use_strengths_opp' => 'Como usar sus fortalezas para aprovechar las oportunidades?',
+        'how_overcome_weaknesses' => 'Como superar las debilidades para aprovechar las oportunidades?',
+        'how_use_strengths_threats' => 'Como usar sus fortalezas para contrarrestar las amenazas?',
+        'how_minimize_weaknesses' => 'Como minimizar las debilidades frente a las amenazas?',
+        'tows_method' => 'Metodo TOWS para asociaciones:',
+        'tows_method_desc' => 'Cruce sus elementos DAFO para identificar 4 tipos de estrategias: Maxi-Maxi (Fortalezas+Oportunidades), Mini-Maxi (Debilidades+Oportunidades), Maxi-Mini (Fortalezas+Amenazas), Mini-Mini (Debilidades+Amenazas).',
+        'based_on_strengths' => 'Basado en sus Fortalezas:',
+        'based_on_weaknesses' => 'Basado en sus Debilidades:',
+        'based_on_opportunities' => 'Basado en sus Oportunidades:',
+        'based_on_threats' => 'Basado en sus Amenazas:',
+        'add_swot_first' => 'Anada primero elementos al DAFO',
+        'no_strength_defined' => 'Ninguna fortaleza definida',
+        'no_weakness_defined' => 'Ninguna debilidad definida',
+        'no_opportunity_defined' => 'Ninguna oportunidad definida',
+        'no_threat_defined' => 'Ninguna amenaza definida',
+
+        // Export
+        'swot_export' => 'Analisis DAFO - Exportar',
+        'tows_export' => 'Analisis TOWS - Exportar',
+        'by' => 'Por',
+        'date' => 'Fecha',
+        'no_element_added' => 'Ningun elemento anadido',
+        'no_strategy_defined' => 'Ninguna estrategia definida',
+
+        // Alerts
+        'enter_text_first' => 'Por favor, introduzca texto antes de anadir un elemento.',
+        'enter_strategy_first' => 'Por favor, introduzca texto antes de anadir una estrategia.',
+        'confirm_clear_swot' => 'Esta seguro de que desea borrar todo el analisis DAFO?',
+        'confirm_clear_tows' => 'Esta seguro de que desea borrar todo el analisis TOWS?',
+        'complete_swot_quadrants' => 'Por favor, complete primero su analisis DAFO con al menos un elemento en cada cuadrante.',
+        'complete_before_submit' => 'Por favor, complete al menos un elemento en cada cuadrante DAFO antes de enviar.',
+        'confirm_submit' => 'Desea enviar su analisis? Podra modificarlo despues.',
+        'submit_success' => 'Su analisis ha sido enviado con exito!',
+        'suggestions_added' => 'Sugerencias anadidas! Personalicelas segun su contexto.',
+        'enough_strategies' => 'Ya tiene suficientes estrategias en cada cuadrante.',
+        'swot_copied' => 'Analisis DAFO copiado al portapapeles!',
+        'tows_copied' => 'Analisis TOWS copiado al portapapeles!',
+        'copy_error' => 'Error al copiar.',
+        'pdf_success' => 'PDF generado con exito!',
+        'pdf_tows_success' => 'PDF TOWS generado con exito!',
+        'pdf_error' => 'Error al generar el PDF.',
+        'pdf_tows_error' => 'Error al generar el PDF TOWS.',
+        'network_error' => 'Error de red durante el envio.',
     ],
 
     // Objetivos SMART

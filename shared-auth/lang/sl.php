@@ -293,6 +293,8 @@ return [
     // SWOT
     'swot' => [
         'title' => 'Analiza SWOT/TOWS',
+        'swot_title' => 'Analiza SWOT',
+        'tows_title' => 'Analiza TOWS',
         'strengths' => 'Prednosti',
         'weaknesses' => 'Slabosti',
         'opportunities' => 'Priloznosti',
@@ -301,6 +303,114 @@ return [
         'external' => 'Zunanje',
         'positive' => 'Pozitivno',
         'negative' => 'Negativno',
+        'subtitle' => 'Orodje za stratesko analizo za zdruzenja in neprofitne organizacije',
+        'tows_subtitle' => 'Strateska matrika: Pretvorite svoj SWOT v konkretne akcijske nacrte',
+
+        // Status
+        'draft' => 'Osnutek',
+        'submitted' => 'Oddano',
+        'logout' => 'Odjava',
+
+        // Save indicator
+        'saving' => 'Shranjevanje...',
+        'save_ok' => 'Shranjeno',
+        'save_error' => 'Napaka pri shranjevanju',
+
+        // Buttons
+        'export_analysis' => 'Izvozi analizo',
+        'clear_all' => 'Izbrisi vse',
+        'submit_analysis' => 'Oddaj mojo analizo',
+        'add' => 'Dodaj',
+        'back_to_swot' => 'Nazaj na SWOT',
+        'go_to_tows' => 'Pojdi na analizo TOWS',
+        'export_tows' => 'Izvozi TOWS',
+        'clear_tows' => 'Izbrisi TOWS',
+        'auto_suggestions' => 'Samodejni predlogi',
+        'print' => 'Natisni',
+        'export_pdf' => 'Izvozi PDF',
+        'copy_text' => 'Kopiraj besedilo',
+
+        // Placeholders
+        'add_strength' => 'Dodajte prednost...',
+        'add_weakness' => 'Dodajte slabost...',
+        'add_opportunity' => 'Dodajte priloznost...',
+        'add_threat' => 'Dodajte groznju...',
+        'strategy_so' => 'Strategija Prednosti + Priloznosti...',
+        'strategy_wo' => 'Strategija Slabosti + Priloznosti...',
+        'strategy_st' => 'Strategija Prednosti + Groznje...',
+        'strategy_wt' => 'Strategija Slabosti + Groznje...',
+
+        // NGO Suggestions
+        'tips_for_ngo' => 'Nasveti za zdruzenja:',
+        'tips_general' => 'Pomislite na svoje cloveske vire (prostovoljci, zaposleni), svojo druzbeno poslanstvo, partnerstva, financiranje, lokalno prisotnost in razvoj regulativnega okolja.',
+        'examples_for_ngo' => 'Primeri za zdruzenja:',
+        'examples_strengths' => 'Zavzeta ekipa, strokovna usposobljenost, mrezanje partnerjev, legitimnost pri upravicencih, lokalna prisotnost',
+        'examples_weaknesses' => 'Omejeni financni viri, odvisnost od subvencij, pomanjkanje prepoznavnosti, zastarela digitalna orodja',
+        'examples_opportunities' => 'Nova evropska sredstva, digitalizacija, javno-zasebna partnerstva, razvoj druzbenih potreb',
+        'examples_threats' => 'Zmanjsanje javnih subvencij, konkurenca drugih akterjev, administrativna kompleksnost, gospodarska kriza',
+
+        // Ready section
+        'ready_for_strategic' => 'Pripravljeni na stratesko analizo?',
+        'complete_swot_first' => 'Ko je vas SWOT zakljucen, pojdite na analizo TOWS, da dolocite svoje akcijske strategije.',
+        'action_plan' => 'Strateski akcijski nacrt',
+        'prioritize_strategies' => 'Zdaj prioritizirajte svoje strategije TOWS in dolocite akcijski nacrt z roki in odgovornimi osebami.',
+
+        // TOWS
+        'strategies_so' => 'Strategije SO',
+        'strategies_wo' => 'Strategije WO',
+        'strategies_st' => 'Strategije ST',
+        'strategies_wt' => 'Strategije WT',
+        'so_desc' => 'Prednosti + Priloznosti',
+        'wo_desc' => 'Slabosti + Priloznosti',
+        'st_desc' => 'Prednosti + Groznje',
+        'wt_desc' => 'Slabosti + Groznje',
+        'maxi_maxi' => 'Strategija Maxi-Maxi:',
+        'mini_maxi' => 'Strategija Mini-Maxi:',
+        'maxi_mini' => 'Strategija Maxi-Mini:',
+        'mini_mini' => 'Strategija Mini-Mini:',
+        'how_use_strengths_opp' => 'Kako uporabiti svoje prednosti za izkoriščanje priložnosti?',
+        'how_overcome_weaknesses' => 'Kako premagati slabosti za izkoristiti priloznosti?',
+        'how_use_strengths_threats' => 'Kako uporabiti svoje prednosti za obvladovanje grozenj?',
+        'how_minimize_weaknesses' => 'Kako zmanjsati slabosti v primeru grozenj?',
+        'tows_method' => 'Metoda TOWS za zdruzenja:',
+        'tows_method_desc' => 'Prekrizajte svoje elemente SWOT, da identificirate 4 vrste strategij: Maxi-Maxi (Prednosti+Priloznosti), Mini-Maxi (Slabosti+Priloznosti), Maxi-Mini (Prednosti+Groznje), Mini-Mini (Slabosti+Groznje).',
+        'based_on_strengths' => 'Na podlagi vasih Prednosti:',
+        'based_on_weaknesses' => 'Na podlagi vasih Slabosti:',
+        'based_on_opportunities' => 'Na podlagi vasih Priloznosti:',
+        'based_on_threats' => 'Na podlagi vasih Grozenj:',
+        'add_swot_first' => 'Najprej dodajte elemente v SWOT',
+        'no_strength_defined' => 'Nobena prednost ni dolocena',
+        'no_weakness_defined' => 'Nobena slabost ni dolocena',
+        'no_opportunity_defined' => 'Nobena priloznost ni dolocena',
+        'no_threat_defined' => 'Nobena groznja ni dolocena',
+
+        // Export
+        'swot_export' => 'Analiza SWOT - Izvoz',
+        'tows_export' => 'Analiza TOWS - Izvoz',
+        'by' => 'Avtor',
+        'date' => 'Datum',
+        'no_element_added' => 'Noben element ni dodan',
+        'no_strategy_defined' => 'Nobena strategija ni dolocena',
+
+        // Alerts
+        'enter_text_first' => 'Prosimo, vnesite besedilo pred dodajanjem elementa.',
+        'enter_strategy_first' => 'Prosimo, vnesite besedilo pred dodajanjem strategije.',
+        'confirm_clear_swot' => 'Ali ste prepricani, da zelite izbrisati celotno analizo SWOT?',
+        'confirm_clear_tows' => 'Ali ste prepricani, da zelite izbrisati celotno analizo TOWS?',
+        'complete_swot_quadrants' => 'Prosimo, najprej zakljucite svojo analizo SWOT z vsaj enim elementom v vsakem kvadrantu.',
+        'complete_before_submit' => 'Prosimo, pred oddajo izpolnite vsaj en element v vsakem kvadrantu SWOT.',
+        'confirm_submit' => 'Ali zelite oddati svojo analizo? Kasneje jo lahko se vedno spremenite.',
+        'submit_success' => 'Vasa analiza je bila uspesno oddana!',
+        'suggestions_added' => 'Predlogi dodani! Prilagodite jih glede na vas kontekst.',
+        'enough_strategies' => 'Ze imate dovolj strategij v vsakem kvadrantu.',
+        'swot_copied' => 'Analiza SWOT kopirana v odlozisce!',
+        'tows_copied' => 'Analiza TOWS kopirana v odlozisce!',
+        'copy_error' => 'Napaka pri kopiranju.',
+        'pdf_success' => 'PDF uspesno ustvarjen!',
+        'pdf_tows_success' => 'TOWS PDF uspesno ustvarjen!',
+        'pdf_error' => 'Napaka pri ustvarjanju PDF.',
+        'pdf_tows_error' => 'Napaka pri ustvarjanju TOWS PDF.',
+        'network_error' => 'Omrezna napaka med oddajo.',
     ],
 
     // SMART cilji
