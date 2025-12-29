@@ -72,6 +72,22 @@ function initDatabase($db) {
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )");
 
+    // Table des cartographies (format avec stakeholders)
+    $db->exec("CREATE TABLE IF NOT EXISTS cartographie (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        session_id INTEGER NOT NULL,
+        titre_projet TEXT DEFAULT '',
+        contexte TEXT DEFAULT '',
+        stakeholders_data TEXT DEFAULT '[]',
+        notes TEXT DEFAULT '',
+        completion_percent INTEGER DEFAULT 0,
+        is_submitted INTEGER DEFAULT 0,
+        submitted_at DATETIME,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )");
+
     // Migration: ajouter session_id si la colonne n'existe pas
     try {
         $db->exec("ALTER TABLE analyses ADD COLUMN session_id INTEGER");
@@ -125,4 +141,19 @@ function requireLoginWithSession() {
  */
 function requireAdmin() {
     requireFormateur();
+}
+
+/**
+ * Categories de parties prenantes
+ */
+function getCategories() {
+    return [
+        'membres' => ['label' => 'Membres', 'color' => '#e74c3c'],
+        'beneficiaires' => ['label' => 'Beneficiaires', 'color' => '#3498db'],
+        'partenaires' => ['label' => 'Partenaires', 'color' => '#27ae60'],
+        'financeurs' => ['label' => 'Financeurs', 'color' => '#f39c12'],
+        'autorites' => ['label' => 'Autorites', 'color' => '#9b59b6'],
+        'medias' => ['label' => 'Medias', 'color' => '#34495e'],
+        'autres' => ['label' => 'Autres', 'color' => '#95a5a6']
+    ];
 }

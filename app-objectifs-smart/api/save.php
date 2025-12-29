@@ -1,8 +1,9 @@
 <?php
 header('Content-Type: application/json');
-require_once '../config/database.php';
+require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../helpers.php';
 
-if (!isParticipantLoggedIn()) {
+if (!isLoggedIn() || !isset($_SESSION['current_session_id'])) {
     echo json_encode(['success' => false, 'error' => 'Non connecte']);
     exit;
 }
@@ -14,6 +15,8 @@ if (!$input) {
 }
 
 $db = getDB();
+$user = getLoggedUser();
+$sessionId = $_SESSION['current_session_id'];
 
 // Calculer completion
 $completion = 0;
@@ -67,7 +70,7 @@ $stmt = $db->prepare("UPDATE objectifs_smart SET
     etape3_creations = ?,
     completion_percent = ?,
     updated_at = CURRENT_TIMESTAMP
-    WHERE participant_id = ?");
+    WHERE user_id = ? AND session_id = ?");
 
 $stmt->execute([
     $input['etape_courante'] ?? 1,
@@ -75,7 +78,8 @@ $stmt->execute([
     json_encode($etape2),
     json_encode($etape3),
     $completion,
-    $_SESSION['participant_id']
+    $user['id'],
+    $sessionId
 ]);
 
 echo json_encode(['success' => true, 'completion' => $completion]);

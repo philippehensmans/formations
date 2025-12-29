@@ -2,43 +2,50 @@
 /**
  * Interface de travail - Cartographie des Parties Prenantes
  */
-require_once 'config/database.php';
-requireParticipant();
+require_once __DIR__ . '/config.php';
 
-$db = getDB();
-$participant = getCurrentParticipant();
-
-// Verifier que le participant existe
-if (!$participant) {
-    session_destroy();
-    header('Location: index.php');
+// Verifier l'authentification
+if (!isLoggedIn() || !isset($_SESSION['current_session_id'])) {
+    header('Location: login.php');
     exit;
 }
 
+$db = getDB();
+$user = getLoggedUser();
+
+if (!$user) {
+    session_destroy();
+    header('Location: login.php');
+    exit;
+}
+
+$sessionId = $_SESSION['current_session_id'];
+$sessionCode = $_SESSION['current_session_code'] ?? '';
+$sessionNom = $_SESSION['current_session_nom'] ?? '';
 $categories = getCategories();
 
 // Charger la cartographie
-$stmt = $db->prepare("SELECT * FROM cartographie WHERE participant_id = ?");
-$stmt->execute([$participant['id']]);
+$stmt = $db->prepare("SELECT * FROM cartographie WHERE user_id = ? AND session_id = ?");
+$stmt->execute([$user['id'], $sessionId]);
 $carto = $stmt->fetch();
 
 if (!$carto) {
-    $stmt = $db->prepare("INSERT INTO cartographie (participant_id, session_id, stakeholders_data) VALUES (?, ?, '[]')");
-    $stmt->execute([$participant['id'], $participant['session_id']]);
-    $stmt = $db->prepare("SELECT * FROM cartographie WHERE participant_id = ?");
-    $stmt->execute([$participant['id']]);
+    $stmt = $db->prepare("INSERT INTO cartographie (user_id, session_id, stakeholders_data) VALUES (?, ?, '[]')");
+    $stmt->execute([$user['id'], $sessionId]);
+    $stmt = $db->prepare("SELECT * FROM cartographie WHERE user_id = ? AND session_id = ?");
+    $stmt->execute([$user['id'], $sessionId]);
     $carto = $stmt->fetch();
 }
 
 $stakeholders = json_decode($carto['stakeholders_data'], true) ?: [];
-$isSubmitted = $carto['is_submitted'] == 1;
+$isSubmitted = ($carto['is_submitted'] ?? 0) == 1;
 ?>
 <!DOCTYPE html>
 <html lang="<?= getCurrentLanguage() ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= t('stakeholders.title') ?> - <?= sanitize($participant['prenom']) ?> <?= sanitize($participant['nom']) ?></title>
+    <title><?= t('stakeholders.title') ?> - <?= h($user['prenom']) ?> <?= h($user['nom']) ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -95,8 +102,8 @@ $isSubmitted = $carto['is_submitted'] == 1;
     <div class="bg-gray-900 text-white p-3 no-print sticky top-0 z-50">
         <div class="max-w-6xl mx-auto flex flex-wrap justify-between items-center gap-3">
             <div>
-                <span class="font-medium"><?= sanitize($participant['prenom']) ?> <?= sanitize($participant['nom']) ?></span>
-                <span class="text-gray-400 text-sm ml-2"><?= sanitize($participant['session_nom']) ?></span>
+                <span class="font-medium"><?= h($user['prenom']) ?> <?= h($user['nom']) ?></span>
+                <span class="text-gray-400 text-sm ml-2"><?= h($sessionNom) ?></span>
             </div>
             <div class="flex items-center gap-3">
                 <?= renderLanguageSelector('text-sm bg-gray-700 text-white px-2 py-1 rounded border border-gray-600') ?>

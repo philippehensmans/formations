@@ -2,32 +2,42 @@
 /**
  * Interface de travail - Objectifs SMART (3 etapes)
  */
-require_once 'config/database.php';
-requireParticipant();
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/helpers.php';
 
-$db = getDB();
-$participant = getCurrentParticipant();
-
-if (!$participant) {
-    session_destroy();
-    header('Location: index.php');
+// Verifier l'authentification
+if (!isLoggedIn() || !isset($_SESSION['current_session_id'])) {
+    header('Location: login.php');
     exit;
 }
 
-$stmt = $db->prepare("SELECT * FROM objectifs_smart WHERE participant_id = ?");
-$stmt->execute([$participant['id']]);
+$db = getDB();
+$user = getLoggedUser();
+
+if (!$user) {
+    session_destroy();
+    header('Location: login.php');
+    exit;
+}
+
+$sessionId = $_SESSION['current_session_id'];
+$sessionCode = $_SESSION['current_session_code'] ?? '';
+$sessionNom = $_SESSION['current_session_nom'] ?? '';
+
+$stmt = $db->prepare("SELECT * FROM objectifs_smart WHERE user_id = ? AND session_id = ?");
+$stmt->execute([$user['id'], $sessionId]);
 $data = $stmt->fetch();
 
 if (!$data) {
-    $stmt = $db->prepare("INSERT INTO objectifs_smart (participant_id, session_id) VALUES (?, ?)");
-    $stmt->execute([$participant['id'], $participant['session_id']]);
-    $stmt = $db->prepare("SELECT * FROM objectifs_smart WHERE participant_id = ?");
-    $stmt->execute([$participant['id']]);
+    $stmt = $db->prepare("INSERT INTO objectifs_smart (user_id, session_id) VALUES (?, ?)");
+    $stmt->execute([$user['id'], $sessionId]);
+    $stmt = $db->prepare("SELECT * FROM objectifs_smart WHERE user_id = ? AND session_id = ?");
+    $stmt->execute([$user['id'], $sessionId]);
     $data = $stmt->fetch();
 }
 
 $etapeCourante = $data['etape_courante'] ?? 1;
-$isSubmitted = $data['is_submitted'] == 1;
+$isSubmitted = ($data['is_submitted'] ?? 0) == 1;
 $objectifsAnalyse = getObjectifsAnalyse();
 $objectifsReform = getObjectifsReformulation();
 $smartHelp = getSmartHelp();
@@ -38,7 +48,7 @@ $exemples = getExemplesParDomaine();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= t('smart.title') ?> - <?= sanitize($participant['prenom']) ?></title>
+    <title><?= t('smart.title') ?> - <?= h($user['prenom']) ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -63,7 +73,7 @@ $exemples = getExemplesParDomaine();
         <div class="max-w-5xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-4">
             <div>
                 <h1 class="text-xl font-bold"><?= t('smart.title') ?></h1>
-                <p class="text-emerald-200 text-sm"><?= sanitize($participant['prenom']) ?> <?= sanitize($participant['nom']) ?> | <?= sanitize($participant['session_code']) ?></p>
+                <p class="text-emerald-200 text-sm"><?= h($user['prenom']) ?> <?= h($user['nom']) ?> | <?= h($sessionCode) ?></p>
             </div>
             <div class="flex items-center gap-3">
                 <?= renderLanguageSelector('text-sm bg-emerald-600 text-white px-2 py-1 rounded border border-emerald-500') ?>
