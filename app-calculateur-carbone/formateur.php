@@ -18,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = authenticateUser($username, $password);
         if ($user && ($user['is_formateur'] || $user['is_admin'])) {
             login($user);
+            session_write_close();
             header('Location: formateur.php');
             exit;
         } else {
