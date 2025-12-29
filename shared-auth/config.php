@@ -12,6 +12,7 @@ if (session_status() === PHP_SESSION_NONE) {
 define('SHARED_AUTH_PATH', __DIR__);
 define('SHARED_DB_PATH', __DIR__ . '/data/users.sqlite');
 define('ADMIN_PASSWORD', 'Formation2024!');
+define('NOTIFY_EMAIL', 'philippe@hensmans.org');
 
 /**
  * Connexion a la base utilisateurs partagee
@@ -121,10 +122,45 @@ function registerUser($username, $password, $prenom = '', $nom = '', $organisati
 
     try {
         $stmt->execute([$username, $hash, $prenom, $nom, $organisation, $email, $emailConsent ? 1 : 0]);
-        return ['success' => true, 'user_id' => $db->lastInsertId()];
+        $userId = $db->lastInsertId();
+
+        // Envoyer notification par email
+        notifyNewRegistration($username, $prenom, $nom, $organisation, $email);
+
+        return ['success' => true, 'user_id' => $userId];
     } catch (Exception $e) {
         return ['success' => false, 'error' => $e->getMessage()];
     }
+}
+
+/**
+ * Envoyer une notification email lors d'une nouvelle inscription
+ */
+function notifyNewRegistration($username, $prenom, $nom, $organisation, $email) {
+    $notifyEmail = defined('NOTIFY_EMAIL') ? NOTIFY_EMAIL : '';
+    if (empty($notifyEmail)) {
+        return false;
+    }
+
+    $appName = defined('APP_NAME') ? APP_NAME : 'Formation';
+    $subject = "[{$appName}] Nouvelle inscription : {$username}";
+
+    $message = "Bonjour,\n\n";
+    $message .= "Une nouvelle personne s'est inscrite.\n\n";
+    $message .= "Details :\n";
+    $message .= "- Identifiant : {$username}\n";
+    $message .= "- Prenom : " . ($prenom ?: '(non renseigne)') . "\n";
+    $message .= "- Nom : " . ($nom ?: '(non renseigne)') . "\n";
+    $message .= "- Organisation : " . ($organisation ?: '(non renseigne)') . "\n";
+    $message .= "- Email : " . ($email ?: '(non renseigne)') . "\n";
+    $message .= "- Date : " . date('d/m/Y H:i') . "\n\n";
+    $message .= "Cordialement,\n";
+    $message .= "Le systeme de formation";
+
+    $headers = "From: noreply@" . ($_SERVER['HTTP_HOST'] ?? 'k1m.be') . "\r\n";
+    $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+
+    return @mail($notifyEmail, $subject, $message, $headers);
 }
 
 /**
