@@ -95,25 +95,25 @@ $isSubmitted = $retro['is_submitted'] == 1;
     <main class="max-w-7xl mx-auto p-4">
         <!-- Projet Info -->
         <div class="bg-white rounded-lg shadow p-6 mb-6">
-            <h2 class="text-lg font-semibold mb-4">Informations du projet</h2>
+            <h2 class="text-lg font-semibold mb-4"><?= t('ssc.project_info') ?></h2>
             <div class="grid md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nom du projet / programme</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"><?= t('ssc.project_name') ?></label>
                     <input type="text" id="projetNom" value="<?= sanitize($retro['projet_nom']) ?>"
-                           
+
                            class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 "
-                           placeholder="Ex: Programme de formation 2024">
+                           placeholder="<?= t('ssc.project_name_placeholder') ?>">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Contexte de l'evaluation</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"><?= t('ssc.context') ?></label>
                     <input type="text" id="projetContexte" value="<?= sanitize($retro['projet_contexte']) ?>"
-                           
+
                            class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 "
-                           placeholder="Ex: Evaluation annuelle Q4 2024">
+                           placeholder="<?= t('ssc.context_placeholder') ?>">
                 </div>
             </div>
             <p class="text-sm text-gray-500 mt-3">
-                Sur la base de votre evaluation, definissez comment votre projet/programme/strategie devrait evoluer.
+                <?= t('ssc.project_instruction') ?>
             </p>
         </div>
 
@@ -124,19 +124,19 @@ $isSubmitted = $retro['is_submitted'] == 1;
                 <div class="flex items-center gap-2 mb-4">
                     <span class="text-2xl">🛑</span>
                     <div>
-                        <h3 class="font-bold text-red-800 text-lg">A CESSER</h3>
-                        <p class="text-xs text-red-600">Stop - Arreter</p>
+                        <h3 class="font-bold text-red-800 text-lg"><?= t('ssc.stop') ?></h3>
+                        <p class="text-xs text-red-600"><?= t('ssc.stop_sub') ?></p>
                     </div>
                 </div>
                 <p class="text-sm text-gray-600 mb-4">
-                    Quelles tactiques, methodes de travail et initiatives devez-vous <strong>cesser</strong> car elles ne permettent pas d'atteindre vos objectifs ?
+                    <?= t('ssc.stop_desc') ?>
                 </p>
                 <div id="listCesser" class="space-y-3 mb-4">
                     <!-- Items dynamiques -->
                 </div>
                 <?php if (!$isSubmitted): ?>
                     <button onclick="addItem('cesser')" class="w-full btn-stop text-white py-2 rounded-lg text-sm font-medium">
-                        + Ajouter un element
+                        + <?= t('ssc.add_element') ?>
                     </button>
                 <?php endif; ?>
             </div>
@@ -146,19 +146,19 @@ $isSubmitted = $retro['is_submitted'] == 1;
                 <div class="flex items-center gap-2 mb-4">
                     <span class="text-2xl">🚀</span>
                     <div>
-                        <h3 class="font-bold text-green-800 text-lg">A COMMENCER</h3>
-                        <p class="text-xs text-green-600">Start - Demarrer</p>
+                        <h3 class="font-bold text-green-800 text-lg"><?= t('ssc.start') ?></h3>
+                        <p class="text-xs text-green-600"><?= t('ssc.start_sub') ?></p>
                     </div>
                 </div>
                 <p class="text-sm text-gray-600 mb-4">
-                    Quelles <strong>nouvelles</strong> tactiques, methodes de travail et initiatives devez-vous mettre en oeuvre pour atteindre vos objectifs ?
+                    <?= t('ssc.start_desc') ?>
                 </p>
                 <div id="listCommencer" class="space-y-3 mb-4">
                     <!-- Items dynamiques -->
                 </div>
                 <?php if (!$isSubmitted): ?>
                     <button onclick="addItem('commencer')" class="w-full btn-start text-white py-2 rounded-lg text-sm font-medium">
-                        + Ajouter un element
+                        + <?= t('ssc.add_element') ?>
                     </button>
                 <?php endif; ?>
             </div>
@@ -168,19 +168,19 @@ $isSubmitted = $retro['is_submitted'] == 1;
                 <div class="flex items-center gap-2 mb-4">
                     <span class="text-2xl">✅</span>
                     <div>
-                        <h3 class="font-bold text-blue-800 text-lg">A CONTINUER</h3>
-                        <p class="text-xs text-blue-600">Continue - Poursuivre</p>
+                        <h3 class="font-bold text-blue-800 text-lg"><?= t('ssc.continue') ?></h3>
+                        <p class="text-xs text-blue-600"><?= t('ssc.continue_sub') ?></p>
                     </div>
                 </div>
                 <p class="text-sm text-gray-600 mb-4">
-                    Quelles tactiques, methodes de travail et initiatives devez-vous <strong>poursuivre</strong> ? Quels ajustements y apporter ?
+                    <?= t('ssc.continue_desc') ?>
                 </p>
                 <div id="listContinuer" class="space-y-3 mb-4">
                     <!-- Items dynamiques -->
                 </div>
                 <?php if (!$isSubmitted): ?>
                     <button onclick="addItem('continuer')" class="w-full btn-continue text-white py-2 rounded-lg text-sm font-medium">
-                        + Ajouter un element
+                        + <?= t('ssc.add_element') ?>
                     </button>
                 <?php endif; ?>
             </div>
@@ -188,10 +188,10 @@ $isSubmitted = $retro['is_submitted'] == 1;
 
         <!-- Notes et Actions -->
         <div class="bg-white rounded-lg shadow p-6 mt-6">
-            <h3 class="font-semibold mb-3">Notes complementaires</h3>
-            <textarea id="notes" rows="3" 
+            <h3 class="font-semibold mb-3"><?= t('ssc.additional_notes') ?></h3>
+            <textarea id="notes" rows="3"
                       class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 "
-                      placeholder="Ressources necessaires, obstacles potentiels, points d'attention..."><?= sanitize($retro['notes']) ?></textarea>
+                      placeholder="<?= t('ssc.notes_placeholder') ?>"><?= sanitize($retro['notes']) ?></textarea>
         </div>
 
         <!-- Boutons d'action -->
@@ -207,12 +207,12 @@ $isSubmitted = $retro['is_submitted'] == 1;
                     JSON
                 </button>
                 <button onclick="window.print()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded">
-                    Imprimer
+                    <?= t('ssc.print') ?>
                 </button>
             </div>
             <?php if (!$isSubmitted): ?>
                 <button onclick="submitWork()" class="bg-blue-900 hover:bg-blue-800 text-white px-6 py-3 rounded-lg font-medium">
-                    Marquer comme termine
+                    <?= t('ssc.mark_complete') ?>
                 </button>
             <?php endif; ?>
         </div>
@@ -221,47 +221,47 @@ $isSubmitted = $retro['is_submitted'] == 1;
     <!-- Modal Ajout/Edition -->
     <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 p-6">
-            <h3 id="modalTitle" class="text-lg font-bold mb-4">Ajouter un element</h3>
+            <h3 id="modalTitle" class="text-lg font-bold mb-4"><?= t('ssc.add_item') ?></h3>
             <input type="hidden" id="editCategory">
             <input type="hidden" id="editIndex" value="-1">
 
             <div class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Description *</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"><?= t('ssc.description') ?> *</label>
                     <textarea id="itemDescription" rows="3"
                               class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                              placeholder="Decrivez l'element..."></textarea>
+                              placeholder="<?= t('ssc.description_placeholder') ?>"></textarea>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Justification / Raison</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"><?= t('ssc.reason') ?></label>
                     <textarea id="itemRaison" rows="2"
                               class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                              placeholder="Pourquoi ce changement ?"></textarea>
+                              placeholder="<?= t('ssc.reason_placeholder') ?>"></textarea>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Priorite</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1"><?= t('ssc.priority') ?></label>
                         <select id="itemPriorite" class="w-full p-3 border rounded-lg">
-                            <option value="moyenne">Moyenne</option>
-                            <option value="haute">Haute</option>
-                            <option value="basse">Basse</option>
+                            <option value="moyenne"><?= t('ssc.priority_medium') ?></option>
+                            <option value="haute"><?= t('ssc.priority_high') ?></option>
+                            <option value="basse"><?= t('ssc.priority_low') ?></option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Responsable</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1"><?= t('ssc.responsible') ?></label>
                         <input type="text" id="itemResponsable"
                                class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                               placeholder="Qui ?">
+                               placeholder="<?= t('ssc.responsible_placeholder') ?>">
                     </div>
                 </div>
             </div>
 
             <div class="flex justify-end gap-3 mt-6">
                 <button onclick="closeModal()" class="px-4 py-2 border rounded-lg hover:bg-gray-100">
-                    Annuler
+                    <?= t('ssc.cancel') ?>
                 </button>
                 <button onclick="saveItem()" class="px-4 py-2 bg-blue-900 text-white rounded-lg hover:bg-blue-800">
-                    Enregistrer
+                    <?= t('ssc.save_item') ?>
                 </button>
             </div>
         </div>
@@ -276,6 +276,24 @@ $isSubmitted = $retro['is_submitted'] == 1;
         };
         const isSubmitted = <?= $isSubmitted ? 'true' : 'false' ?>;
         let saveTimeout = null;
+
+        // Translations
+        const trans = {
+            noElement: '<?= t('ssc.no_element') ?>',
+            addStop: '<?= t('ssc.add_stop') ?>',
+            addStart: '<?= t('ssc.add_start') ?>',
+            addContinue: '<?= t('ssc.add_continue') ?>',
+            editItem: '<?= t('ssc.edit_item') ?>',
+            enterDescription: '<?= t('ssc.enter_description') ?>',
+            deleteConfirm: '<?= t('ssc.delete_confirm') ?>',
+            modifying: '<?= t('ssc.modifying') ?>',
+            saving: '<?= t('ssc.saving') ?>',
+            saveOk: '<?= t('ssc.save_ok') ?>',
+            error: '<?= t('ssc.error') ?>',
+            networkError: '<?= t('ssc.network_error') ?>',
+            confirmComplete: '<?= t('ssc.confirm_complete') ?>',
+            markedComplete: '<?= t('ssc.marked_complete') ?>'
+        };
 
         // Initialisation
         document.addEventListener('DOMContentLoaded', function() {
@@ -299,7 +317,7 @@ $isSubmitted = $retro['is_submitted'] == 1;
             const items = data[category];
 
             if (items.length === 0) {
-                container.innerHTML = '<p class="text-gray-400 text-sm italic text-center py-4">Aucun element</p>';
+                container.innerHTML = '<p class="text-gray-400 text-sm italic text-center py-4">' + trans.noElement + '</p>';
                 return;
             }
 
@@ -352,9 +370,9 @@ $isSubmitted = $retro['is_submitted'] == 1;
             document.getElementById('itemResponsable').value = '';
 
             const titles = {
-                cesser: 'Ajouter - A CESSER',
-                commencer: 'Ajouter - A COMMENCER',
-                continuer: 'Ajouter - A CONTINUER'
+                cesser: trans.addStop,
+                commencer: trans.addStart,
+                continuer: trans.addContinue
             };
             document.getElementById('modalTitle').textContent = titles[category];
             document.getElementById('modal').classList.remove('hidden');
@@ -370,7 +388,7 @@ $isSubmitted = $retro['is_submitted'] == 1;
             document.getElementById('itemPriorite').value = item.priorite || 'moyenne';
             document.getElementById('itemResponsable').value = item.responsable || '';
 
-            document.getElementById('modalTitle').textContent = 'Modifier l\'element';
+            document.getElementById('modalTitle').textContent = trans.editItem;
             document.getElementById('modal').classList.remove('hidden');
             document.getElementById('modal').classList.add('flex');
         }
@@ -386,7 +404,7 @@ $isSubmitted = $retro['is_submitted'] == 1;
             const description = document.getElementById('itemDescription').value.trim();
 
             if (!description) {
-                alert('Veuillez entrer une description');
+                alert(trans.enterDescription);
                 return;
             }
 
@@ -409,7 +427,7 @@ $isSubmitted = $retro['is_submitted'] == 1;
         }
 
         function deleteItem(category, index) {
-            if (confirm('Supprimer cet element ?')) {
+            if (confirm(trans.deleteConfirm)) {
                 data[category].splice(index, 1);
                 renderAll();
                 scheduleSave();
@@ -418,7 +436,7 @@ $isSubmitted = $retro['is_submitted'] == 1;
 
         function scheduleSave() {
             if (saveTimeout) clearTimeout(saveTimeout);
-            document.getElementById('saveStatus').textContent = 'Modifications...';
+            document.getElementById('saveStatus').textContent = trans.modifying;
             saveTimeout = setTimeout(doSave, 1000);
         }
 
@@ -428,7 +446,7 @@ $isSubmitted = $retro['is_submitted'] == 1;
         }
 
         function doSave() {
-            document.getElementById('saveStatus').textContent = 'Sauvegarde...';
+            document.getElementById('saveStatus').textContent = trans.saving;
 
             const payload = {
                 projet_nom: document.getElementById('projetNom').value,
@@ -447,30 +465,30 @@ $isSubmitted = $retro['is_submitted'] == 1;
             .then(r => r.json())
             .then(result => {
                 if (result.success) {
-                    document.getElementById('saveStatus').textContent = 'Sauvegarde OK';
+                    document.getElementById('saveStatus').textContent = trans.saveOk;
                     setTimeout(() => {
                         document.getElementById('saveStatus').textContent = '';
                     }, 2000);
                 } else {
-                    document.getElementById('saveStatus').textContent = 'Erreur!';
+                    document.getElementById('saveStatus').textContent = trans.error;
                 }
             })
             .catch(() => {
-                document.getElementById('saveStatus').textContent = 'Erreur reseau';
+                document.getElementById('saveStatus').textContent = trans.networkError;
             });
         }
 
         function submitWork() {
-            if (!confirm('Marquer comme termine ? Vous pourrez toujours modifier ensuite.')) return;
+            if (!confirm(trans.confirmComplete)) return;
 
             fetch('api/submit.php', { method: 'POST' })
             .then(r => r.json())
             .then(result => {
                 if (result.success) {
-                    alert('Marque comme termine !');
+                    alert(trans.markedComplete);
                     location.reload();
                 } else {
-                    alert('Erreur: ' + (result.error || 'Erreur inconnue'));
+                    alert(trans.error + ': ' + (result.error || ''));
                 }
             });
         }
