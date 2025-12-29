@@ -4,6 +4,9 @@
  * Accessible par le formateur
  */
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/../shared-auth/lang.php';
+
+$lang = getCurrentLanguage();
 
 // Verifier acces formateur
 if (!isFormateur()) {
@@ -32,12 +35,12 @@ $stmt->execute([$participantId]);
 $participant = $stmt->fetch();
 
 if (!$participant) {
-    die("Participant non trouve");
+    die(t('cadrelogique.participant_not_found'));
 }
 
 // Verifier l'acces a cette session
 if (!canAccessSession($appKey, $participant['session_id'])) {
-    die("Acces refuse a cette session.");
+    die(t('cadrelogique.access_denied'));
 }
 
 // Recuperer le cadre logique
@@ -60,11 +63,11 @@ if (!$cadre) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="<?= $lang ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadre Logique - <?= sanitize($participant['prenom']) ?> <?= sanitize($participant['nom']) ?></title>
+    <title><?= t('cadrelogique.title') ?> - <?= sanitize($participant['prenom']) ?> <?= sanitize($participant['nom']) ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .niveau-og { background: linear-gradient(to right, #dbeafe, #e0e7ff); }
@@ -86,12 +89,13 @@ if (!$cadre) {
                 <span class="text-indigo-200 text-sm ml-2"><?= sanitize($participant['session_nom']) ?> (<?= sanitize($participant['session_code']) ?>)</span>
             </div>
             <div class="flex items-center gap-4">
+                <?= renderLanguageSelector('text-sm bg-white/20 rounded px-2 py-1 text-white border-0') ?>
                 <span class="text-sm px-3 py-1 rounded-full <?= $cadre['is_submitted'] ? 'bg-green-500' : 'bg-yellow-500' ?>">
-                    <?= $cadre['is_submitted'] ? 'Soumis' : 'Brouillon' ?>
+                    <?= $cadre['is_submitted'] ? t('cadrelogique.submitted') : t('cadrelogique.draft') ?>
                 </span>
-                <span class="text-sm">Completion: <strong><?= $cadre['completion_percent'] ?>%</strong></span>
-                <button onclick="window.print()" class="text-sm bg-white/20 hover:bg-white/30 px-3 py-1 rounded">Imprimer</button>
-                <a href="formateur.php?session=<?= $participant['session_id'] ?>" class="text-sm bg-white/20 hover:bg-white/30 px-3 py-1 rounded">Retour</a>
+                <span class="text-sm"><?= t('cadrelogique.completion') ?>: <strong><?= $cadre['completion_percent'] ?>%</strong></span>
+                <button onclick="window.print()" class="text-sm bg-white/20 hover:bg-white/30 px-3 py-1 rounded"><?= t('common.print') ?></button>
+                <a href="formateur.php?session=<?= $participant['session_id'] ?>" class="text-sm bg-white/20 hover:bg-white/30 px-3 py-1 rounded"><?= t('common.back') ?></a>
             </div>
         </div>
     </div>
@@ -99,24 +103,24 @@ if (!$cadre) {
     <div class="max-w-7xl mx-auto p-4">
         <!-- En-tete du projet -->
         <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
-            <h1 class="text-2xl font-bold text-gray-800 mb-4">Cadre Logique</h1>
+            <h1 class="text-2xl font-bold text-gray-800 mb-4"><?= t('cadrelogique.title') ?></h1>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-gray-500 text-sm mb-1">Titre du projet</label>
-                    <div class="px-4 py-2 bg-gray-50 rounded-lg border"><?= sanitize($cadre['titre_projet']) ?: '<em class="text-gray-400">Non renseigne</em>' ?></div>
+                    <label class="block text-gray-500 text-sm mb-1"><?= t('cadrelogique.project_title') ?></label>
+                    <div class="px-4 py-2 bg-gray-50 rounded-lg border"><?= sanitize($cadre['titre_projet']) ?: '<em class="text-gray-400">' . t('common.not_specified') . '</em>' ?></div>
                 </div>
                 <div>
-                    <label class="block text-gray-500 text-sm mb-1">Organisation porteuse</label>
-                    <div class="px-4 py-2 bg-gray-50 rounded-lg border"><?= sanitize($cadre['organisation']) ?: '<em class="text-gray-400">Non renseigne</em>' ?></div>
+                    <label class="block text-gray-500 text-sm mb-1"><?= t('cadrelogique.organisation') ?></label>
+                    <div class="px-4 py-2 bg-gray-50 rounded-lg border"><?= sanitize($cadre['organisation']) ?: '<em class="text-gray-400">' . t('common.not_specified') . '</em>' ?></div>
                 </div>
                 <div>
-                    <label class="block text-gray-500 text-sm mb-1">Zone geographique / Beneficiaires</label>
-                    <div class="px-4 py-2 bg-gray-50 rounded-lg border"><?= sanitize($cadre['zone_geo']) ?: '<em class="text-gray-400">Non renseigne</em>' ?></div>
+                    <label class="block text-gray-500 text-sm mb-1"><?= t('cadrelogique.geo_zone') ?></label>
+                    <div class="px-4 py-2 bg-gray-50 rounded-lg border"><?= sanitize($cadre['zone_geo']) ?: '<em class="text-gray-400">' . t('common.not_specified') . '</em>' ?></div>
                 </div>
                 <div>
-                    <label class="block text-gray-500 text-sm mb-1">Duree prevue</label>
-                    <div class="px-4 py-2 bg-gray-50 rounded-lg border"><?= sanitize($cadre['duree']) ?: '<em class="text-gray-400">Non renseigne</em>' ?></div>
+                    <label class="block text-gray-500 text-sm mb-1"><?= t('cadrelogique.duration') ?></label>
+                    <div class="px-4 py-2 bg-gray-50 rounded-lg border"><?= sanitize($cadre['duree']) ?: '<em class="text-gray-400">' . t('common.not_specified') . '</em>' ?></div>
                 </div>
             </div>
         </div>
@@ -124,22 +128,22 @@ if (!$cadre) {
         <!-- Matrice du cadre logique -->
         <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-6">
             <div class="bg-gray-800 text-white p-4">
-                <h2 class="text-xl font-bold">Matrice du Cadre Logique</h2>
+                <h2 class="text-xl font-bold"><?= t('cadrelogique.matrix') ?></h2>
             </div>
 
             <!-- En-tetes des colonnes -->
             <div class="grid grid-cols-12 gap-px bg-gray-300 text-sm font-bold">
-                <div class="col-span-1 bg-gray-100 p-2 text-center">Niveau</div>
-                <div class="col-span-3 bg-gray-100 p-2">Description narrative</div>
-                <div class="col-span-3 bg-gray-100 p-2">Indicateurs (IOV)</div>
-                <div class="col-span-2 bg-gray-100 p-2">Sources verification</div>
-                <div class="col-span-3 bg-gray-100 p-2">Hypotheses / Risques</div>
+                <div class="col-span-1 bg-gray-100 p-2 text-center"><?= t('cadrelogique.level') ?></div>
+                <div class="col-span-3 bg-gray-100 p-2"><?= t('cadrelogique.narrative') ?></div>
+                <div class="col-span-3 bg-gray-100 p-2"><?= t('cadrelogique.indicators') ?></div>
+                <div class="col-span-2 bg-gray-100 p-2"><?= t('cadrelogique.sources') ?></div>
+                <div class="col-span-3 bg-gray-100 p-2"><?= t('cadrelogique.hypotheses') ?></div>
             </div>
 
             <!-- Objectif Global -->
             <div class="grid grid-cols-12 gap-px bg-gray-300 niveau-og">
                 <div class="col-span-1 bg-blue-100 p-2 flex items-center justify-center font-bold text-blue-800 text-sm">
-                    Objectif<br>Global
+                    <?= t('cadrelogique.global_objective') ?>
                 </div>
                 <div class="col-span-3 bg-blue-50 p-2">
                     <div class="text-sm whitespace-pre-wrap"><?= sanitize($matrice['objectif_global']['description'] ?? '') ?: '<em class="text-gray-400">-</em>' ?></div>
@@ -158,7 +162,7 @@ if (!$cadre) {
             <!-- Objectif Specifique -->
             <div class="grid grid-cols-12 gap-px bg-gray-300 niveau-os">
                 <div class="col-span-1 bg-green-100 p-2 flex items-center justify-center font-bold text-green-800 text-sm">
-                    Objectif<br>Specifique
+                    <?= t('cadrelogique.specific_objective') ?>
                 </div>
                 <div class="col-span-3 bg-green-50 p-2">
                     <div class="text-sm whitespace-pre-wrap"><?= sanitize($matrice['objectif_specifique']['description'] ?? '') ?: '<em class="text-gray-400">-</em>' ?></div>
@@ -220,5 +224,6 @@ if (!$cadre) {
             <?php endforeach; ?>
         </div>
     </div>
+    <?= renderLanguageScript() ?>
 </body>
 </html>
