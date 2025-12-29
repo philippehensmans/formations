@@ -99,6 +99,24 @@ function initDatabase($db) {
     } catch (Exception $e) {
         // Colonne existe deja
     }
+
+    // Migration: ajouter user_id a cartographie si participant_id existe
+    try {
+        $db->exec("ALTER TABLE cartographie ADD COLUMN user_id INTEGER");
+    } catch (Exception $e) {
+        // Colonne existe deja
+    }
+
+    // Migration: copier participant_id vers user_id si necessaire
+    try {
+        $result = $db->query("SELECT participant_id FROM cartographie LIMIT 1");
+        if ($result) {
+            // La colonne participant_id existe, copier les donnees vers user_id
+            $db->exec("UPDATE cartographie SET user_id = participant_id WHERE user_id IS NULL");
+        }
+    } catch (Exception $e) {
+        // participant_id n'existe pas, c'est normal pour les nouvelles installations
+    }
 }
 
 /**
