@@ -11,7 +11,6 @@ if (!isLoggedIn() || !isset($_SESSION['current_session_id'])) {
     exit;
 }
 
-$db = getDB();
 $user = getLoggedUser();
 
 if (!$user) {
@@ -20,6 +19,7 @@ if (!$user) {
     exit;
 }
 
+$db = getDB();
 $sessionId = $_SESSION['current_session_id'];
 $sessionCode = $_SESSION['current_session_code'] ?? '';
 $sessionNom = $_SESSION['current_session_nom'] ?? '';
