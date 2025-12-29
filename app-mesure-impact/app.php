@@ -50,11 +50,11 @@ $etape5 = json_decode($mesure['etape5_synthese'] ?: '{}', true);
 $etapeCourante = $mesure['etape_courante'] ?: 1;
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="<?= getCurrentLanguage() ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mesure d'Impact Social - <?= htmlspecialchars($participant['prenom']) ?></title>
+    <title><?= t('impact.title') ?> - <?= htmlspecialchars($participant['prenom']) ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -98,17 +98,18 @@ $etapeCourante = $mesure['etape_courante'] ?: 1;
                         </svg>
                     </div>
                     <div>
-                        <h1 class="font-semibold text-gray-900">Mesure d'Impact Social</h1>
-                        <p class="text-sm text-gray-500">Session: <?= htmlspecialchars($participant['session_code']) ?></p>
+                        <h1 class="font-semibold text-gray-900"><?= t('impact.title') ?></h1>
+                        <p class="text-sm text-gray-500"><?= t('impact.session') ?>: <?= htmlspecialchars($participant['session_code']) ?></p>
                     </div>
                 </div>
                 <div class="flex items-center gap-4">
+                    <?= renderLanguageSelector('lang-select') ?>
                     <div class="text-right">
                         <p class="text-sm font-medium text-gray-900"><?= htmlspecialchars($participant['prenom'] . ' ' . $participant['nom']) ?></p>
                         <p class="text-xs text-gray-500"><?= htmlspecialchars($participant['organisation'] ?? '') ?></p>
                     </div>
                     <span id="saveStatus" class="text-xs text-gray-400"></span>
-                    <a href="logout.php" class="text-gray-400 hover:text-gray-600">
+                    <a href="logout.php" class="text-gray-400 hover:text-gray-600" title="<?= t('auth.logout') ?>">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                         </svg>
@@ -131,7 +132,7 @@ $etapeCourante = $mesure['etape_courante'] ?: 1;
                         </span>
                         <span class="hidden md:inline text-sm font-medium">
                             <?php
-                            $stepNames = ['Classifier', 'Theorie du changement', 'Indicateurs', 'Plan de collecte', 'Synthese'];
+                            $stepNames = [t('impact.step1'), t('impact.step2'), t('impact.step3'), t('impact.step4'), t('impact.step5')];
                             echo $stepNames[$i-1];
                             ?>
                         </span>
@@ -1353,5 +1354,6 @@ $etapeCourante = $mesure['etape_courante'] ?: 1;
             });
         });
     </script>
+    <?= renderLanguageScript() ?>
 </body>
 </html>
