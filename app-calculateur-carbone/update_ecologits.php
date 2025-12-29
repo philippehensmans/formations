@@ -176,8 +176,8 @@ function fetchEcoLogitsData() {
     }
 }
 
-// Execution
-if (php_sapi_name() === 'cli' || isset($_POST['action'])) {
+// Execution - seulement si appele directement (pas via include)
+if (php_sapi_name() === 'cli') {
     // Tenter de recuperer les dernieres donnees
     fetchEcoLogitsData();
 
@@ -185,4 +185,12 @@ if (php_sapi_name() === 'cli' || isset($_POST['action'])) {
     $success = updateEstimations();
 
     exit($success ? 0 : 1);
+} elseif (basename($_SERVER['SCRIPT_FILENAME'] ?? '') === 'update_ecologits.php') {
+    // Appel direct via navigateur
+    fetchEcoLogitsData();
+    updateEstimations();
+} elseif (isset($_POST['action']) && $_POST['action'] === 'update_ecologits') {
+    // Inclus depuis formateur.php
+    fetchEcoLogitsData();
+    updateEstimations();
 }

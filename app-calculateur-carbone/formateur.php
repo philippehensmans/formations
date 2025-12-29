@@ -42,16 +42,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $db->prepare("UPDATE sessions SET is_active = NOT is_active WHERE id = ? AND formateur_id = ?");
             $stmt->execute([$sessionId, $user['id']]);
         } elseif ($action === 'update_ecologits') {
-            // Lancer le script de mise a jour
-            $output = [];
-            $returnCode = 0;
-            exec('php ' . __DIR__ . '/update_ecologits.php 2>&1', $output, $returnCode);
-
-            if ($returnCode === 0) {
-                $success = "Mise a jour depuis EcoLogits effectuee.";
-            } else {
-                $error = "Erreur lors de la mise a jour: " . implode("\n", $output);
-            }
+            // Inclure et executer le script de mise a jour
+            ob_start();
+            include __DIR__ . '/update_ecologits.php';
+            $output = ob_get_clean();
+            $success = "Mise a jour depuis EcoLogits effectuee.";
         }
     }
 }
