@@ -34,11 +34,11 @@ $stakeholders = json_decode($carto['stakeholders_data'], true) ?: [];
 $isSubmitted = $carto['is_submitted'] == 1;
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="<?= getCurrentLanguage() ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cartographie - <?= sanitize($participant['prenom']) ?> <?= sanitize($participant['nom']) ?></title>
+    <title><?= t('stakeholders.title') ?> - <?= sanitize($participant['prenom']) ?> <?= sanitize($participant['nom']) ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -89,6 +89,7 @@ $isSubmitted = $carto['is_submitted'] == 1;
         @media print { .no-print { display: none !important; } }
     </style>
 </head>
+<?= renderLanguageScript() ?>
 <body class="bg-gray-100 min-h-screen">
     <!-- Barre utilisateur -->
     <div class="bg-gray-900 text-white p-3 no-print sticky top-0 z-50">
@@ -98,14 +99,15 @@ $isSubmitted = $carto['is_submitted'] == 1;
                 <span class="text-gray-400 text-sm ml-2"><?= sanitize($participant['session_nom']) ?></span>
             </div>
             <div class="flex items-center gap-3">
+                <?= renderLanguageSelector('text-sm bg-gray-700 text-white px-2 py-1 rounded border border-gray-600') ?>
                 <button onclick="manualSave()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-medium transition">
-                    Sauvegarder
+                    <?= t('common.save') ?>
                 </button>
                 <span id="saveStatus" class="text-sm px-3 py-1 rounded-full bg-gray-700">
-                    <?= $isSubmitted ? 'Soumis' : 'Brouillon' ?>
+                    <?= $isSubmitted ? t('app.submitted') : t('app.draft') ?>
                 </span>
-                <span id="completion" class="text-sm">Completion: <strong><?= $carto['completion_percent'] ?>%</strong></span>
-                <a href="logout.php" class="text-sm bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded transition">Deconnexion</a>
+                <span id="completion" class="text-sm"><?= t('app.completion') ?>: <strong><?= $carto['completion_percent'] ?>%</strong></span>
+                <a href="logout.php" class="text-sm bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded transition"><?= t('auth.logout') ?></a>
             </div>
         </div>
     </div>
@@ -114,17 +116,17 @@ $isSubmitted = $carto['is_submitted'] == 1;
         <div class="bg-white rounded-lg shadow-lg overflow-hidden">
             <!-- Header -->
             <div class="text-center p-6 border-b">
-                <h1 class="text-3xl font-bold text-gray-800 mb-2">Cartographie des Parties Prenantes</h1>
-                <p class="text-gray-600">Analysez l'influence et l'interet de vos parties prenantes</p>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2"><?= t('stakeholders.title') ?></h1>
+                <p class="text-gray-600"><?= t('stakeholders.subtitle') ?></p>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-0">
                 <!-- Sidebar -->
                 <div class="bg-gray-50 p-6 border-r">
-                    <h3 class="text-lg font-bold mb-4">Ajouter une partie prenante</h3>
+                    <h3 class="text-lg font-bold mb-4"><?= t('stakeholders.add_stakeholder') ?></h3>
 
                     <div class="mb-4">
-                        <label class="block text-gray-700 font-semibold mb-1">Titre du projet</label>
+                        <label class="block text-gray-700 font-semibold mb-1"><?= t('stakeholders.project_title') ?></label>
                         <input type="text" id="titreProjet"
                             class="w-full px-3 py-2 border border-gray-300 rounded focus:border-blue-900 focus:outline-none"
                             placeholder="Ex: Projet associatif XYZ"
@@ -133,14 +135,14 @@ $isSubmitted = $carto['is_submitted'] == 1;
                     </div>
 
                     <div class="mb-4">
-                        <label class="block text-gray-700 font-semibold mb-1">Nom / Organisation</label>
+                        <label class="block text-gray-700 font-semibold mb-1"><?= t('stakeholders.name_org') ?></label>
                         <input type="text" id="stakeholderName"
                             class="w-full px-3 py-2 border border-gray-300 rounded focus:border-blue-900 focus:outline-none"
                             placeholder="Ex: Commune de Liege">
                     </div>
 
                     <div class="mb-4">
-                        <label class="block text-gray-700 font-semibold mb-1">Categorie</label>
+                        <label class="block text-gray-700 font-semibold mb-1"><?= t('stakeholders.category') ?></label>
                         <select id="stakeholderCategory"
                             class="w-full px-3 py-2 border border-gray-300 rounded focus:border-blue-900 focus:outline-none">
                             <?php foreach ($categories as $key => $cat): ?>
@@ -151,7 +153,7 @@ $isSubmitted = $carto['is_submitted'] == 1;
 
                     <div class="mb-4">
                         <div class="flex justify-between mb-1">
-                            <label class="font-semibold">Influence</label>
+                            <label class="font-semibold"><?= t('stakeholders.influence') ?></label>
                             <span id="influenceValue" class="font-bold text-blue-900">5</span>
                         </div>
                         <input type="range" id="influenceSlider" min="1" max="10" value="5"
@@ -161,7 +163,7 @@ $isSubmitted = $carto['is_submitted'] == 1;
 
                     <div class="mb-4">
                         <div class="flex justify-between mb-1">
-                            <label class="font-semibold">Interet</label>
+                            <label class="font-semibold"><?= t('stakeholders.interest') ?></label>
                             <span id="interestValue" class="font-bold text-blue-900">5</span>
                         </div>
                         <input type="range" id="interestSlider" min="1" max="10" value="5"
@@ -170,12 +172,12 @@ $isSubmitted = $carto['is_submitted'] == 1;
                     </div>
 
                     <button onclick="addStakeholder()" class="w-full bg-blue-900 text-white py-2 rounded font-semibold hover:bg-blue-800 transition mb-2">
-                        Ajouter
+                        <?= t('stakeholders.add') ?>
                     </button>
 
                     <!-- Legende -->
                     <div class="mt-6 p-4 bg-white rounded border">
-                        <h4 class="font-bold mb-3">Legende</h4>
+                        <h4 class="font-bold mb-3"><?= t('stakeholders.legend') ?></h4>
                         <?php foreach ($categories as $key => $cat): ?>
                             <div class="flex items-center mb-2 text-sm">
                                 <span class="w-3 h-3 rounded-full mr-2" style="background: <?= $cat['color'] ?>"></span>
@@ -187,46 +189,46 @@ $isSubmitted = $carto['is_submitted'] == 1;
 
                 <!-- Zone matrice -->
                 <div class="lg:col-span-3 p-6">
-                    <h2 class="text-xl font-bold mb-4">Matrice Influence x Interet</h2>
+                    <h2 class="text-xl font-bold mb-4"><?= t('stakeholders.matrix_title') ?></h2>
 
                     <div class="matrix" id="stakeholderMatrix">
                         <div class="matrix-lines"></div>
-                        <div class="absolute bottom-[-24px] left-1/2 transform -translate-x-1/2 font-bold text-sm">Interet →</div>
-                        <div class="absolute left-[-40px] top-1/2 transform -translate-y-1/2 -rotate-90 font-bold text-sm">Influence ↑</div>
-                        <div class="quadrant-label q1"><strong>Gerer etroitement</strong><br>Haute influence, Haut interet</div>
-                        <div class="quadrant-label q2"><strong>Maintenir satisfait</strong><br>Haute influence, Faible interet</div>
-                        <div class="quadrant-label q3"><strong>Surveiller</strong><br>Faible influence, Faible interet</div>
-                        <div class="quadrant-label q4"><strong>Tenir informe</strong><br>Faible influence, Haut interet</div>
+                        <div class="absolute bottom-[-24px] left-1/2 transform -translate-x-1/2 font-bold text-sm"><?= t('stakeholders.interest') ?> →</div>
+                        <div class="absolute left-[-40px] top-1/2 transform -translate-y-1/2 -rotate-90 font-bold text-sm"><?= t('stakeholders.influence') ?> ↑</div>
+                        <div class="quadrant-label q1"><strong><?= t('stakeholders.manage_closely') ?></strong><br><?= t('stakeholders.manage_closely_desc') ?></div>
+                        <div class="quadrant-label q2"><strong><?= t('stakeholders.keep_satisfied') ?></strong><br><?= t('stakeholders.keep_satisfied_desc') ?></div>
+                        <div class="quadrant-label q3"><strong><?= t('stakeholders.monitor') ?></strong><br><?= t('stakeholders.monitor_desc') ?></div>
+                        <div class="quadrant-label q4"><strong><?= t('stakeholders.keep_informed') ?></strong><br><?= t('stakeholders.keep_informed_desc') ?></div>
                         <div id="stakeholdersContainer"></div>
                     </div>
 
                     <!-- Liste des parties prenantes -->
                     <div class="mt-8 bg-gray-50 rounded-lg p-4">
-                        <h3 class="text-lg font-bold mb-4">Liste des parties prenantes</h3>
+                        <h3 class="text-lg font-bold mb-4"><?= t('stakeholders.stakeholders_list') ?></h3>
                         <div id="stakeholdersList">
-                            <p class="text-gray-500 text-center">Aucune partie prenante ajoutee</p>
+                            <p class="text-gray-500 text-center"><?= t('stakeholders.no_stakeholder') ?></p>
                         </div>
                     </div>
 
                     <!-- Strategies -->
                     <div id="strategiesSection" class="mt-6 bg-blue-50 rounded-lg p-4" style="display: none;">
-                        <h3 class="text-lg font-bold mb-4">Strategies recommandees</h3>
+                        <h3 class="text-lg font-bold mb-4"><?= t('stakeholders.strategies') ?></h3>
                         <div id="strategiesContent"></div>
                     </div>
 
                     <!-- Notes -->
                     <div class="mt-6">
-                        <label class="block text-gray-700 font-semibold mb-2">Notes complementaires</label>
+                        <label class="block text-gray-700 font-semibold mb-2"><?= t('app.notes') ?></label>
                         <textarea id="notes" rows="3"
                             class="w-full px-4 py-2 border border-gray-300 rounded focus:border-blue-900 focus:outline-none"
-                            placeholder="Observations, reflexions..."
+                            placeholder="<?= t('app.notes_placeholder') ?>"
                             onchange="scheduleAutoSave()"><?= sanitize($carto['notes']) ?></textarea>
                     </div>
 
                     <!-- Boutons export -->
                     <div class="mt-6 flex flex-wrap gap-3 no-print">
                         <button onclick="submitCarto()" class="bg-purple-600 text-white px-6 py-3 rounded font-semibold hover:bg-purple-700 transition">
-                            ✅ Marquer termine
+                            ✅ <?= t('app.mark_complete') ?>
                         </button>
                         <button onclick="exportToExcel()" class="bg-emerald-600 text-white px-6 py-3 rounded font-semibold hover:bg-emerald-700 transition">
                             📊 Excel
@@ -238,7 +240,7 @@ $isSubmitted = $carto['is_submitted'] == 1;
                             📥 JSON
                         </button>
                         <button onclick="window.print()" class="bg-gray-600 text-white px-6 py-3 rounded font-semibold hover:bg-gray-700 transition">
-                            🖨️ Imprimer
+                            🖨️ <?= t('common.print') ?>
                         </button>
                     </div>
                 </div>
@@ -247,6 +249,32 @@ $isSubmitted = $carto['is_submitted'] == 1;
     </div>
 
     <script>
+        // Traductions JavaScript
+        const jsTranslations = {
+            saving: '<?= t('app.saving') ?>',
+            saved: '<?= t('app.saved') ?>',
+            error: '<?= t('common.error') ?>',
+            networkError: '<?= t('app.network_error') ?>',
+            submitted: '<?= t('app.submitted') ?>',
+            completion: '<?= t('app.completion') ?>',
+            markedComplete: '<?= t('app.marked_complete') ?>',
+            noStakeholder: '<?= t('stakeholders.no_stakeholder') ?>',
+            confirmSubmit: '<?= t('app.submit_confirm') ?>',
+            confirmDelete: '<?= t('stakeholders.remove_confirm') ?>',
+            enterName: '<?= t('stakeholders.name_required') ?>',
+            alreadyExists: '<?= t('stakeholders.already_exists') ?>',
+            delete: '<?= t('common.delete') ?>',
+            manageClosely: '<?= t('stakeholders.manage_closely') ?>',
+            keepSatisfied: '<?= t('stakeholders.keep_satisfied') ?>',
+            monitor: '<?= t('stakeholders.monitor') ?>',
+            keepInformed: '<?= t('stakeholders.keep_informed') ?>',
+            strategyManage: '<?= t('stakeholders.strategy_manage') ?>',
+            strategySatisfied: '<?= t('stakeholders.strategy_satisfied') ?>',
+            strategyMonitor: '<?= t('stakeholders.strategy_monitor') ?>',
+            strategyInformed: '<?= t('stakeholders.strategy_informed') ?>',
+            concerned: '<?= t('stakeholders.concerned') ?>'
+        };
+
         const categoryColors = <?= json_encode(array_map(fn($c) => $c['color'], $categories)) ?>;
         const categoryLabels = <?= json_encode(array_map(fn($c) => $c['label'], $categories)) ?>;
         let stakeholders = <?= json_encode($stakeholders) ?>;
@@ -264,12 +292,12 @@ $isSubmitted = $carto['is_submitted'] == 1;
             const interest = parseInt(document.getElementById('interestSlider').value);
 
             if (!name) {
-                alert('Veuillez saisir un nom.');
+                alert(jsTranslations.enterName);
                 return;
             }
 
             if (stakeholders.some(s => s.name.toLowerCase() === name.toLowerCase())) {
-                alert('Cette partie prenante existe deja.');
+                alert(jsTranslations.alreadyExists);
                 return;
             }
 
@@ -318,7 +346,7 @@ $isSubmitted = $carto['is_submitted'] == 1;
             const c = document.getElementById('stakeholdersList');
 
             if (!stakeholders.length) {
-                c.innerHTML = '<p class="text-gray-500 text-center">Aucune partie prenante ajoutee</p>';
+                c.innerHTML = '<p class="text-gray-500 text-center">' + jsTranslations.noStakeholder + '</p>';
                 return;
             }
 
@@ -335,7 +363,7 @@ $isSubmitted = $carto['is_submitted'] == 1;
                     </div>
                     <div class="text-right">
                         <small>I: ${s.influence}/10, Int: ${s.interest}/10</small><br>
-                        <button onclick="removeStakeholder(${s.id})" class="text-red-600 hover:text-red-800 text-sm">Supprimer</button>
+                        <button onclick="removeStakeholder(${s.id})" class="text-red-600 hover:text-red-800 text-sm">${jsTranslations.delete}</button>
                     </div>
                 `;
                 c.appendChild(item);
@@ -343,19 +371,18 @@ $isSubmitted = $carto['is_submitted'] == 1;
         }
 
         function getQuadrant(influence, interest) {
-            if (influence > 5 && interest > 5) return 'Gerer etroitement';
-            if (influence > 5 && interest <= 5) return 'Maintenir satisfait';
-            if (influence <= 5 && interest <= 5) return 'Surveiller';
-            return 'Tenir informe';
+            if (influence > 5 && interest > 5) return jsTranslations.manageClosely;
+            if (influence > 5 && interest <= 5) return jsTranslations.keepSatisfied;
+            if (influence <= 5 && interest <= 5) return jsTranslations.monitor;
+            return jsTranslations.keepInformed;
         }
 
         function getStrategy(quadrant) {
-            const strategies = {
-                'Gerer etroitement': 'Co-construction, implication directe dans les decisions',
-                'Maintenir satisfait': 'Information reguliere, consultation ponctuelle',
-                'Surveiller': 'Veille passive, communication minimale',
-                'Tenir informe': 'Communication transparente et reguliere'
-            };
+            const strategies = {};
+            strategies[jsTranslations.manageClosely] = jsTranslations.strategyManage;
+            strategies[jsTranslations.keepSatisfied] = jsTranslations.strategySatisfied;
+            strategies[jsTranslations.monitor] = jsTranslations.strategyMonitor;
+            strategies[jsTranslations.keepInformed] = jsTranslations.strategyInformed;
             return strategies[quadrant] || '';
         }
 
@@ -384,14 +411,14 @@ $isSubmitted = $carto['is_submitted'] == 1;
                 div.innerHTML = `
                     <strong>${q}</strong> (${groups[q].length})<br>
                     <em class="text-gray-600">${getStrategy(q)}</em><br>
-                    <small><strong>Concernes:</strong> ${groups[q].map(s => s.name).join(', ')}</small>
+                    <small><strong>${jsTranslations.concerned}:</strong> ${groups[q].map(s => s.name).join(', ')}</small>
                 `;
                 content.appendChild(div);
             });
         }
 
         function removeStakeholder(id) {
-            if (confirm('Supprimer cette partie prenante ?')) {
+            if (confirm(jsTranslations.confirmDelete)) {
                 stakeholders = stakeholders.filter(s => s.id !== id);
                 updateMatrix();
                 updateStakeholdersList();
@@ -402,7 +429,7 @@ $isSubmitted = $carto['is_submitted'] == 1;
 
         function scheduleAutoSave() {
             if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
-            document.getElementById('saveStatus').textContent = 'Sauvegarde...';
+            document.getElementById('saveStatus').textContent = jsTranslations.saving;
             document.getElementById('saveStatus').className = 'text-sm px-3 py-1 rounded-full bg-yellow-500 text-yellow-900';
             autoSaveTimeout = setTimeout(saveData, 1000);
         }
@@ -423,16 +450,16 @@ $isSubmitted = $carto['is_submitted'] == 1;
                 const result = await response.json();
 
                 if (result.success) {
-                    document.getElementById('saveStatus').textContent = 'Enregistre';
+                    document.getElementById('saveStatus').textContent = jsTranslations.saved;
                     document.getElementById('saveStatus').className = 'text-sm px-3 py-1 rounded-full bg-green-500 text-white';
-                    document.getElementById('completion').innerHTML = 'Completion: <strong>' + result.completion + '%</strong>';
+                    document.getElementById('completion').innerHTML = jsTranslations.completion + ': <strong>' + result.completion + '%</strong>';
                 } else {
-                    document.getElementById('saveStatus').textContent = 'Erreur';
+                    document.getElementById('saveStatus').textContent = jsTranslations.error;
                     document.getElementById('saveStatus').className = 'text-sm px-3 py-1 rounded-full bg-red-500 text-white';
                 }
             } catch (error) {
                 console.error('Erreur:', error);
-                document.getElementById('saveStatus').textContent = 'Erreur reseau';
+                document.getElementById('saveStatus').textContent = jsTranslations.networkError;
             }
         }
 
@@ -442,18 +469,18 @@ $isSubmitted = $carto['is_submitted'] == 1;
         }
 
         async function submitCarto() {
-            if (!confirm('Marquer comme termine ? Vous pourrez toujours modifier ensuite.')) return;
+            if (!confirm(jsTranslations.confirmSubmit)) return;
             await saveData();
 
             try {
                 const response = await fetch('api/submit.php', { method: 'POST' });
                 const result = await response.json();
                 if (result.success) {
-                    document.getElementById('saveStatus').textContent = 'Soumis';
+                    document.getElementById('saveStatus').textContent = jsTranslations.submitted;
                     document.getElementById('saveStatus').className = 'text-sm px-3 py-1 rounded-full bg-purple-500 text-white';
-                    alert('Marque comme termine !');
+                    alert(jsTranslations.markedComplete);
                 } else {
-                    alert(result.error || 'Erreur lors de la soumission');
+                    alert(result.error || jsTranslations.error);
                 }
             } catch (error) {
                 console.error('Erreur:', error);

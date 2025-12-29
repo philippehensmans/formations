@@ -5,11 +5,11 @@ requireLoginWithSession();
 $user = getCurrentUser();
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="<?= getCurrentLanguage() ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arbre à Problèmes & Solutions - <?= sanitize($user['username']) ?></title>
+    <title><?= t('problemtree.title') ?> - <?= sanitize($user['username']) ?></title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -408,46 +408,48 @@ $user = getCurrentUser();
     </style>
 </head>
 <body>
+    <?= renderLanguageScript() ?>
     <div style="max-width: 1400px; margin: 0 auto;">
         <div class="user-bar no-print">
             <div class="user-info">
-                Connecté : <strong><?= sanitize($user['username']) ?></strong>
+                <?= t('app.connected') ?> : <strong><?= sanitize($user['username']) ?></strong>
                 <?php if ($user['is_admin']): ?>
-                    <a href="admin.php" style="margin-left: 10px;">Interface Formateur</a>
+                    <a href="admin.php" style="margin-left: 10px;"><?= t('trainer.title') ?></a>
                 <?php endif; ?>
             </div>
+            <?= renderLanguageSelector('text-sm bg-white/20 text-white px-2 py-1 rounded border border-white/30') ?>
             <div class="share-toggle">
                 <input type="checkbox" id="shareToggle" onchange="toggleShare()">
-                <label for="shareToggle">Partager avec le formateur</label>
+                <label for="shareToggle"><?= t('problemtree.share_trainer') ?></label>
             </div>
-            <div class="save-status" id="saveStatus">Chargement...</div>
-            <a href="logout.php">Déconnexion</a>
+            <div class="save-status" id="saveStatus"><?= t('common.loading') ?></div>
+            <a href="logout.php"><?= t('auth.logout') ?></a>
         </div>
 
         <div class="container">
             <header>
-                <h1>Analyse du Contexte & Identification des Enjeux</h1>
-                <p>Méthode : Arbre à Problèmes -> Arbre à Solutions</p>
+                <h1><?= t('problemtree.app_title') ?></h1>
+                <p><?= t('problemtree.app_subtitle') ?></p>
             </header>
 
             <div class="form-group">
-                <label for="nomProjet">Nom du Projet</label>
-                <input type="text" id="nomProjet" placeholder="Ex: Amélioration de l'accès à l'eau potable" oninput="updateTree()">
+                <label for="nomProjet"><?= t('problemtree.project_name') ?></label>
+                <input type="text" id="nomProjet" placeholder="<?= t('problemtree.project_placeholder') ?>" oninput="updateTree()">
             </div>
 
             <div class="form-group">
-                <label for="participants">Groupe / Participants</label>
-                <input type="text" id="participants" placeholder="Noms des participants du groupe" oninput="scheduleAutoSave()">
+                <label for="participants"><?= t('problemtree.group_participants') ?></label>
+                <input type="text" id="participants" placeholder="<?= t('problemtree.participants_placeholder') ?>" oninput="scheduleAutoSave()">
             </div>
 
             <div class="view-toggle no-print">
-                <button class="btn btn-outline active" onclick="switchView('tree')">Vue Arbre</button>
-                <button class="btn btn-outline" onclick="switchView('form')">Vue Formulaire</button>
+                <button class="btn btn-outline active" onclick="switchView('tree')"><?= t('problemtree.tree_view') ?></button>
+                <button class="btn btn-outline" onclick="switchView('form')"><?= t('problemtree.form_view') ?></button>
             </div>
 
             <div class="tabs no-print">
-                <button id="tab-problemes" class="tab-button active" onclick="switchTab('problemes')">Arbre à Problèmes</button>
-                <button id="tab-solutions" class="tab-button" onclick="switchTab('solutions')">Arbre à Solutions</button>
+                <button id="tab-problemes" class="tab-button active" onclick="switchTab('problemes')"><?= t('problemtree.problems_tree') ?></button>
+                <button id="tab-solutions" class="tab-button" onclick="switchTab('solutions')"><?= t('problemtree.solutions_tree') ?></button>
             </div>
 
             <!-- VUE ARBRE - Problèmes -->
@@ -455,32 +457,32 @@ $user = getCurrentUser();
                 <div class="legend no-print">
                     <div class="legend-item">
                         <div class="legend-color" style="background: #fef2f2; color: #fecaca;"></div>
-                        <span>Conséquences</span>
+                        <span><?= t('problemtree.consequences') ?></span>
                     </div>
                     <div class="legend-item">
                         <div class="legend-color" style="background: #fff7ed; color: #fb923c;"></div>
-                        <span>Problème central</span>
+                        <span><?= t('problemtree.central_problem') ?></span>
                     </div>
                     <div class="legend-item">
                         <div class="legend-color" style="background: #fffbeb; color: #fde68a;"></div>
-                        <span>Causes</span>
+                        <span><?= t('problemtree.causes') ?></span>
                     </div>
                 </div>
 
                 <div class="tree-container">
-                    <div class="section-label">Conséquences (Effets du problème)</div>
+                    <div class="section-label"><?= t('problemtree.consequences_effects') ?></div>
                     <div class="consequences-section" id="tree-consequences">
-                        <button class="add-node-btn" onclick="addConsequence()">+ Ajouter une conséquence</button>
+                        <button class="add-node-btn" onclick="addConsequence()">+ <?= t('problemtree.add_consequence') ?></button>
                     </div>
 
                     <div class="tree-node central" onclick="editCentralNode('problemeCentral')">
-                        <div class="node-title">Problème Central</div>
-                        <div class="node-content central-node editable" id="tree-problemeCentral">Cliquez pour définir le problème central</div>
+                        <div class="node-title"><?= t('problemtree.central_problem') ?></div>
+                        <div class="node-content central-node editable" id="tree-problemeCentral"><?= t('problemtree.click_define_problem') ?></div>
                     </div>
 
-                    <div class="section-label">Causes (Racines du problème)</div>
+                    <div class="section-label"><?= t('problemtree.causes_roots') ?></div>
                     <div class="causes-section" id="tree-causes">
-                        <button class="add-node-btn" onclick="addCause()">+ Ajouter une cause</button>
+                        <button class="add-node-btn" onclick="addCause()">+ <?= t('problemtree.add_cause') ?></button>
                     </div>
                 </div>
             </div>
@@ -490,32 +492,32 @@ $user = getCurrentUser();
                 <div class="legend no-print">
                     <div class="legend-item">
                         <div class="legend-color" style="background: #f0fdf4; color: #bbf7d0;"></div>
-                        <span>Objectifs</span>
+                        <span><?= t('problemtree.objectives') ?></span>
                     </div>
                     <div class="legend-item">
                         <div class="legend-color" style="background: #fff7ed; color: #fb923c;"></div>
-                        <span>Objectif central</span>
+                        <span><?= t('problemtree.central_objective') ?></span>
                     </div>
                     <div class="legend-item">
                         <div class="legend-color" style="background: #eff6ff; color: #bfdbfe;"></div>
-                        <span>Moyens</span>
+                        <span><?= t('problemtree.means') ?></span>
                     </div>
                 </div>
 
                 <div class="tree-container">
-                    <div class="section-label">Objectifs / Impacts Positifs</div>
+                    <div class="section-label"><?= t('problemtree.positive_impacts') ?></div>
                     <div class="consequences-section" id="tree-objectifs">
-                        <button class="add-node-btn" onclick="addObjectif()">+ Ajouter un objectif</button>
+                        <button class="add-node-btn" onclick="addObjectif()">+ <?= t('problemtree.add_objective') ?></button>
                     </div>
 
                     <div class="tree-node central" onclick="editCentralNode('objectifCentral')">
-                        <div class="node-title">Objectif Central</div>
-                        <div class="node-content central-node editable" id="tree-objectifCentral">Cliquez pour définir l'objectif central</div>
+                        <div class="node-title"><?= t('problemtree.central_objective') ?></div>
+                        <div class="node-content central-node editable" id="tree-objectifCentral"><?= t('problemtree.click_define_objective') ?></div>
                     </div>
 
-                    <div class="section-label">Moyens / Actions à Mettre en Oeuvre</div>
+                    <div class="section-label"><?= t('problemtree.means_actions') ?></div>
                     <div class="causes-section" id="tree-moyens">
-                        <button class="add-node-btn" onclick="addMoyen()">+ Ajouter un moyen</button>
+                        <button class="add-node-btn" onclick="addMoyen()">+ <?= t('problemtree.add_means') ?></button>
                     </div>
                 </div>
             </div>
@@ -525,27 +527,27 @@ $user = getCurrentUser();
                 <div class="section section-consequences">
                     <div class="section-header">
                         <div>
-                            <div class="section-title">Conséquences (Effets)</div>
-                            <div class="info-text">Quels sont les impacts négatifs du problème ?</div>
+                            <div class="section-title"><?= t('problemtree.consequences_effects') ?></div>
+                            <div class="info-text"><?= t('problemtree.consequences_desc') ?></div>
                         </div>
-                        <button onclick="addConsequence()" class="btn btn-red">+ Ajouter</button>
+                        <button onclick="addConsequence()" class="btn btn-red">+ <?= t('common.add') ?></button>
                     </div>
                     <div id="consequencesList" class="item-list"></div>
                 </div>
 
                 <div class="section section-central">
-                    <div class="section-title">Problème Central</div>
-                    <div class="info-text" style="text-align: center; margin-bottom: 16px;">Quel est le problème principal ?</div>
-                    <textarea id="problemeCentral" rows="3" class="central-input" placeholder="Ex: Accès insuffisant à l'eau potable" oninput="updateTree()"></textarea>
+                    <div class="section-title"><?= t('problemtree.central_problem') ?></div>
+                    <div class="info-text" style="text-align: center; margin-bottom: 16px;"><?= t('problemtree.central_problem_question') ?></div>
+                    <textarea id="problemeCentral" rows="3" class="central-input" placeholder="<?= t('problemtree.project_placeholder') ?>" oninput="updateTree()"></textarea>
                 </div>
 
                 <div class="section section-causes">
                     <div class="section-header">
                         <div>
-                            <div class="section-title">Causes (Racines)</div>
-                            <div class="info-text">Quelles sont les causes profondes ?</div>
+                            <div class="section-title"><?= t('problemtree.causes_roots') ?></div>
+                            <div class="info-text"><?= t('problemtree.causes_desc') ?></div>
                         </div>
-                        <button onclick="addCause()" class="btn btn-amber">+ Ajouter</button>
+                        <button onclick="addCause()" class="btn btn-amber">+ <?= t('common.add') ?></button>
                     </div>
                     <div id="causesList" class="item-list"></div>
                 </div>
@@ -556,42 +558,66 @@ $user = getCurrentUser();
                 <div class="section section-objectifs">
                     <div class="section-header">
                         <div>
-                            <div class="section-title">Objectifs / Impacts Positifs</div>
-                            <div class="info-text">Résultats positifs souhaités</div>
+                            <div class="section-title"><?= t('problemtree.objectives') ?></div>
+                            <div class="info-text"><?= t('problemtree.objectives_desc') ?></div>
                         </div>
-                        <button onclick="addObjectif()" class="btn btn-green">+ Ajouter</button>
+                        <button onclick="addObjectif()" class="btn btn-green">+ <?= t('common.add') ?></button>
                     </div>
                     <div id="objectifsList" class="item-list"></div>
                 </div>
 
                 <div class="section section-central">
-                    <div class="section-title">Objectif Central</div>
-                    <div class="info-text" style="text-align: center; margin-bottom: 16px;">Reformulation positive du problème</div>
-                    <textarea id="objectifCentral" rows="3" class="central-input" placeholder="Ex: Garantir un accès durable à l'eau potable" oninput="updateTree()"></textarea>
+                    <div class="section-title"><?= t('problemtree.central_objective') ?></div>
+                    <div class="info-text" style="text-align: center; margin-bottom: 16px;"><?= t('problemtree.central_objective_reformulation') ?></div>
+                    <textarea id="objectifCentral" rows="3" class="central-input" placeholder="<?= t('problemtree.project_placeholder') ?>" oninput="updateTree()"></textarea>
                 </div>
 
                 <div class="section section-moyens">
                     <div class="section-header">
                         <div>
-                            <div class="section-title">Moyens / Actions</div>
-                            <div class="info-text">Actions concrètes à mettre en oeuvre</div>
+                            <div class="section-title"><?= t('problemtree.means') ?></div>
+                            <div class="info-text"><?= t('problemtree.means_desc') ?></div>
                         </div>
-                        <button onclick="addMoyen()" class="btn btn-blue">+ Ajouter</button>
+                        <button onclick="addMoyen()" class="btn btn-blue">+ <?= t('common.add') ?></button>
                     </div>
                     <div id="moyensList" class="item-list"></div>
                 </div>
             </div>
 
             <div class="actions no-print">
-                <button onclick="window.print()" class="btn btn-primary">Imprimer / PDF</button>
-                <button onclick="exportJSON()" class="btn btn-outline">Exporter JSON</button>
-                <button onclick="exportToExcel()" class="btn btn-outline">Exporter Excel</button>
-                <button onclick="resetForm()" class="btn btn-outline">Réinitialiser</button>
+                <button onclick="window.print()" class="btn btn-primary"><?= t('common.print') ?> / PDF</button>
+                <button onclick="exportJSON()" class="btn btn-outline"><?= t('common.export') ?> JSON</button>
+                <button onclick="exportToExcel()" class="btn btn-outline"><?= t('app.export_excel') ?></button>
+                <button onclick="resetForm()" class="btn btn-outline"><?= t('app.reset') ?></button>
             </div>
         </div>
     </div>
 
     <script>
+        // Traductions JavaScript
+        const jsTranslations = {
+            dataLoaded: '<?= t('app.data_loaded') ?>',
+            loadError: '<?= t('app.load_error') ?>',
+            pendingChanges: '<?= t('app.pending_changes') ?>',
+            saving: '<?= t('app.saving') ?>',
+            savedAt: '<?= t('app.saved_at') ?>',
+            connectionError: '<?= t('app.connection_error') ?>',
+            sharedWithTrainer: '<?= t('problemtree.shared_with_trainer') ?>',
+            notShared: '<?= t('problemtree.not_shared') ?>',
+            clickDefineProb: '<?= t('problemtree.click_define_problem') ?>',
+            clickDefineObj: '<?= t('problemtree.click_define_objective') ?>',
+            addConsequence: '<?= t('problemtree.add_consequence') ?>',
+            addCause: '<?= t('problemtree.add_cause') ?>',
+            addObjective: '<?= t('problemtree.add_objective') ?>',
+            addMeans: '<?= t('problemtree.add_means') ?>',
+            newConsequence: '<?= t('problemtree.new_consequence') ?>',
+            newCause: '<?= t('problemtree.new_cause') ?>',
+            newObjective: '<?= t('problemtree.new_objective') ?>',
+            newMeans: '<?= t('problemtree.new_means') ?>',
+            deleteConfirm: '<?= t('problemtree.delete_confirm') ?>',
+            resetConfirm: '<?= t('problemtree.reset_confirm') ?>'
+        };
+
         let currentView = 'tree';
         let currentTab = 'problemes';
         let data = { consequences: [], causes: [], objectifs: [], moyens: [] };
@@ -620,21 +646,21 @@ $user = getCurrentUser();
                     updateTree();
                     updateFormLists();
                 }
-                updateSaveStatus('Données chargées');
+                updateSaveStatus(jsTranslations.dataLoaded);
             } catch (error) {
                 console.error('Erreur de chargement:', error);
-                updateSaveStatus('Erreur de chargement');
+                updateSaveStatus(jsTranslations.loadError);
             }
         }
 
         function scheduleAutoSave() {
             if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
             autoSaveTimeout = setTimeout(saveToServer, 1500);
-            updateSaveStatus('Modifications en attente...');
+            updateSaveStatus(jsTranslations.pendingChanges);
         }
 
         async function saveToServer() {
-            updateSaveStatus('Sauvegarde...');
+            updateSaveStatus(jsTranslations.saving);
             try {
                 const saveData = {
                     nomProjet: document.getElementById('nomProjet').value,
@@ -655,13 +681,13 @@ $user = getCurrentUser();
 
                 const result = await response.json();
                 if (result.success) {
-                    updateSaveStatus('Sauvegardé à ' + new Date().toLocaleTimeString());
+                    updateSaveStatus(jsTranslations.savedAt + ' ' + new Date().toLocaleTimeString());
                 } else {
-                    updateSaveStatus('Erreur: ' + result.error);
+                    updateSaveStatus(jsTranslations.error + ': ' + result.error);
                 }
             } catch (error) {
                 console.error('Erreur de sauvegarde:', error);
-                updateSaveStatus('Erreur de connexion');
+                updateSaveStatus(jsTranslations.connectionError);
             }
         }
 
@@ -673,7 +699,7 @@ $user = getCurrentUser();
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ shared: isShared })
                 });
-                updateSaveStatus(isShared ? 'Partagé avec le formateur' : 'Non partagé');
+                updateSaveStatus(isShared ? jsTranslations.sharedWithTrainer : jsTranslations.notShared);
             } catch (error) {
                 console.error('Erreur:', error);
             }
@@ -726,12 +752,12 @@ $user = getCurrentUser();
         function updateTree() {
             const problemeCentral = document.getElementById('problemeCentral').value;
             const treeProblemeCentral = document.getElementById('tree-problemeCentral');
-            treeProblemeCentral.textContent = problemeCentral || 'Cliquez pour définir le problème central';
+            treeProblemeCentral.textContent = problemeCentral || jsTranslations.clickDefineProb;
             treeProblemeCentral.classList.toggle('empty', !problemeCentral);
 
             const objectifCentral = document.getElementById('objectifCentral').value;
             const treeObjectifCentral = document.getElementById('tree-objectifCentral');
-            treeObjectifCentral.textContent = objectifCentral || "Cliquez pour définir l'objectif central";
+            treeObjectifCentral.textContent = objectifCentral || jsTranslations.clickDefineObj;
             treeObjectifCentral.classList.toggle('empty', !objectifCentral);
 
             renderTreeNodes();
@@ -739,14 +765,17 @@ $user = getCurrentUser();
         }
 
         function renderTreeNodes() {
+            const labels = {
+                consequences: jsTranslations.addConsequence,
+                causes: jsTranslations.addCause,
+                objectifs: jsTranslations.addObjective,
+                moyens: jsTranslations.addMeans
+            };
             ['consequences', 'causes', 'objectifs', 'moyens'].forEach(key => {
                 const container = document.getElementById('tree-' + key);
                 const type = key === 'consequences' ? 'consequence' :
                             key === 'causes' ? 'cause' :
                             key === 'objectifs' ? 'objectif' : 'moyen';
-                const label = key === 'consequences' ? 'une conséquence' :
-                             key === 'causes' ? 'une cause' :
-                             key === 'objectifs' ? 'un objectif' : 'un moyen';
 
                 container.innerHTML = '';
                 data[key].forEach((text, index) => {
@@ -758,7 +787,7 @@ $user = getCurrentUser();
 
                 const addBtn = document.createElement('button');
                 addBtn.className = 'add-node-btn';
-                addBtn.textContent = '+ Ajouter ' + label;
+                addBtn.textContent = '+ ' + labels[key];
                 addBtn.onclick = () => addItem(key);
                 container.appendChild(addBtn);
             });
@@ -787,10 +816,10 @@ $user = getCurrentUser();
 
         function addItem(key) {
             const labels = {
-                consequences: 'Nouvelle conséquence:',
-                causes: 'Nouvelle cause:',
-                objectifs: 'Nouvel objectif:',
-                moyens: 'Nouveau moyen:'
+                consequences: jsTranslations.newConsequence,
+                causes: jsTranslations.newCause,
+                objectifs: jsTranslations.newObjective,
+                moyens: jsTranslations.newMeans
             };
             const text = prompt(labels[key]);
             if (text && text.trim()) {
@@ -815,7 +844,7 @@ $user = getCurrentUser();
         }
 
         function deleteNode(dataKey, index) {
-            if (confirm('Supprimer cet élément ?')) {
+            if (confirm(jsTranslations.deleteConfirm)) {
                 data[dataKey].splice(index, 1);
                 updateTree();
                 updateFormLists();
@@ -913,7 +942,7 @@ $user = getCurrentUser();
         }
 
         function resetForm() {
-            if (confirm('Etes-vous sur de vouloir réinitialiser le formulaire ?')) {
+            if (confirm(jsTranslations.resetConfirm)) {
                 document.getElementById('nomProjet').value = '';
                 document.getElementById('participants').value = '';
                 document.getElementById('problemeCentral').value = '';

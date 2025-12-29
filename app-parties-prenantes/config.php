@@ -7,6 +7,7 @@
 // Charger le systeme d'authentification partage
 require_once __DIR__ . '/../shared-auth/config.php';
 require_once __DIR__ . '/../shared-auth/sessions.php';
+require_once __DIR__ . '/../shared-auth/lang.php';
 
 define('APP_NAME', 'Parties Prenantes');
 define('APP_COLOR', 'purple');
