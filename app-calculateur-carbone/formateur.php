@@ -131,20 +131,34 @@ if ($selectedSessionId) {
     $selectedSession = $stmt->fetch();
 
     if ($selectedSession) {
-        // Participants
+        // Participants - requete locale puis enrichissement depuis shared DB
         $stmt = $db->prepare("
-            SELECT u.id, u.prenom, u.username,
+            SELECT p.user_id,
                    COALESCE(SUM(c.co2_total), 0) as total_co2,
                    COUNT(c.id) as nb_calculs
             FROM participants p
-            JOIN users u ON p.user_id = u.id
-            LEFT JOIN calculs c ON c.user_id = u.id AND c.session_id = p.session_id
+            LEFT JOIN calculs c ON c.user_id = p.user_id AND c.session_id = p.session_id
             WHERE p.session_id = ?
-            GROUP BY u.id
+            GROUP BY p.user_id
             ORDER BY total_co2 DESC
         ");
         $stmt->execute([$selectedSessionId]);
-        $participants = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $participantsData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Enrichir avec les infos utilisateur depuis la base partagee
+        $sharedDb = getSharedDB();
+        $participants = [];
+        foreach ($participantsData as $p) {
+            $stmtUser = $sharedDb->prepare("SELECT id, prenom, username FROM users WHERE id = ?");
+            $stmtUser->execute([$p['user_id']]);
+            $userData = $stmtUser->fetch(PDO::FETCH_ASSOC);
+            if ($userData) {
+                $participants[] = array_merge($userData, [
+                    'total_co2' => $p['total_co2'],
+                    'nb_calculs' => $p['nb_calculs']
+                ]);
+            }
+        }
 
         // Total session
         $stmt = $db->prepare("SELECT SUM(co2_total) as total FROM calculs WHERE session_id = ?");
