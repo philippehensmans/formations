@@ -6,6 +6,7 @@
 
 require_once __DIR__ . '/../shared-auth/config.php';
 require_once __DIR__ . '/../shared-auth/sessions.php';
+require_once __DIR__ . '/../shared-auth/lang.php';
 
 define('APP_NAME', 'Carte Mentale');
 define('APP_COLOR', 'violet');

@@ -46,11 +46,11 @@ foreach ($participantIds as $pid) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="<?= getCurrentLanguage() ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carte Mentale - <?= h($session['nom']) ?></title>
+    <title><?= t('mindmap.title') ?> - <?= h($session['nom']) ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .mindmap-container {
@@ -151,40 +151,42 @@ foreach ($participantIds as $pid) {
         <div class="flex items-center gap-4">
             <h1 class="font-bold text-violet-600"><?= h($session['nom']) ?></h1>
             <span class="text-sm text-gray-500">Code: <span class="font-mono"><?= h($session['code']) ?></span></span>
-            <span id="syncStatus" class="text-xs px-2 py-1 rounded bg-green-100 text-green-700">Connecte</span>
+            <span id="syncStatus" class="text-xs px-2 py-1 rounded bg-green-100 text-green-700"><?= t('mindmap.connected') ?></span>
         </div>
         <div class="flex items-center gap-4">
+            <?= renderLanguageSelector('lang-select') ?>
             <div class="text-sm text-gray-500">
-                <?= count($participants) ?> participant<?= count($participants) > 1 ? 's' : '' ?>
+                <?= count($participants) ?> <?= count($participants) > 1 ? t('mindmap.participants') : t('mindmap.participant') ?>
             </div>
             <span class="text-sm font-medium text-gray-700"><?= h($user['prenom']) ?></span>
-            <a href="logout.php" class="text-sm text-gray-500 hover:text-gray-700">Deconnexion</a>
+            <a href="logout.php" class="text-sm text-gray-500 hover:text-gray-700"><?= t('mindmap.logout') ?></a>
         </div>
     </header>
+    <?= renderLanguageScript() ?>
 
     <!-- Toolbar -->
     <div class="bg-white border-b px-4 py-2 flex items-center gap-2 flex-wrap">
-        <button onclick="zoomIn()" class="toolbar-btn bg-gray-100 hover:bg-gray-200">➕ Zoom</button>
-        <button onclick="zoomOut()" class="toolbar-btn bg-gray-100 hover:bg-gray-200">➖ Zoom</button>
-        <button onclick="resetView()" class="toolbar-btn bg-gray-100 hover:bg-gray-200">🎯 Centrer</button>
+        <button onclick="zoomIn()" class="toolbar-btn bg-gray-100 hover:bg-gray-200">➕ <?= t('mindmap.zoom_in') ?></button>
+        <button onclick="zoomOut()" class="toolbar-btn bg-gray-100 hover:bg-gray-200">➖ <?= t('mindmap.zoom_out') ?></button>
+        <button onclick="resetView()" class="toolbar-btn bg-gray-100 hover:bg-gray-200">🎯 <?= t('mindmap.center') ?></button>
         <div class="w-px h-6 bg-gray-300 mx-2"></div>
-        <span class="text-sm text-gray-500">Couleurs:</span>
+        <span class="text-sm text-gray-500"><?= t('mindmap.colors') ?>:</span>
         <?php foreach ($colors as $colorKey => $colorClass): ?>
             <button onclick="setCurrentColor('<?= $colorKey ?>')"
                     class="w-6 h-6 rounded-full <?= $colorClass['bg'] ?> border-2 border-white shadow color-btn"
                     data-color="<?= $colorKey ?>" title="<?= ucfirst($colorKey) ?>"></button>
         <?php endforeach; ?>
         <div class="w-px h-6 bg-gray-300 mx-2"></div>
-        <span class="text-sm text-gray-500">Icones:</span>
+        <span class="text-sm text-gray-500"><?= t('mindmap.icons') ?>:</span>
         <?php foreach ($icons as $iconKey => $icon): ?>
             <button onclick="setCurrentIcon('<?= $iconKey ?>')"
                     class="toolbar-btn bg-gray-100 hover:bg-gray-200 icon-btn"
-                    data-icon="<?= $iconKey ?>" title="<?= $icon['label'] ?>"><?= $icon['emoji'] ?></button>
+                    data-icon="<?= $iconKey ?>" title="<?= t('mindmap.icon_' . $iconKey) ?>"><?= $icon['emoji'] ?></button>
         <?php endforeach; ?>
-        <button onclick="setCurrentIcon(null)" class="toolbar-btn bg-gray-100 hover:bg-gray-200" title="Sans icone">🚫</button>
+        <button onclick="setCurrentIcon(null)" class="toolbar-btn bg-gray-100 hover:bg-gray-200" title="<?= t('mindmap.no_icon') ?>">🚫</button>
         <div class="flex-1"></div>
-        <button onclick="exportRTF()" class="toolbar-btn bg-violet-100 text-violet-700 hover:bg-violet-200">📄 Export RTF</button>
-        <button onclick="exportPDF()" class="toolbar-btn bg-violet-100 text-violet-700 hover:bg-violet-200">📑 Export PDF</button>
+        <button onclick="exportRTF()" class="toolbar-btn bg-violet-100 text-violet-700 hover:bg-violet-200">📄 <?= t('mindmap.export_rtf') ?></button>
+        <button onclick="exportPDF()" class="toolbar-btn bg-violet-100 text-violet-700 hover:bg-violet-200">📑 <?= t('mindmap.export_pdf') ?></button>
     </div>
 
     <!-- Mindmap Container -->
@@ -196,22 +198,22 @@ foreach ($participantIds as $pid) {
     <!-- Modal Edition -->
     <div id="editModal" class="modal hidden">
         <div class="bg-white rounded-xl shadow-xl p-6 w-[480px] max-h-[90vh] overflow-y-auto">
-            <h3 class="text-lg font-bold mb-4">Modifier le noeud</h3>
+            <h3 class="text-lg font-bold mb-4"><?= t('mindmap.edit_node') ?></h3>
             <input type="hidden" id="editNodeId">
             <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Texte</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1"><?= t('mindmap.text') ?></label>
                 <input type="text" id="editNodeText" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500" maxlength="100">
             </div>
             <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Note (description)</label>
-                <textarea id="editNodeNote" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 h-20" placeholder="Description detaillee..."></textarea>
+                <label class="block text-sm font-medium text-gray-700 mb-1"><?= t('mindmap.note') ?></label>
+                <textarea id="editNodeNote" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 h-20" placeholder="<?= t('mindmap.note_placeholder') ?>"></textarea>
             </div>
             <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Lien vers fichier (URL)</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1"><?= t('mindmap.file_link') ?></label>
                 <input type="url" id="editNodeFileUrl" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500" placeholder="https://...">
             </div>
             <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Couleur</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1"><?= t('mindmap.color') ?></label>
                 <div class="flex gap-2">
                     <?php foreach ($colors as $colorKey => $colorClass): ?>
                         <button type="button" onclick="selectEditColor('<?= $colorKey ?>')"
@@ -221,9 +223,9 @@ foreach ($participantIds as $pid) {
                 </div>
             </div>
             <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Icone</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1"><?= t('mindmap.icon') ?></label>
                 <div class="flex gap-2 flex-wrap">
-                    <button type="button" onclick="selectEditIcon(null)" class="px-2 py-1 border rounded edit-icon-btn" data-icon="">Aucune</button>
+                    <button type="button" onclick="selectEditIcon(null)" class="px-2 py-1 border rounded edit-icon-btn" data-icon=""><?= t('mindmap.none') ?></button>
                     <?php foreach ($icons as $iconKey => $icon): ?>
                         <button type="button" onclick="selectEditIcon('<?= $iconKey ?>')"
                                 class="px-2 py-1 border rounded edit-icon-btn"
@@ -232,18 +234,35 @@ foreach ($participantIds as $pid) {
                 </div>
             </div>
             <div class="flex justify-end gap-2">
-                <button onclick="closeEditModal()" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Annuler</button>
-                <button onclick="saveNodeEdit()" class="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700">Enregistrer</button>
+                <button onclick="closeEditModal()" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"><?= t('mindmap.cancel') ?></button>
+                <button onclick="saveNodeEdit()" class="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700"><?= t('mindmap.save') ?></button>
             </div>
         </div>
     </div>
 
     <script>
+        // Translations for JavaScript
+        const trans = {
+            connected: '<?= t('mindmap.connected') ?>',
+            syncing: '<?= t('mindmap.syncing') ?>',
+            error: '<?= t('mindmap.error') ?>',
+            hasNote: '<?= t('mindmap.has_note') ?>',
+            openLink: '<?= t('mindmap.open_link') ?>',
+            addChild: '<?= t('mindmap.add_child') ?>',
+            edit: '<?= t('mindmap.edit') ?>',
+            delete: '<?= t('mindmap.delete') ?>',
+            newNodeText: '<?= t('mindmap.new_node_text') ?>',
+            deleteConfirm: '<?= t('mindmap.delete_confirm') ?>',
+            noData: '<?= t('mindmap.no_data') ?>',
+            title: '<?= t('mindmap.title') ?>',
+            link: '<?= t('mindmap.link') ?>'
+        };
+
         // Configuration
         const mindmapId = <?= $mindmap['id'] ?>;
         const userId = <?= $user['id'] ?>;
         const icons = <?= json_encode($icons) ?>;
-        const colors = <?= json_encode(array_map(fn($c) => $c['bg'], $colors)) ?>;
+        const colors = <?= json_encode(array_map(function($c) { return $c['bg']; }, $colors)) ?>;
 
         // Etat
         let nodes = <?= json_encode($nodes) ?>;
@@ -313,8 +332,8 @@ foreach ($participantIds as $pid) {
             const hasNote = node.note && node.note.trim();
             const hasFile = node.file_url && node.file_url.trim();
             const indicators = [];
-            if (hasNote) indicators.push('<span title="A une note" style="cursor:help">📝</span>');
-            if (hasFile) indicators.push(`<a href="${escapeHtml(node.file_url)}" target="_blank" title="Ouvrir le lien" onclick="event.stopPropagation()" style="text-decoration:none">🔗</a>`);
+            if (hasNote) indicators.push(`<span title="${trans.hasNote}" style="cursor:help">📝</span>`);
+            if (hasFile) indicators.push(`<a href="${escapeHtml(node.file_url)}" target="_blank" title="${trans.openLink}" onclick="event.stopPropagation()" style="text-decoration:none">🔗</a>`);
             const indicatorHtml = indicators.length ? `<span class="node-indicators" style="margin-left:4px;font-size:12px">${indicators.join('')}</span>` : '';
 
             // Contenu
@@ -322,9 +341,9 @@ foreach ($participantIds as $pid) {
             el.innerHTML = `
                 ${iconHtml}<span class="node-text">${escapeHtml(node.text)}</span>${indicatorHtml}
                 <div class="node-actions">
-                    <button class="node-btn bg-green-500 text-white" onclick="addChild(${node.id})" title="Ajouter enfant">+</button>
-                    <button class="node-btn bg-blue-500 text-white" onclick="editNode(${node.id})" title="Modifier">✏️</button>
-                    ${!node.is_root ? `<button class="node-btn bg-red-500 text-white" onclick="deleteNode(${node.id})" title="Supprimer">×</button>` : ''}
+                    <button class="node-btn bg-green-500 text-white" onclick="addChild(${node.id})" title="${trans.addChild}">+</button>
+                    <button class="node-btn bg-blue-500 text-white" onclick="editNode(${node.id})" title="${trans.edit}">✏️</button>
+                    ${!node.is_root ? `<button class="node-btn bg-red-500 text-white" onclick="deleteNode(${node.id})" title="${trans.delete}">×</button>` : ''}
                 </div>
             `;
 
@@ -497,7 +516,7 @@ foreach ($participantIds as $pid) {
         // Ajouter un enfant
         function addChild(parentId) {
             const parent = nodes.find(n => n.id == parentId);
-            const text = prompt('Texte du nouveau noeud:');
+            const text = prompt(trans.newNodeText);
             if (!text) return;
 
             // Position: decaler par rapport au parent
@@ -568,14 +587,14 @@ foreach ($participantIds as $pid) {
 
         // Supprimer
         function deleteNode(nodeId) {
-            if (!confirm('Supprimer ce noeud et tous ses enfants?')) return;
+            if (!confirm(trans.deleteConfirm)) return;
             apiCall('delete', {id: nodeId});
         }
 
         // API
         async function apiCall(action, data = {}) {
             const status = document.getElementById('syncStatus');
-            status.textContent = 'Synchronisation...';
+            status.textContent = trans.syncing;
             status.className = 'text-xs px-2 py-1 rounded bg-yellow-100 text-yellow-700 sync-indicator';
 
             try {
@@ -592,13 +611,13 @@ foreach ($participantIds as $pid) {
                         render();
                     }
                     lastUpdate = result.updated_at || lastUpdate;
-                    status.textContent = 'Connecte';
+                    status.textContent = trans.connected;
                     status.className = 'text-xs px-2 py-1 rounded bg-green-100 text-green-700';
                 } else {
-                    throw new Error(result.error || 'Erreur');
+                    throw new Error(result.error || trans.error);
                 }
             } catch (e) {
-                status.textContent = 'Erreur';
+                status.textContent = trans.error;
                 status.className = 'text-xs px-2 py-1 rounded bg-red-100 text-red-700';
                 console.error(e);
             }
@@ -645,12 +664,12 @@ foreach ($participantIds as $pid) {
         // Export RTF (telechargement direct)
         function exportRTF() {
             const tree = buildTree();
-            if (!tree) return alert('Aucune donnee a exporter');
+            if (!tree) return alert(trans.noData);
 
             let rtf = '{\\rtf1\\ansi\\deff0 {\\fonttbl{\\f0 Arial;}}\n';
             rtf += '{\\colortbl;\\red0\\green0\\blue0;\\red100\\green100\\blue100;}\n';
             rtf += '\\f0\\fs24\n';
-            rtf += '\\b Carte Mentale\\b0\\par\\par\n';
+            rtf += '\\b ' + trans.title + '\\b0\\par\\par\n';
 
             function addNode(node, level) {
                 const indent = '\\tab '.repeat(level);
@@ -664,7 +683,7 @@ foreach ($participantIds as $pid) {
                     rtf += `${indent}\\tab {\\i\\cf2 ${node.note}}\\par\n`;
                 }
                 if (node.file_url) {
-                    rtf += `${indent}\\tab {\\cf2 Lien: ${node.file_url}}\\par\n`;
+                    rtf += `${indent}\\tab {\\cf2 ${trans.link}: ${node.file_url}}\\par\n`;
                 }
 
                 if (node.children) {
@@ -688,7 +707,7 @@ foreach ($participantIds as $pid) {
         // Export PDF (via fenetre d'impression)
         function exportPDF() {
             const tree = buildTree();
-            if (!tree) return alert('Aucune donnee a exporter');
+            if (!tree) return alert(trans.noData);
 
             // Creer le contenu HTML pour l'impression
             let html = `
@@ -696,7 +715,7 @@ foreach ($participantIds as $pid) {
                 <html>
                 <head>
                     <meta charset="UTF-8">
-                    <title>Carte Mentale - Export</title>
+                    <title>${trans.title} - Export</title>
                     <style>
                         body { font-family: Arial, sans-serif; margin: 40px; }
                         h1 { color: #8b5cf6; margin-bottom: 20px; }
@@ -713,7 +732,7 @@ foreach ($participantIds as $pid) {
                     </style>
                 </head>
                 <body>
-                    <h1>Carte Mentale</h1>
+                    <h1>${trans.title}</h1>
             `;
 
             function renderNode(node, isRoot = false) {
