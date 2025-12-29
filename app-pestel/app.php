@@ -2,42 +2,60 @@
 /**
  * Interface de travail - Analyse PESTEL
  */
-require_once 'config/database.php';
-require_once __DIR__ . '/../shared-auth/lang.php';
-requireParticipant();
+require_once __DIR__ . '/config.php';
+
+// Vérifier l'authentification
+if (!isLoggedIn() || !isset($_SESSION['current_session_id'])) {
+    header('Location: login.php');
+    exit;
+}
 
 $db = getDB();
-$participant = getCurrentParticipant();
+$user = getLoggedUser();
+$participantId = $_SESSION['participant_id'] ?? null;
+$sessionId = $_SESSION['current_session_id'];
+$sessionNom = $_SESSION['current_session_nom'] ?? '';
 
-// Vérifier que le participant existe toujours en base
-if (!$participant) {
-    session_destroy();
-    header('Location: index.php');
+// Vérifier que le participant existe
+if (!$participantId) {
+    header('Location: login.php');
     exit;
 }
 
 // Charger l'analyse PESTEL
-$stmt = $db->prepare("SELECT * FROM analyse_pestel WHERE participant_id = ?");
-$stmt->execute([$participant['id']]);
+$stmt = $db->prepare("SELECT * FROM analyses WHERE user_id = ? AND session_id = ?");
+$stmt->execute([$user['id'], $sessionId]);
 $analyse = $stmt->fetch();
 
 if (!$analyse) {
-    $stmt = $db->prepare("INSERT INTO analyse_pestel (participant_id, session_id, pestel_data) VALUES (?, ?, ?)");
-    $stmt->execute([$participant['id'], $participant['session_id'], json_encode(getEmptyPestel())]);
-    $stmt = $db->prepare("SELECT * FROM analyse_pestel WHERE participant_id = ?");
-    $stmt->execute([$participant['id']]);
+    $stmt = $db->prepare("INSERT INTO analyses (user_id, session_id, pestel_data) VALUES (?, ?, ?)");
+    $stmt->execute([$user['id'], $sessionId, json_encode(getEmptyPestel())]);
+    $stmt = $db->prepare("SELECT * FROM analyses WHERE user_id = ? AND session_id = ?");
+    $stmt->execute([$user['id'], $sessionId]);
     $analyse = $stmt->fetch();
 }
 
 $pestelData = json_decode($analyse['pestel_data'], true) ?: getEmptyPestel();
-$isSubmitted = $analyse['is_submitted'] == 1;
+$isSubmitted = ($analyse['is_shared'] ?? 0) == 1;
+
+// Fonction helper pour PESTEL vide
+function getEmptyPestel() {
+    return [
+        'politique' => [''],
+        'economique' => [''],
+        'socioculturel' => [''],
+        'technologique' => [''],
+        'environnemental' => [''],
+        'legal' => ['']
+    ];
+}
 ?>
 <!DOCTYPE html>
 <html lang="<?= getCurrentLanguage() ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= t('pestel.title') ?> - <?= sanitize($participant['prenom']) ?> <?= sanitize($participant['nom']) ?></title>
+    <title><?= t('pestel.title') ?> - <?= h($user['prenom']) ?> <?= h($user['nom']) ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -52,8 +70,8 @@ $isSubmitted = $analyse['is_submitted'] == 1;
     <div class="max-w-6xl mx-auto mb-4 bg-white/90 backdrop-blur rounded-lg shadow-lg p-3 no-print">
         <div class="flex flex-wrap justify-between items-center gap-3">
             <div>
-                <span class="font-medium text-gray-800"><?= sanitize($participant['prenom']) ?> <?= sanitize($participant['nom']) ?></span>
-                <span class="text-gray-500 text-sm ml-2"><?= sanitize($participant['session_nom']) ?></span>
+                <span class="font-medium text-gray-800"><?= h($user['prenom']) ?> <?= h($user['nom']) ?></span>
+                <span class="text-gray-500 text-sm ml-2"><?= h($sessionNom) ?></span>
             </div>
             <div class="flex items-center gap-3">
                 <?= renderLanguageSelector('text-sm bg-white/20 text-gray-800 px-2 py-1 rounded border border-gray-300') ?>
@@ -63,7 +81,7 @@ $isSubmitted = $analyse['is_submitted'] == 1;
                 <span id="saveStatus" class="text-sm px-3 py-1 rounded-full bg-gray-200">
                     <?= $isSubmitted ? t('app.submitted') : t('app.draft') ?>
                 </span>
-                <span id="completion" class="text-sm text-gray-600"><?= t('app.completion') ?>: <strong><?= $analyse['completion_percent'] ?>%</strong></span>
+                <span id="completion" class="text-sm text-gray-600"><?= t('app.completion') ?>: <strong>0%</strong></span>
                 <a href="logout.php" class="text-sm bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded transition"><?= t('auth.logout') ?></a>
             </div>
         </div>
@@ -121,7 +139,7 @@ $isSubmitted = $analyse['is_submitted'] == 1;
             <input type="text" id="nomProjet"
                 class="w-full px-4 py-2 border-2 border-purple-200 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="<?= t('pestel.project_placeholder') ?>"
-                value="<?= sanitize($analyse['nom_projet']) ?>"
+                value="<?= h($analyse['titre_projet'] ?? '') ?>"
                 oninput="scheduleAutoSave()">
         </div>
 
@@ -132,7 +150,7 @@ $isSubmitted = $analyse['is_submitted'] == 1;
             <input type="text" id="participantsAnalyse"
                 class="w-full px-4 py-2 border-2 border-indigo-200 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder="<?= t('app.participants_placeholder') ?>"
-                value="<?= sanitize($analyse['participants_analyse']) ?>"
+                value="<?= h($pestelData['participants_analyse'] ?? '') ?>"
                 oninput="scheduleAutoSave()">
         </div>
 
@@ -143,7 +161,7 @@ $isSubmitted = $analyse['is_submitted'] == 1;
             <input type="text" id="zone"
                 class="w-full px-4 py-2 border-2 border-blue-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="<?= t('pestel.geo_placeholder') ?>"
-                value="<?= sanitize($analyse['zone']) ?>"
+                value="<?= h($pestelData['zone'] ?? '') ?>"
                 oninput="scheduleAutoSave()">
         </div>
 
@@ -167,7 +185,7 @@ $isSubmitted = $analyse['is_submitted'] == 1;
                         <div class="pestel-item flex gap-2" data-category="politique">
                             <textarea rows="2" class="flex-1 px-3 py-2 border-2 border-red-300 rounded-md focus:ring-2 focus:ring-red-500 text-sm resize-none"
                                 placeholder="Ex: Nouvelle politique de soutien aux energies renouvelables..."
-                                oninput="scheduleAutoSave()"><?= sanitize($item) ?></textarea>
+                                oninput="scheduleAutoSave()"><?= h($item) ?></textarea>
                             <button type="button" onclick="removeItem(this)" class="no-print text-red-700 hover:text-red-900 px-2">❌</button>
                         </div>
                         <?php endforeach; ?>
@@ -189,7 +207,7 @@ $isSubmitted = $analyse['is_submitted'] == 1;
                         <div class="pestel-item flex gap-2" data-category="economique">
                             <textarea rows="2" class="flex-1 px-3 py-2 border-2 border-green-300 rounded-md focus:ring-2 focus:ring-green-500 text-sm resize-none"
                                 placeholder="Ex: Ralentissement economique reduisant les budgets disponibles..."
-                                oninput="scheduleAutoSave()"><?= sanitize($item) ?></textarea>
+                                oninput="scheduleAutoSave()"><?= h($item) ?></textarea>
                             <button type="button" onclick="removeItem(this)" class="no-print text-green-700 hover:text-green-900 px-2">❌</button>
                         </div>
                         <?php endforeach; ?>
@@ -211,7 +229,7 @@ $isSubmitted = $analyse['is_submitted'] == 1;
                         <div class="pestel-item flex gap-2" data-category="socioculturel">
                             <textarea rows="2" class="flex-1 px-3 py-2 border-2 border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500 text-sm resize-none"
                                 placeholder="Ex: Vieillissement de la population augmentant la demande..."
-                                oninput="scheduleAutoSave()"><?= sanitize($item) ?></textarea>
+                                oninput="scheduleAutoSave()"><?= h($item) ?></textarea>
                             <button type="button" onclick="removeItem(this)" class="no-print text-purple-700 hover:text-purple-900 px-2">❌</button>
                         </div>
                         <?php endforeach; ?>
@@ -233,7 +251,7 @@ $isSubmitted = $analyse['is_submitted'] == 1;
                         <div class="pestel-item flex gap-2" data-category="technologique">
                             <textarea rows="2" class="flex-1 px-3 py-2 border-2 border-blue-300 rounded-md focus:ring-2 focus:ring-blue-500 text-sm resize-none"
                                 placeholder="Ex: Developpement de l'IA transformant les pratiques..."
-                                oninput="scheduleAutoSave()"><?= sanitize($item) ?></textarea>
+                                oninput="scheduleAutoSave()"><?= h($item) ?></textarea>
                             <button type="button" onclick="removeItem(this)" class="no-print text-blue-700 hover:text-blue-900 px-2">❌</button>
                         </div>
                         <?php endforeach; ?>
@@ -255,7 +273,7 @@ $isSubmitted = $analyse['is_submitted'] == 1;
                         <div class="pestel-item flex gap-2" data-category="environnemental">
                             <textarea rows="2" class="flex-1 px-3 py-2 border-2 border-teal-300 rounded-md focus:ring-2 focus:ring-teal-500 text-sm resize-none"
                                 placeholder="Ex: Pression croissante pour reduire l'empreinte carbone..."
-                                oninput="scheduleAutoSave()"><?= sanitize($item) ?></textarea>
+                                oninput="scheduleAutoSave()"><?= h($item) ?></textarea>
                             <button type="button" onclick="removeItem(this)" class="no-print text-teal-700 hover:text-teal-900 px-2">❌</button>
                         </div>
                         <?php endforeach; ?>
@@ -277,7 +295,7 @@ $isSubmitted = $analyse['is_submitted'] == 1;
                         <div class="pestel-item flex gap-2" data-category="legal">
                             <textarea rows="2" class="flex-1 px-3 py-2 border-2 border-amber-300 rounded-md focus:ring-2 focus:ring-amber-500 text-sm resize-none"
                                 placeholder="Ex: Nouvelle reglementation RGPD sur la protection des donnees..."
-                                oninput="scheduleAutoSave()"><?= sanitize($item) ?></textarea>
+                                oninput="scheduleAutoSave()"><?= h($item) ?></textarea>
                             <button type="button" onclick="removeItem(this)" class="no-print text-amber-700 hover:text-amber-900 px-2">❌</button>
                         </div>
                         <?php endforeach; ?>
@@ -297,7 +315,7 @@ $isSubmitted = $analyse['is_submitted'] == 1;
             <textarea id="synthese" rows="5"
                 class="w-full px-4 py-2 border-2 border-indigo-300 rounded-md focus:ring-2 focus:ring-indigo-500"
                 placeholder="<?= t('pestel.synthesis_placeholder') ?>"
-                oninput="scheduleAutoSave()"><?= sanitize($analyse['synthese']) ?></textarea>
+                oninput="scheduleAutoSave()"><?= h($pestelData['synthese'] ?? '') ?></textarea>
         </div>
 
         <!-- Notes -->
@@ -308,7 +326,7 @@ $isSubmitted = $analyse['is_submitted'] == 1;
             <textarea id="notes" rows="3"
                 class="w-full px-4 py-2 border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-gray-500"
                 placeholder="<?= t('app.notes_placeholder') ?>"
-                oninput="scheduleAutoSave()"><?= sanitize($analyse['notes']) ?></textarea>
+                oninput="scheduleAutoSave()"><?= h($pestelData['notes'] ?? '') ?></textarea>
         </div>
 
         <!-- Boutons d'action -->

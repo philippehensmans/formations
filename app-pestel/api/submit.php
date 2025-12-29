@@ -2,22 +2,24 @@
 /**
  * API de soumission finale de l'analyse PESTEL
  */
-require_once '../config/database.php';
+require_once __DIR__ . '/../config.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
-if (!isParticipantLoggedIn()) {
+if (!isLoggedIn() || !isset($_SESSION['current_session_id'])) {
     http_response_code(401);
     echo json_encode(['error' => 'Non authentifie']);
     exit;
 }
 
 $db = getDB();
-$participantId = $_SESSION['participant_id'];
+$user = getLoggedUser();
+$userId = $user['id'];
+$sessionId = $_SESSION['current_session_id'];
 
 // Verifier que l'analyse existe
-$stmt = $db->prepare("SELECT * FROM analyse_pestel WHERE participant_id = ?");
-$stmt->execute([$participantId]);
+$stmt = $db->prepare("SELECT * FROM analyses WHERE user_id = ? AND session_id = ?");
+$stmt->execute([$userId, $sessionId]);
 $analyse = $stmt->fetch();
 
 if (!$analyse) {
@@ -26,16 +28,9 @@ if (!$analyse) {
     exit;
 }
 
-// Verifier completion minimale
-if ($analyse['completion_percent'] < 30) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Completez au moins 30% de l\'analyse avant de soumettre']);
-    exit;
-}
-
-// Marquer comme soumis
-$stmt = $db->prepare("UPDATE analyse_pestel SET is_submitted = 1, submitted_at = CURRENT_TIMESTAMP WHERE participant_id = ?");
-$stmt->execute([$participantId]);
+// Marquer comme soumis (is_shared = 1)
+$stmt = $db->prepare("UPDATE analyses SET is_shared = 1, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND session_id = ?");
+$stmt->execute([$userId, $sessionId]);
 
 echo json_encode([
     'success' => true,
