@@ -1,11 +1,9 @@
 <?php
-require_once __DIR__ . '/../shared-auth/auth.php';
+require_once __DIR__ . '/config.php';
 requireLogin();
 
-$user = getCurrentUser();
+$user = getLoggedUser();
 $sessionId = $user['session_id'];
-
-require_once __DIR__ . '/config.php';
 $db = getDB();
 
 // Récupérer le scénario actif
