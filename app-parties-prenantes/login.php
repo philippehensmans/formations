@@ -3,6 +3,8 @@
  * Page de connexion - Parties Prenantes
  * Utilise le template partage
  */
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 $appName = 'Parties Prenantes';
 $appColor = 'purple';
