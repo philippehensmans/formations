@@ -451,5 +451,114 @@ return [
         'quarterly' => 'Trimestral',
         'yearly' => 'Anual',
         'total_annual' => 'Total anual',
+        'logout' => 'Cerrar sesion',
+        'session' => 'Sesion',
+
+        // Steps
+        'step1_title' => '1. Elija una categoria',
+        'step2_title' => '2. Seleccione un caso de uso',
+        'step3_title' => '3. Configure el uso',
+        'select_category_first' => 'Seleccione primero una categoria',
+        'no_use_case_in_category' => 'Ningun caso de uso en esta categoria',
+
+        // Frequency options
+        'freq_once' => 'Puntual (1 vez)',
+        'freq_daily' => 'Diario (250 dias/ano)',
+        'freq_weekly' => 'Semanal (52/ano)',
+        'freq_monthly' => 'Mensual (12/ano)',
+        'freq_quarterly' => 'Trimestral (4/ano)',
+        'freq_yearly' => 'Anual (1/ano)',
+        'quantity_per_occurrence' => 'Cantidad por ocurrencia',
+
+        // Results
+        'estimated_annual_impact' => 'Impacto de carbono anual estimado',
+        'grams_co2' => 'gramos CO2',
+        'kg_co2' => 'kg CO2',
+        'grams_co2_year' => 'gramos CO2 / ano',
+        'kg_co2_year' => 'kg CO2 / ano',
+        'add_to_balance' => 'Anadir a mi balance',
+
+        // Balance
+        'my_annual_footprint' => 'Mi huella IA anual',
+        'in_kg' => 'En kg',
+        'km_car' => 'Km en coche',
+        'export_balance' => 'Exportar mi balance (Excel)',
+        'my_usages' => 'Mis usos',
+        'no_usage_recorded' => 'Ningun uso registrado',
+        'delete' => 'Eliminar',
+        'delete_usage' => 'Eliminar este uso?',
+
+        // Equivalents
+        'km_car_short' => 'km coche',
+        'emails' => 'emails',
+        'streaming_hours' => 'h streaming',
+        'phone_charges' => 'cargas movil',
+        'coffee_cups' => 'tazas cafe',
+
+        // Info box
+        'good_to_know' => 'Para saber',
+        'info_ecologits' => 'Las estimaciones se basan en datos de EcoLogits',
+        'info_email' => '1 email = ~4g CO2',
+        'info_car' => '1 km en coche = ~210g CO2',
+        'info_streaming' => '1h streaming HD = ~36g CO2',
+
+        // Alerts
+        'error_adding' => 'Error al anadir',
+
+        // Formateur
+        'trainer_area' => 'Area de Formador',
+        'trainer' => 'Formador',
+        'welcome' => 'Bienvenido',
+        'identifier' => 'Identificador',
+        'password' => 'Contrasena',
+        'login' => 'Iniciar sesion',
+        'back_participant' => 'Volver a participante',
+        'access_trainers_only' => 'Acceso reservado a formadores.',
+
+        // Tabs
+        'tab_sessions' => 'Sesiones',
+        'tab_stats' => 'Estadisticas',
+        'tab_estimations' => 'Estimaciones CO2',
+
+        // Session management
+        'create_session' => 'Crear una sesion',
+        'session_name' => 'Nombre de la sesion',
+        'session_name_placeholder' => 'Ej: Formacion IA Sostenible - Enero 2025',
+        'create_session_btn' => 'Crear sesion',
+        'my_sessions' => 'Mis sesiones',
+        'code' => 'Codigo',
+        'inactive' => 'inactiva',
+        'stats' => 'Stats',
+        'deactivate' => 'Desactivar',
+        'activate' => 'Activar',
+        'delete_session' => 'Eliminar',
+        'no_session_created' => 'Ninguna sesion creada',
+        'session_created_with_code' => 'Sesion creada con codigo',
+        'session_deleted' => 'Sesion eliminada.',
+        'confirm_delete_session' => 'Eliminar esta sesion y todos sus datos?',
+
+        // Stats
+        'participants' => 'Participantes',
+        'kg_co2_total' => 'kg CO2 total',
+        'km_car_equiv' => 'km coche equiv.',
+        'export_session' => 'Exportar sesion (Excel)',
+        'participant_ranking' => 'Clasificacion de participantes',
+        'top_use_cases' => 'Top casos de uso',
+        'occurrences_year' => 'ocurrencias/ano',
+        'no_participant' => 'Ningun participante',
+
+        // Estimations
+        'co2_estimations_base' => 'Base de estimaciones CO2',
+        'version' => 'Version',
+        'last_updated' => 'Ultima actualizacion',
+        'unknown' => 'Desconocida',
+        'update_from_ecologits' => 'Actualizar desde EcoLogits',
+        'update_done' => 'Actualizacion desde EcoLogits completada.',
+        'use_case' => 'Caso de uso',
+        'model' => 'Modelo',
+        'tokens' => 'Tokens',
+        'co2_g' => 'CO2 (g)',
+        'equivalent' => 'Equivalente',
+        'cases' => 'casos',
     ],
 ];

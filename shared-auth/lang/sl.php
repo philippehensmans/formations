@@ -451,5 +451,114 @@ return [
         'quarterly' => 'Cetrtletno',
         'yearly' => 'Letno',
         'total_annual' => 'Letni skupaj',
+        'logout' => 'Odjava',
+        'session' => 'Seja',
+
+        // Steps
+        'step1_title' => '1. Izberite kategorijo',
+        'step2_title' => '2. Izberite primer uporabe',
+        'step3_title' => '3. Konfigurirajte uporabo',
+        'select_category_first' => 'Najprej izberite kategorijo',
+        'no_use_case_in_category' => 'Ni primera uporabe v tej kategoriji',
+
+        // Frequency options
+        'freq_once' => 'Enkratno (1-krat)',
+        'freq_daily' => 'Dnevno (250 dni/leto)',
+        'freq_weekly' => 'Tedensko (52/leto)',
+        'freq_monthly' => 'Mesecno (12/leto)',
+        'freq_quarterly' => 'Cetrtletno (4/leto)',
+        'freq_yearly' => 'Letno (1/leto)',
+        'quantity_per_occurrence' => 'Kolicina na dogodek',
+
+        // Results
+        'estimated_annual_impact' => 'Ocenjeni letni ogljicni vpliv',
+        'grams_co2' => 'grami CO2',
+        'kg_co2' => 'kg CO2',
+        'grams_co2_year' => 'grami CO2 / leto',
+        'kg_co2_year' => 'kg CO2 / leto',
+        'add_to_balance' => 'Dodaj v moj pregled',
+
+        // Balance
+        'my_annual_footprint' => 'Moj letni UI odtis',
+        'in_kg' => 'V kg',
+        'km_car' => 'Km z avtom',
+        'export_balance' => 'Izvozi moj pregled (Excel)',
+        'my_usages' => 'Moje uporabe',
+        'no_usage_recorded' => 'Nobena uporaba ni zabelezena',
+        'delete' => 'Izbrisi',
+        'delete_usage' => 'Izbrisati to uporabo?',
+
+        // Equivalents
+        'km_car_short' => 'km avto',
+        'emails' => 'emailov',
+        'streaming_hours' => 'h predvajanja',
+        'phone_charges' => 'polnjenj telefona',
+        'coffee_cups' => 'skodelice kave',
+
+        // Info box
+        'good_to_know' => 'Dobro je vedeti',
+        'info_ecologits' => 'Ocene temeljijo na podatkih EcoLogits',
+        'info_email' => '1 email = ~4g CO2',
+        'info_car' => '1 km z avtom = ~210g CO2',
+        'info_streaming' => '1h HD predvajanja = ~36g CO2',
+
+        // Alerts
+        'error_adding' => 'Napaka pri dodajanju',
+
+        // Formateur
+        'trainer_area' => 'Obmocje trenerja',
+        'trainer' => 'Trener',
+        'welcome' => 'Dobrodosli',
+        'identifier' => 'Uporabnisko ime',
+        'password' => 'Geslo',
+        'login' => 'Prijava',
+        'back_participant' => 'Nazaj na udelezenca',
+        'access_trainers_only' => 'Dostop rezerviran za trenerje.',
+
+        // Tabs
+        'tab_sessions' => 'Seje',
+        'tab_stats' => 'Statistike',
+        'tab_estimations' => 'Ocene CO2',
+
+        // Session management
+        'create_session' => 'Ustvari sejo',
+        'session_name' => 'Ime seje',
+        'session_name_placeholder' => 'Npr: Trajnostna UI usposabljanje - Januar 2025',
+        'create_session_btn' => 'Ustvari sejo',
+        'my_sessions' => 'Moje seje',
+        'code' => 'Koda',
+        'inactive' => 'neaktivna',
+        'stats' => 'Statistike',
+        'deactivate' => 'Deaktiviraj',
+        'activate' => 'Aktiviraj',
+        'delete_session' => 'Izbrisi',
+        'no_session_created' => 'Nobena seja ni ustvarjena',
+        'session_created_with_code' => 'Seja ustvarjena s kodo',
+        'session_deleted' => 'Seja izbrisana.',
+        'confirm_delete_session' => 'Izbrisati to sejo in vse njene podatke?',
+
+        // Stats
+        'participants' => 'Udelezenci',
+        'kg_co2_total' => 'kg CO2 skupaj',
+        'km_car_equiv' => 'km avto ekv.',
+        'export_session' => 'Izvozi sejo (Excel)',
+        'participant_ranking' => 'Razvrstitev udelezencev',
+        'top_use_cases' => 'Top primeri uporabe',
+        'occurrences_year' => 'pojavitve/leto',
+        'no_participant' => 'Ni udelezencev',
+
+        // Estimations
+        'co2_estimations_base' => 'Baza ocen CO2',
+        'version' => 'Razlicica',
+        'last_updated' => 'Nazadnje posodobljeno',
+        'unknown' => 'Neznano',
+        'update_from_ecologits' => 'Posodobi iz EcoLogits',
+        'update_done' => 'Posodobitev iz EcoLogits zakljucena.',
+        'use_case' => 'Primer uporabe',
+        'model' => 'Model',
+        'tokens' => 'Zetoni',
+        'co2_g' => 'CO2 (g)',
+        'equivalent' => 'Ekvivalent',
+        'cases' => 'primerov',
     ],
 ];

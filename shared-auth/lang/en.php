@@ -451,5 +451,114 @@ return [
         'quarterly' => 'Quarterly',
         'yearly' => 'Yearly',
         'total_annual' => 'Annual total',
+        'logout' => 'Logout',
+        'session' => 'Session',
+
+        // Steps
+        'step1_title' => '1. Choose a category',
+        'step2_title' => '2. Select a use case',
+        'step3_title' => '3. Configure usage',
+        'select_category_first' => 'Select a category first',
+        'no_use_case_in_category' => 'No use case in this category',
+
+        // Frequency options
+        'freq_once' => 'One-time (1 time)',
+        'freq_daily' => 'Daily (250 days/year)',
+        'freq_weekly' => 'Weekly (52/year)',
+        'freq_monthly' => 'Monthly (12/year)',
+        'freq_quarterly' => 'Quarterly (4/year)',
+        'freq_yearly' => 'Yearly (1/year)',
+        'quantity_per_occurrence' => 'Quantity per occurrence',
+
+        // Results
+        'estimated_annual_impact' => 'Estimated annual carbon impact',
+        'grams_co2' => 'grams CO2',
+        'kg_co2' => 'kg CO2',
+        'grams_co2_year' => 'grams CO2 / year',
+        'kg_co2_year' => 'kg CO2 / year',
+        'add_to_balance' => 'Add to my balance',
+
+        // Balance
+        'my_annual_footprint' => 'My annual AI footprint',
+        'in_kg' => 'In kg',
+        'km_car' => 'Km by car',
+        'export_balance' => 'Export my balance (Excel)',
+        'my_usages' => 'My usages',
+        'no_usage_recorded' => 'No usage recorded',
+        'delete' => 'Delete',
+        'delete_usage' => 'Delete this usage?',
+
+        // Equivalents
+        'km_car_short' => 'km car',
+        'emails' => 'emails',
+        'streaming_hours' => 'h streaming',
+        'phone_charges' => 'phone charges',
+        'coffee_cups' => 'coffee cups',
+
+        // Info box
+        'good_to_know' => 'Good to know',
+        'info_ecologits' => 'Estimates are based on EcoLogits data',
+        'info_email' => '1 email = ~4g CO2',
+        'info_car' => '1 km by car = ~210g CO2',
+        'info_streaming' => '1h HD streaming = ~36g CO2',
+
+        // Alerts
+        'error_adding' => 'Error adding',
+
+        // Formateur
+        'trainer_area' => 'Trainer Area',
+        'trainer' => 'Trainer',
+        'welcome' => 'Welcome',
+        'identifier' => 'Username',
+        'password' => 'Password',
+        'login' => 'Login',
+        'back_participant' => 'Back to participant',
+        'access_trainers_only' => 'Access reserved for trainers.',
+
+        // Tabs
+        'tab_sessions' => 'Sessions',
+        'tab_stats' => 'Statistics',
+        'tab_estimations' => 'CO2 Estimations',
+
+        // Session management
+        'create_session' => 'Create a session',
+        'session_name' => 'Session name',
+        'session_name_placeholder' => 'Ex: Sustainable AI Training - January 2025',
+        'create_session_btn' => 'Create session',
+        'my_sessions' => 'My sessions',
+        'code' => 'Code',
+        'inactive' => 'inactive',
+        'stats' => 'Stats',
+        'deactivate' => 'Deactivate',
+        'activate' => 'Activate',
+        'delete_session' => 'Delete',
+        'no_session_created' => 'No session created',
+        'session_created_with_code' => 'Session created with code',
+        'session_deleted' => 'Session deleted.',
+        'confirm_delete_session' => 'Delete this session and all its data?',
+
+        // Stats
+        'participants' => 'Participants',
+        'kg_co2_total' => 'kg CO2 total',
+        'km_car_equiv' => 'km car equiv.',
+        'export_session' => 'Export session (Excel)',
+        'participant_ranking' => 'Participant ranking',
+        'top_use_cases' => 'Top use cases',
+        'occurrences_year' => 'occurrences/year',
+        'no_participant' => 'No participant',
+
+        // Estimations
+        'co2_estimations_base' => 'CO2 estimations database',
+        'version' => 'Version',
+        'last_updated' => 'Last updated',
+        'unknown' => 'Unknown',
+        'update_from_ecologits' => 'Update from EcoLogits',
+        'update_done' => 'Update from EcoLogits completed.',
+        'use_case' => 'Use case',
+        'model' => 'Model',
+        'tokens' => 'Tokens',
+        'co2_g' => 'CO2 (g)',
+        'equivalent' => 'Equivalent',
+        'cases' => 'cases',
     ],
 ];
