@@ -41,6 +41,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sessionId = intval($_POST['session_id'] ?? 0);
             $stmt = $db->prepare("UPDATE sessions SET is_active = NOT is_active WHERE id = ? AND formateur_id = ?");
             $stmt->execute([$sessionId, $user['id']]);
+        } elseif ($action === 'delete_session') {
+            $sessionId = intval($_POST['session_id'] ?? 0);
+            // Supprimer les calculs lies
+            $stmt = $db->prepare("DELETE FROM calculs WHERE session_id = ?");
+            $stmt->execute([$sessionId]);
+            // Supprimer les participants lies
+            $stmt = $db->prepare("DELETE FROM participants WHERE session_id = ?");
+            $stmt->execute([$sessionId]);
+            // Supprimer la session
+            $stmt = $db->prepare("DELETE FROM sessions WHERE id = ? AND formateur_id = ?");
+            $stmt->execute([$sessionId, $user['id']]);
+            $success = "Session supprimee.";
         } elseif ($action === 'update_ecologits') {
             // Inclure et executer le script de mise a jour
             ob_start();
@@ -272,6 +284,13 @@ if ($selectedSessionId) {
                                 <input type="hidden" name="session_id" value="<?= $session['id'] ?>">
                                 <button type="submit" class="px-3 py-1 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300">
                                     <?= $session['is_active'] ? 'Desactiver' : 'Activer' ?>
+                                </button>
+                            </form>
+                            <form method="POST" class="inline" onsubmit="return confirm('Supprimer cette session et toutes ses donnees ?');">
+                                <input type="hidden" name="action" value="delete_session">
+                                <input type="hidden" name="session_id" value="<?= $session['id'] ?>">
+                                <button type="submit" class="px-3 py-1 bg-red-100 text-red-700 rounded text-sm hover:bg-red-200">
+                                    Supprimer
                                 </button>
                             </form>
                         </div>
