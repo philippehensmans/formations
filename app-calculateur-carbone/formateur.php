@@ -118,10 +118,15 @@ if (!$user || (!$user['is_formateur'] && !$user['is_admin'])) {
     exit;
 }
 
-// Charger les sessions du formateur
-$stmt = $db->prepare("SELECT * FROM sessions WHERE formateur_id = ? ORDER BY created_at DESC");
-$stmt->execute([$user['id']]);
-$sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Charger les sessions (toutes pour super_admin, sinon seulement les siennes)
+if ($user['is_super_admin']) {
+    $stmt = $db->query("SELECT * FROM sessions ORDER BY created_at DESC");
+    $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} else {
+    $stmt = $db->prepare("SELECT * FROM sessions WHERE formateur_id = ? ORDER BY created_at DESC");
+    $stmt->execute([$user['id']]);
+    $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 
 // Charger les estimations
 $estimations = getEstimations();
@@ -133,8 +138,13 @@ $metadata = $estimations['_metadata'] ?? [];
 $selectedSessionId = intval($_GET['session'] ?? ($sessions[0]['id'] ?? 0));
 $sessionStats = null;
 if ($selectedSessionId) {
-    $stmt = $db->prepare("SELECT * FROM sessions WHERE id = ? AND formateur_id = ?");
-    $stmt->execute([$selectedSessionId, $user['id']]);
+    if ($user['is_super_admin']) {
+        $stmt = $db->prepare("SELECT * FROM sessions WHERE id = ?");
+        $stmt->execute([$selectedSessionId]);
+    } else {
+        $stmt = $db->prepare("SELECT * FROM sessions WHERE id = ? AND formateur_id = ?");
+        $stmt->execute([$selectedSessionId, $user['id']]);
+    }
     $selectedSession = $stmt->fetch();
 
     if ($selectedSession) {
