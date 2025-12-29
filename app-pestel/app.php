@@ -8,6 +8,13 @@ requireParticipant();
 $db = getDB();
 $participant = getCurrentParticipant();
 
+// Vérifier que le participant existe toujours en base
+if (!$participant) {
+    session_destroy();
+    header('Location: index.php');
+    exit;
+}
+
 // Charger l'analyse PESTEL
 $stmt = $db->prepare("SELECT * FROM analyse_pestel WHERE participant_id = ?");
 $stmt->execute([$participant['id']]);
