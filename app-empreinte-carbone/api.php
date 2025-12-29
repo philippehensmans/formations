@@ -2,8 +2,14 @@
 require_once __DIR__ . '/config.php';
 requireLogin();
 
+if (!isset($_SESSION['current_session_id'])) {
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'Session non selectionnee']);
+    exit;
+}
+
 $user = getLoggedUser();
-$sessionId = $user['session_id'];
+$sessionId = $_SESSION['current_session_id'];
 $db = getDB();
 
 header('Content-Type: application/json');

@@ -2,8 +2,14 @@
 require_once __DIR__ . '/config.php';
 requireLogin();
 
+// Verifier qu'une session est selectionnee
+if (!isset($_SESSION['current_session_id'])) {
+    header('Location: login.php');
+    exit;
+}
+
 $user = getLoggedUser();
-$sessionId = $user['session_id'];
+$sessionId = $_SESSION['current_session_id'];
 $db = getDB();
 
 // Récupérer le scénario actif
