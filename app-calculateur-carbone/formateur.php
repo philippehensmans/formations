@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $password = $_POST['password'] ?? '';
 
         $user = authenticateUser($username, $password);
-        if ($user && $user['role'] === 'formateur') {
+        if ($user && ($user['is_formateur'] || $user['is_admin'])) {
             login($user);
             header('Location: formateur.php');
             exit;
@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Si non connecte, afficher login
-if (!$user || $user['role'] !== 'formateur') {
+if (!$user || (!$user['is_formateur'] && !$user['is_admin'])) {
     ?>
     <!DOCTYPE html>
     <html lang="fr">
