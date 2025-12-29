@@ -206,6 +206,7 @@ return [
         'submit' => 'Soumettre',
         'submit_confirm' => 'Confirmer la soumission ?',
         'mark_complete' => 'Marquer termine',
+        'marked_complete' => 'Travail marque comme termine !',
         'export_excel' => 'Exporter Excel',
         'export_word' => 'Exporter Word',
         'export_json' => 'JSON',
