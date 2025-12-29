@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/../shared-auth/lang.php';
 
 $user = getLoggedUser();
 $db = getDB();
@@ -22,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Location: formateur.php');
             exit;
         } else {
-            $error = 'Acces reserve aux formateurs.';
+            $error = t('carbon.access_trainers_only');
             $user = null;
         }
     } else {
@@ -35,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!empty($nom)) {
                 $stmt = $db->prepare("INSERT INTO sessions (code, nom, formateur_id) VALUES (?, ?, ?)");
                 $stmt->execute([$code, $nom, $user['id']]);
-                $success = "Session creee avec le code: $code";
+                $success = t('carbon.session_created_with_code') . ": $code";
             }
         } elseif ($action === 'toggle_session') {
             $sessionId = intval($_POST['session_id'] ?? 0);
@@ -52,26 +53,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Supprimer la session
             $stmt = $db->prepare("DELETE FROM sessions WHERE id = ? AND formateur_id = ?");
             $stmt->execute([$sessionId, $user['id']]);
-            $success = "Session supprimee.";
+            $success = t('carbon.session_deleted');
         } elseif ($action === 'update_ecologits') {
             // Inclure et executer le script de mise a jour
             ob_start();
             include __DIR__ . '/update_ecologits.php';
             $output = ob_get_clean();
-            $success = "Mise a jour depuis EcoLogits effectuee.";
+            $success = t('carbon.update_done');
         }
     }
 }
 
 // Si non connecte, afficher login
+$currentLang = getCurrentLanguage();
 if (!$user || (!$user['is_formateur'] && !$user['is_admin'])) {
     ?>
     <!DOCTYPE html>
-    <html lang="fr">
+    <html lang="<?= $currentLang ?>">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Formateur - <?= h(APP_NAME) ?></title>
+        <title><?= t('carbon.trainer') ?> - <?= h(APP_NAME) ?></title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
         <style>body { font-family: 'Inter', sans-serif; }</style>
@@ -79,7 +81,10 @@ if (!$user || (!$user['is_formateur'] && !$user['is_admin'])) {
     <body class="min-h-screen bg-gradient-to-br from-emerald-600 to-emerald-800 flex items-center justify-center p-4">
         <div class="w-full max-w-md">
             <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold text-white mb-2">Espace Formateur</h1>
+                <div class="flex justify-center mb-4">
+                    <?= renderLanguageSelector('text-sm border border-emerald-400 rounded px-2 py-1 bg-emerald-700 text-white') ?>
+                </div>
+                <h1 class="text-3xl font-bold text-white mb-2"><?= t('carbon.trainer_area') ?></h1>
                 <p class="text-emerald-200"><?= h(APP_NAME) ?></p>
             </div>
 
@@ -92,26 +97,27 @@ if (!$user || (!$user['is_formateur'] && !$user['is_admin'])) {
 
                 <form method="POST" class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Identifiant</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1"><?= t('carbon.identifier') ?></label>
                         <input type="text" name="username" required
                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-emerald-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1"><?= t('carbon.password') ?></label>
                         <input type="password" name="password" required
                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-emerald-500">
                     </div>
                     <button type="submit"
                             class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg">
-                        Connexion
+                        <?= t('carbon.login') ?>
                     </button>
                 </form>
 
                 <div class="mt-4 text-center">
-                    <a href="login.php" class="text-emerald-600 hover:text-emerald-800 text-sm">Retour participant</a>
+                    <a href="login.php" class="text-emerald-600 hover:text-emerald-800 text-sm"><?= t('carbon.back_participant') ?></a>
                 </div>
             </div>
         </div>
+        <?= renderLanguageScript() ?>
     </body>
     </html>
     <?php
@@ -223,11 +229,11 @@ if ($selectedSessionId) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="<?= $currentLang ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formateur - <?= h(APP_NAME) ?></title>
+    <title><?= t('carbon.trainer') ?> - <?= h(APP_NAME) ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>body { font-family: 'Inter', sans-serif; }</style>
@@ -238,28 +244,32 @@ if ($selectedSessionId) {
         <div class="max-w-7xl mx-auto px-4 py-4">
             <div class="flex justify-between items-center">
                 <div>
-                    <h1 class="text-xl font-bold"><?= h(APP_NAME) ?> - Formateur</h1>
-                    <p class="text-emerald-200 text-sm">Bienvenue, <?= h($user['prenom'] ?? $user['username']) ?></p>
+                    <h1 class="text-xl font-bold"><?= h(APP_NAME) ?> - <?= t('carbon.trainer') ?></h1>
+                    <p class="text-emerald-200 text-sm"><?= t('carbon.welcome') ?>, <?= h($user['prenom'] ?? $user['username']) ?></p>
                 </div>
-                <a href="logout.php" class="bg-emerald-800 hover:bg-emerald-900 px-4 py-2 rounded">
-                    Deconnexion
-                </a>
+                <div class="flex items-center gap-4">
+                    <?= renderLanguageSelector('text-sm border border-emerald-400 rounded px-2 py-1 bg-emerald-800') ?>
+                    <a href="logout.php" class="bg-emerald-800 hover:bg-emerald-900 px-4 py-2 rounded">
+                        <?= t('carbon.logout') ?>
+                    </a>
+                </div>
             </div>
         </div>
     </header>
+    <?= renderLanguageScript() ?>
 
     <!-- Tabs -->
     <div class="bg-white border-b">
         <div class="max-w-7xl mx-auto px-4">
             <nav class="flex gap-4">
                 <a href="?tab=sessions" class="py-4 px-2 border-b-2 <?= $activeTab === 'sessions' ? 'border-emerald-500 text-emerald-600' : 'border-transparent text-gray-600 hover:text-emerald-600' ?>">
-                    Sessions
+                    <?= t('carbon.tab_sessions') ?>
                 </a>
                 <a href="?tab=stats&session=<?= $selectedSessionId ?>" class="py-4 px-2 border-b-2 <?= $activeTab === 'stats' ? 'border-emerald-500 text-emerald-600' : 'border-transparent text-gray-600 hover:text-emerald-600' ?>">
-                    Statistiques
+                    <?= t('carbon.tab_stats') ?>
                 </a>
                 <a href="?tab=estimations" class="py-4 px-2 border-b-2 <?= $activeTab === 'estimations' ? 'border-emerald-500 text-emerald-600' : 'border-transparent text-gray-600 hover:text-emerald-600' ?>">
-                    Estimations CO2
+                    <?= t('carbon.tab_estimations') ?>
                 </a>
             </nav>
         </div>
@@ -278,58 +288,58 @@ if ($selectedSessionId) {
         <div class="grid md:grid-cols-2 gap-6">
             <!-- Creer session -->
             <div class="bg-white rounded-xl shadow-md p-6">
-                <h2 class="text-lg font-semibold text-gray-800 mb-4">Creer une session</h2>
+                <h2 class="text-lg font-semibold text-gray-800 mb-4"><?= t('carbon.create_session') ?></h2>
                 <form method="POST" class="space-y-4">
                     <input type="hidden" name="action" value="create_session">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Nom de la session</label>
-                        <input type="text" name="nom" required placeholder="Ex: Formation IA Durable - Janvier 2025"
+                        <label class="block text-sm font-medium text-gray-700 mb-1"><?= t('carbon.session_name') ?></label>
+                        <input type="text" name="nom" required placeholder="<?= t('carbon.session_name_placeholder') ?>"
                                class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-emerald-500">
                     </div>
                     <button type="submit" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg">
-                        Creer la session
+                        <?= t('carbon.create_session_btn') ?>
                     </button>
                 </form>
             </div>
 
             <!-- Liste sessions -->
             <div class="bg-white rounded-xl shadow-md p-6">
-                <h2 class="text-lg font-semibold text-gray-800 mb-4">Mes sessions</h2>
+                <h2 class="text-lg font-semibold text-gray-800 mb-4"><?= t('carbon.my_sessions') ?></h2>
                 <div class="space-y-2">
                     <?php foreach ($sessions as $session): ?>
                     <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                         <div>
                             <p class="font-medium"><?= h($session['nom']) ?></p>
                             <p class="text-sm text-gray-500">
-                                Code: <span class="font-mono font-bold text-emerald-600"><?= h($session['code']) ?></span>
+                                <?= t('carbon.code') ?>: <span class="font-mono font-bold text-emerald-600"><?= h($session['code']) ?></span>
                                 <?php if (!$session['is_active']): ?>
-                                    <span class="text-red-500">(inactive)</span>
+                                    <span class="text-red-500">(<?= t('carbon.inactive') ?>)</span>
                                 <?php endif; ?>
                             </p>
                         </div>
                         <div class="flex gap-2">
                             <a href="?tab=stats&session=<?= $session['id'] ?>" class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded text-sm hover:bg-emerald-200">
-                                Stats
+                                <?= t('carbon.stats') ?>
                             </a>
                             <form method="POST" class="inline">
                                 <input type="hidden" name="action" value="toggle_session">
                                 <input type="hidden" name="session_id" value="<?= $session['id'] ?>">
                                 <button type="submit" class="px-3 py-1 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300">
-                                    <?= $session['is_active'] ? 'Desactiver' : 'Activer' ?>
+                                    <?= $session['is_active'] ? t('carbon.deactivate') : t('carbon.activate') ?>
                                 </button>
                             </form>
-                            <form method="POST" class="inline" onsubmit="return confirm('Supprimer cette session et toutes ses donnees ?');">
+                            <form method="POST" class="inline" onsubmit="return confirm('<?= t('carbon.confirm_delete_session') ?>');">
                                 <input type="hidden" name="action" value="delete_session">
                                 <input type="hidden" name="session_id" value="<?= $session['id'] ?>">
                                 <button type="submit" class="px-3 py-1 bg-red-100 text-red-700 rounded text-sm hover:bg-red-200">
-                                    Supprimer
+                                    <?= t('carbon.delete_session') ?>
                                 </button>
                             </form>
                         </div>
                     </div>
                     <?php endforeach; ?>
                     <?php if (empty($sessions)): ?>
-                        <p class="text-gray-500 text-center py-4">Aucune session creee</p>
+                        <p class="text-gray-500 text-center py-4"><?= t('carbon.no_session_created') ?></p>
                     <?php endif; ?>
                 </div>
             </div>
@@ -341,33 +351,33 @@ if ($selectedSessionId) {
             <!-- Header session -->
             <div class="bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-xl p-6 text-white">
                 <h2 class="text-2xl font-bold"><?= h($sessionStats['session']['nom']) ?></h2>
-                <p class="text-emerald-200">Code: <?= h($sessionStats['session']['code']) ?></p>
+                <p class="text-emerald-200"><?= t('carbon.code') ?>: <?= h($sessionStats['session']['code']) ?></p>
                 <div class="mt-4 grid grid-cols-3 gap-4">
                     <div>
                         <p class="text-4xl font-bold"><?= count($sessionStats['participants']) ?></p>
-                        <p class="text-emerald-200">Participants</p>
+                        <p class="text-emerald-200"><?= t('carbon.participants') ?></p>
                     </div>
                     <div>
                         <p class="text-4xl font-bold"><?= number_format($sessionStats['total']/1000, 1, ',', ' ') ?></p>
-                        <p class="text-emerald-200">kg CO2 total</p>
+                        <p class="text-emerald-200"><?= t('carbon.kg_co2_total') ?></p>
                     </div>
                     <div>
                         <p class="text-4xl font-bold"><?= round($sessionStats['total']/1000/0.21, 0) ?></p>
-                        <p class="text-emerald-200">km voiture eq.</p>
+                        <p class="text-emerald-200"><?= t('carbon.km_car_equiv') ?></p>
                     </div>
                 </div>
                 <a href="export.php?type=session&session=<?= $selectedSessionId ?>" class="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
-                    Exporter la session (Excel)
+                    <?= t('carbon.export_session') ?>
                 </a>
             </div>
 
             <div class="grid md:grid-cols-2 gap-6">
                 <!-- Classement participants -->
                 <div class="bg-white rounded-xl shadow-md p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Classement participants</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4"><?= t('carbon.participant_ranking') ?></h3>
                     <div class="space-y-2">
                         <?php foreach ($sessionStats['participants'] as $i => $p): ?>
                         <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
@@ -379,19 +389,19 @@ if ($selectedSessionId) {
                             </div>
                             <div class="text-right">
                                 <span class="font-semibold text-emerald-600"><?= number_format($p['total_co2'], 0, ',', ' ') ?>g</span>
-                                <span class="text-xs text-gray-500 block"><?= $p['nb_occurrences'] ?> occurrences/an</span>
+                                <span class="text-xs text-gray-500 block"><?= $p['nb_occurrences'] ?> <?= t('carbon.occurrences_year') ?></span>
                             </div>
                         </div>
                         <?php endforeach; ?>
                         <?php if (empty($sessionStats['participants'])): ?>
-                            <p class="text-gray-500 text-center py-4">Aucun participant</p>
+                            <p class="text-gray-500 text-center py-4"><?= t('carbon.no_participant') ?></p>
                         <?php endif; ?>
                     </div>
                 </div>
 
                 <!-- Top use cases -->
                 <div class="bg-white rounded-xl shadow-md p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Top cas d'usage</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4"><?= t('carbon.top_use_cases') ?></h3>
                     <div class="space-y-2">
                         <?php foreach ($sessionStats['top_use_cases'] as $uc):
                             $ucData = $useCases[$uc['use_case_id']] ?? null;
@@ -399,13 +409,13 @@ if ($selectedSessionId) {
                         <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
                             <div>
                                 <p class="font-medium"><?= h($ucData['nom'] ?? $uc['use_case_id']) ?></p>
-                                <p class="text-xs text-gray-500"><?= $uc['nb_occurrences'] ?> occurrences/an</p>
+                                <p class="text-xs text-gray-500"><?= $uc['nb_occurrences'] ?> <?= t('carbon.occurrences_year') ?></p>
                             </div>
                             <span class="font-semibold text-emerald-600"><?= number_format($uc['total_co2'], 0, ',', ' ') ?>g</span>
                         </div>
                         <?php endforeach; ?>
                         <?php if (empty($sessionStats['top_use_cases'])): ?>
-                            <p class="text-gray-500 text-center py-4">Aucun usage enregistre</p>
+                            <p class="text-gray-500 text-center py-4"><?= t('carbon.no_usage_recorded') ?></p>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -419,10 +429,10 @@ if ($selectedSessionId) {
             <div class="bg-white rounded-xl shadow-md p-6">
                 <div class="flex justify-between items-start">
                     <div>
-                        <h2 class="text-lg font-semibold text-gray-800">Base d'estimations CO2</h2>
+                        <h2 class="text-lg font-semibold text-gray-800"><?= t('carbon.co2_estimations_base') ?></h2>
                         <p class="text-sm text-gray-500 mt-1">
-                            Version: <?= h($metadata['version'] ?? '1.0') ?> |
-                            Derniere mise a jour: <?= h($metadata['last_updated'] ?? 'Inconnue') ?>
+                            <?= t('carbon.version') ?>: <?= h($metadata['version'] ?? '1.0') ?> |
+                            <?= t('carbon.last_updated') ?>: <?= h($metadata['last_updated'] ?? t('carbon.unknown')) ?>
                         </p>
                         <p class="text-xs text-gray-400 mt-1"><?= h($metadata['source'] ?? '') ?></p>
                     </div>
@@ -432,7 +442,7 @@ if ($selectedSessionId) {
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                             </svg>
-                            Mettre a jour depuis EcoLogits
+                            <?= t('carbon.update_from_ecologits') ?>
                         </button>
                     </form>
                 </div>
@@ -445,17 +455,17 @@ if ($selectedSessionId) {
             <div class="bg-white rounded-xl shadow-md p-6">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">
                     <?= $cat['icon'] ?> <?= h($cat['nom']) ?>
-                    <span class="text-sm font-normal text-gray-500">(<?= count($catUseCases) ?> cas)</span>
+                    <span class="text-sm font-normal text-gray-500">(<?= count($catUseCases) ?> <?= t('carbon.cases') ?>)</span>
                 </h3>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="text-left p-2">Cas d'usage</th>
-                                <th class="text-left p-2">Modele</th>
-                                <th class="text-right p-2">Tokens</th>
-                                <th class="text-right p-2">CO2 (g)</th>
-                                <th class="text-left p-2">Equivalent</th>
+                                <th class="text-left p-2"><?= t('carbon.use_case') ?></th>
+                                <th class="text-left p-2"><?= t('carbon.model') ?></th>
+                                <th class="text-right p-2"><?= t('carbon.tokens') ?></th>
+                                <th class="text-right p-2"><?= t('carbon.co2_g') ?></th>
+                                <th class="text-left p-2"><?= t('carbon.equivalent') ?></th>
                             </tr>
                         </thead>
                         <tbody>

@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/../shared-auth/lang.php';
 
 $user = getLoggedUser();
 if (!$user || !isset($_SESSION['current_session_id'])) {
@@ -26,9 +27,11 @@ $mesCalculs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Calculer le total CO2 du participant
 $totalCO2 = array_sum(array_column($mesCalculs, 'co2_total'));
+
+$currentLang = getCurrentLanguage();
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="<?= $currentLang ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -47,17 +50,19 @@ $totalCO2 = array_sum(array_column($mesCalculs, 'co2_total'));
             <div class="flex justify-between items-center">
                 <div>
                     <h1 class="text-xl font-bold"><?= h(APP_NAME) ?></h1>
-                    <p class="text-emerald-200 text-sm">Session: <?= h($sessionNom) ?> (<?= h($sessionCode) ?>)</p>
+                    <p class="text-emerald-200 text-sm"><?= t('carbon.session') ?>: <?= h($sessionNom) ?> (<?= h($sessionCode) ?>)</p>
                 </div>
                 <div class="flex items-center gap-4">
+                    <?= renderLanguageSelector('text-sm border border-emerald-400 rounded px-2 py-1 bg-emerald-700') ?>
                     <span class="text-emerald-200"><?= h($userName) ?></span>
                     <a href="logout.php" class="bg-emerald-700 hover:bg-emerald-800 px-3 py-1 rounded text-sm">
-                        Deconnexion
+                        <?= t('carbon.logout') ?>
                     </a>
                 </div>
             </div>
         </div>
     </header>
+    <?= renderLanguageScript() ?>
 
     <main class="max-w-7xl mx-auto px-4 py-6">
         <div class="grid lg:grid-cols-3 gap-6">
@@ -65,7 +70,7 @@ $totalCO2 = array_sum(array_column($mesCalculs, 'co2_total'));
             <div class="lg:col-span-2 space-y-6">
                 <!-- Selection categorie -->
                 <div class="bg-white rounded-xl shadow-md p-6">
-                    <h2 class="text-lg font-semibold text-gray-800 mb-4">1. Choisissez une categorie</h2>
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4"><?= t('carbon.step1_title') ?></h2>
                     <div class="grid grid-cols-3 md:grid-cols-5 gap-2">
                         <?php foreach ($categories as $catId => $cat): ?>
                         <button type="button"
@@ -81,30 +86,30 @@ $totalCO2 = array_sum(array_column($mesCalculs, 'co2_total'));
 
                 <!-- Selection cas d'usage -->
                 <div class="bg-white rounded-xl shadow-md p-6">
-                    <h2 class="text-lg font-semibold text-gray-800 mb-4">2. Selectionnez un cas d'usage</h2>
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4"><?= t('carbon.step2_title') ?></h2>
                     <div id="useCasesContainer" class="space-y-2">
-                        <p class="text-gray-500 text-center py-8">Selectionnez d'abord une categorie</p>
+                        <p class="text-gray-500 text-center py-8"><?= t('carbon.select_category_first') ?></p>
                     </div>
                 </div>
 
                 <!-- Configuration frequence -->
                 <div class="bg-white rounded-xl shadow-md p-6" id="configPanel" style="display: none;">
-                    <h2 class="text-lg font-semibold text-gray-800 mb-4">3. Configurez l'utilisation</h2>
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4"><?= t('carbon.step3_title') ?></h2>
 
                     <div class="grid md:grid-cols-2 gap-4 mb-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Frequence</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2"><?= t('carbon.frequency') ?></label>
                             <select id="frequence" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-emerald-500">
-                                <option value="ponctuel">Ponctuel (1 fois)</option>
-                                <option value="quotidien">Quotidien (250j/an)</option>
-                                <option value="hebdomadaire">Hebdomadaire (52/an)</option>
-                                <option value="mensuel">Mensuel (12/an)</option>
-                                <option value="trimestriel">Trimestriel (4/an)</option>
-                                <option value="annuel">Annuel (1/an)</option>
+                                <option value="ponctuel"><?= t('carbon.freq_once') ?></option>
+                                <option value="quotidien"><?= t('carbon.freq_daily') ?></option>
+                                <option value="hebdomadaire"><?= t('carbon.freq_weekly') ?></option>
+                                <option value="mensuel"><?= t('carbon.freq_monthly') ?></option>
+                                <option value="trimestriel"><?= t('carbon.freq_quarterly') ?></option>
+                                <option value="annuel"><?= t('carbon.freq_yearly') ?></option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Quantite par occurrence</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2"><?= t('carbon.quantity_per_occurrence') ?></label>
                             <input type="number" id="quantite" value="1" min="1" max="100"
                                    class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-emerald-500">
                         </div>
@@ -113,16 +118,16 @@ $totalCO2 = array_sum(array_column($mesCalculs, 'co2_total'));
                     <!-- Resultat calcul -->
                     <div id="resultatCalcul" class="bg-emerald-50 rounded-lg p-4 mb-4" style="display: none;">
                         <div class="text-center">
-                            <p class="text-sm text-emerald-600 mb-1">Impact carbone annuel estime</p>
+                            <p class="text-sm text-emerald-600 mb-1"><?= t('carbon.estimated_annual_impact') ?></p>
                             <p class="text-4xl font-bold text-emerald-700" id="co2Result">0</p>
-                            <p class="text-emerald-600" id="co2Unit">grammes CO2</p>
+                            <p class="text-emerald-600" id="co2Unit"><?= t('carbon.grams_co2') ?></p>
                         </div>
                         <div class="mt-4 grid grid-cols-2 md:grid-cols-5 gap-2 text-center text-xs" id="equivalents"></div>
                     </div>
 
                     <button onclick="ajouterCalcul()"
                             class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-colors">
-                        Ajouter a mon bilan
+                        <?= t('carbon.add_to_balance') ?>
                     </button>
                 </div>
             </div>
@@ -131,24 +136,24 @@ $totalCO2 = array_sum(array_column($mesCalculs, 'co2_total'));
             <div class="space-y-6">
                 <!-- Total personnel -->
                 <div class="bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-xl shadow-md p-6 text-white">
-                    <h3 class="text-lg font-semibold mb-2">Mon empreinte IA annuelle</h3>
+                    <h3 class="text-lg font-semibold mb-2"><?= t('carbon.my_annual_footprint') ?></h3>
                     <p class="text-5xl font-bold" id="totalCO2"><?= number_format($totalCO2, 0, ',', ' ') ?></p>
-                    <p class="text-emerald-200">grammes CO2 / an</p>
+                    <p class="text-emerald-200"><?= t('carbon.grams_co2_year') ?></p>
                     <div class="mt-4 pt-4 border-t border-emerald-400 text-sm">
-                        <p class="flex justify-between"><span>En kg:</span><span id="totalKg"><?= number_format($totalCO2/1000, 2, ',', ' ') ?></span></p>
-                        <p class="flex justify-between"><span>Km voiture:</span><span id="totalKm"><?= round($totalCO2/1000/0.21, 1) ?></span></p>
+                        <p class="flex justify-between"><span><?= t('carbon.in_kg') ?>:</span><span id="totalKg"><?= number_format($totalCO2/1000, 2, ',', ' ') ?></span></p>
+                        <p class="flex justify-between"><span><?= t('carbon.km_car') ?>:</span><span id="totalKm"><?= round($totalCO2/1000/0.21, 1) ?></span></p>
                     </div>
                     <a href="export.php?type=participant" class="mt-4 block w-full py-2 bg-white/20 hover:bg-white/30 text-center rounded-lg text-sm transition-colors">
-                        Exporter mon bilan (Excel)
+                        <?= t('carbon.export_balance') ?>
                     </a>
                 </div>
 
                 <!-- Liste des calculs -->
                 <div class="bg-white rounded-xl shadow-md p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Mes usages</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4"><?= t('carbon.my_usages') ?></h3>
                     <div id="mesUsages" class="space-y-2 max-h-96 overflow-y-auto">
                         <?php if (empty($mesCalculs)): ?>
-                        <p class="text-gray-500 text-center py-4 text-sm">Aucun usage enregistre</p>
+                        <p class="text-gray-500 text-center py-4 text-sm"><?= t('carbon.no_usage_recorded') ?></p>
                         <?php else: ?>
                             <?php foreach ($mesCalculs as $calc):
                                 $uc = $useCases[$calc['use_case_id']] ?? null;
@@ -160,7 +165,7 @@ $totalCO2 = array_sum(array_column($mesCalculs, 'co2_total'));
                                 </div>
                                 <div class="text-right">
                                     <p class="font-semibold text-emerald-600"><?= number_format($calc['co2_total'], 0, ',', ' ') ?>g</p>
-                                    <button onclick="supprimerCalcul(<?= $calc['id'] ?>)" class="text-xs text-red-500 hover:text-red-700">Supprimer</button>
+                                    <button onclick="supprimerCalcul(<?= $calc['id'] ?>)" class="text-xs text-red-500 hover:text-red-700"><?= t('carbon.delete') ?></button>
                                 </div>
                             </div>
                             <?php endforeach; ?>
@@ -170,12 +175,12 @@ $totalCO2 = array_sum(array_column($mesCalculs, 'co2_total'));
 
                 <!-- Legende -->
                 <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm">
-                    <h4 class="font-semibold text-amber-800 mb-2">A savoir</h4>
+                    <h4 class="font-semibold text-amber-800 mb-2"><?= t('carbon.good_to_know') ?></h4>
                     <ul class="text-amber-700 space-y-1 text-xs">
-                        <li>Les estimations sont basees sur les donnees EcoLogits</li>
-                        <li>1 email = ~4g CO2</li>
-                        <li>1 km voiture = ~210g CO2</li>
-                        <li>1h streaming HD = ~36g CO2</li>
+                        <li><?= t('carbon.info_ecologits') ?></li>
+                        <li><?= t('carbon.info_email') ?></li>
+                        <li><?= t('carbon.info_car') ?></li>
+                        <li><?= t('carbon.info_streaming') ?></li>
                     </ul>
                 </div>
             </div>
@@ -185,6 +190,18 @@ $totalCO2 = array_sum(array_column($mesCalculs, 'co2_total'));
     <script>
     const useCases = <?= json_encode($useCases) ?>;
     const categories = <?= json_encode($categories) ?>;
+    const T = {
+        no_use_case: <?= json_encode(t('carbon.no_use_case_in_category')) ?>,
+        kg_co2_year: <?= json_encode(t('carbon.kg_co2_year')) ?>,
+        grams_co2_year: <?= json_encode(t('carbon.grams_co2_year')) ?>,
+        km_car: <?= json_encode(t('carbon.km_car_short')) ?>,
+        emails: <?= json_encode(t('carbon.emails')) ?>,
+        streaming: <?= json_encode(t('carbon.streaming_hours')) ?>,
+        phone_charges: <?= json_encode(t('carbon.phone_charges')) ?>,
+        coffee_cups: <?= json_encode(t('carbon.coffee_cups')) ?>,
+        add_error: <?= json_encode(t('carbon.error_adding')) ?>,
+        confirm_delete: <?= json_encode(t('carbon.delete_usage')) ?>
+    };
     let selectedCategory = null;
     let selectedUseCase = null;
 
@@ -203,7 +220,7 @@ $totalCO2 = array_sum(array_column($mesCalculs, 'co2_total'));
         const filtered = Object.entries(useCases).filter(([id, uc]) => uc.categorie === catId);
 
         if (filtered.length === 0) {
-            container.innerHTML = '<p class="text-gray-500 text-center py-8">Aucun cas d\'usage dans cette categorie</p>';
+            container.innerHTML = '<p class="text-gray-500 text-center py-8">' + T.no_use_case + '</p>';
             return;
         }
 
@@ -262,10 +279,10 @@ $totalCO2 = array_sum(array_column($mesCalculs, 'co2_total'));
 
         if (co2Total >= 1000) {
             document.getElementById('co2Result').textContent = (co2Total / 1000).toFixed(2);
-            document.getElementById('co2Unit').textContent = 'kg CO2 / an';
+            document.getElementById('co2Unit').textContent = T.kg_co2_year;
         } else {
             document.getElementById('co2Result').textContent = Math.round(co2Total);
-            document.getElementById('co2Unit').textContent = 'grammes CO2 / an';
+            document.getElementById('co2Unit').textContent = T.grams_co2_year;
         }
 
         // Equivalents
@@ -278,11 +295,11 @@ $totalCO2 = array_sum(array_column($mesCalculs, 'co2_total'));
         };
 
         document.getElementById('equivalents').innerHTML = `
-            <div class="bg-white p-2 rounded"><span class="block text-lg">${eq.km_voiture}</span>km voiture</div>
-            <div class="bg-white p-2 rounded"><span class="block text-lg">${eq.emails}</span>emails</div>
-            <div class="bg-white p-2 rounded"><span class="block text-lg">${eq.streaming}</span>h streaming</div>
-            <div class="bg-white p-2 rounded"><span class="block text-lg">${eq.charges}</span>charges tel</div>
-            <div class="bg-white p-2 rounded"><span class="block text-lg">${eq.cafes}</span>tasses cafe</div>
+            <div class="bg-white p-2 rounded"><span class="block text-lg">${eq.km_voiture}</span>${T.km_car}</div>
+            <div class="bg-white p-2 rounded"><span class="block text-lg">${eq.emails}</span>${T.emails}</div>
+            <div class="bg-white p-2 rounded"><span class="block text-lg">${eq.streaming}</span>${T.streaming}</div>
+            <div class="bg-white p-2 rounded"><span class="block text-lg">${eq.charges}</span>${T.phone_charges}</div>
+            <div class="bg-white p-2 rounded"><span class="block text-lg">${eq.cafes}</span>${T.coffee_cups}</div>
         `;
     }
 
@@ -307,12 +324,12 @@ $totalCO2 = array_sum(array_column($mesCalculs, 'co2_total'));
         if (data.success) {
             location.reload();
         } else {
-            alert(data.error || 'Erreur lors de l\'ajout');
+            alert(data.error || T.add_error);
         }
     }
 
     async function supprimerCalcul(id) {
-        if (!confirm('Supprimer cet usage ?')) return;
+        if (!confirm(T.confirm_delete)) return;
 
         const response = await fetch('api.php', {
             method: 'POST',
