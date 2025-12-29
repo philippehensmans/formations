@@ -1,19 +1,21 @@
 <?php
-require_once '../config/database.php';
+require_once __DIR__ . '/../config.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
-if (!isParticipantLoggedIn()) {
+if (!isLoggedIn() || !isset($_SESSION['current_session_id'])) {
     http_response_code(401);
     echo json_encode(['error' => 'Non authentifie']);
     exit;
 }
 
 $db = getDB();
-$participantId = $_SESSION['participant_id'];
+$user = getLoggedUser();
+$userId = $user['id'];
+$sessionId = $_SESSION['current_session_id'];
 
-$stmt = $db->prepare("SELECT * FROM cartographie WHERE participant_id = ?");
-$stmt->execute([$participantId]);
+$stmt = $db->prepare("SELECT * FROM cartographie WHERE user_id = ? AND session_id = ?");
+$stmt->execute([$userId, $sessionId]);
 $carto = $stmt->fetch();
 
 if ($carto) {

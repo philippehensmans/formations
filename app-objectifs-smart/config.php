@@ -72,6 +72,21 @@ function initDatabase($db) {
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )");
 
+    // Table des objectifs SMART (format 3 etapes)
+    $db->exec("CREATE TABLE IF NOT EXISTS objectifs_smart (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        session_id INTEGER NOT NULL,
+        etape_courante INTEGER DEFAULT 1,
+        etape1_analyses TEXT DEFAULT '[]',
+        etape2_reformulations TEXT DEFAULT '[]',
+        etape3_creations TEXT DEFAULT '[]',
+        completion_percent INTEGER DEFAULT 0,
+        is_submitted INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )");
+
     // Migration: ajouter session_id si la colonne n'existe pas
     try {
         $db->exec("ALTER TABLE objectifs ADD COLUMN session_id INTEGER");
