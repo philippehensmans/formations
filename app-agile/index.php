@@ -28,11 +28,11 @@ $project['retrospective'] = $project['retrospective'] ?: '{"good":[],"improve":[
 $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goal":""}';
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="<?= getCurrentLanguage() ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formation Methode Agile - Outil Interactif</title>
+    <title><?= t('agile.title') ?> - <?= t('agile.subtitle') ?></title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -538,53 +538,51 @@ $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goa
         </div>
         <div class="share-toggle">
             <input type="checkbox" id="shareToggle" <?= $project['is_shared'] ? 'checked' : '' ?> onchange="toggleShare()">
-            <label for="shareToggle">Partager avec le formateur</label>
+            <label for="shareToggle"><?= t('agile.share_trainer') ?></label>
         </div>
         <div>
-            <span id="saveStatus" class="save-status saved">Sauvegarde</span>
-            <a href="logout.php">Deconnexion</a>
+            <?= renderLanguageSelector('lang-select') ?>
+            <span id="saveStatus" class="save-status saved"><?= t('app.saved') ?></span>
+            <a href="logout.php"><?= t('auth.logout') ?></a>
         </div>
     </div>
+    <?= renderLanguageScript() ?>
 
     <div class="container">
         <header>
-            <h1>Formation Methode Agile</h1>
-            <p>Outil interactif d'apprentissage et de pratique</p>
+            <h1><?= t('agile.title') ?></h1>
+            <p><?= t('agile.subtitle') ?></p>
         </header>
 
         <div class="info-box">
-            <h2>Comprendre la methode Agile</h2>
-            <p>
-                <strong>Agile</strong> est une approche de gestion de projet qui privilegie la flexibilite, la collaboration
-                et la livraison iterative. Plutot que de planifier l'ensemble du projet en detail des le depart,
-                Agile encourage des cycles courts (sprints) avec des ajustements reguliers.
-            </p>
-            <p><strong>Principes cles :</strong></p>
+            <h2><?= t('agile.understand') ?></h2>
+            <p><?= t('agile.intro') ?></p>
+            <p><strong><?= t('agile.principles') ?> :</strong></p>
             <ul>
-                <li><strong>Individus et interactions</strong> plutot que processus et outils</li>
-                <li><strong>Logiciel fonctionnel</strong> plutot que documentation exhaustive</li>
-                <li><strong>Collaboration avec le client</strong> plutot que negociation contractuelle</li>
-                <li><strong>Adaptation au changement</strong> plutot que suivi d'un plan</li>
+                <li><?= t('agile.principle1') ?></li>
+                <li><?= t('agile.principle2') ?></li>
+                <li><?= t('agile.principle3') ?></li>
+                <li><?= t('agile.principle4') ?></li>
             </ul>
         </div>
 
         <div class="form-group">
-            <label for="projectName">Nom du Projet</label>
+            <label for="projectName"><?= t('agile.project_name') ?></label>
             <input
                 type="text"
                 id="projectName"
-                placeholder="Ex: Developpement d'une plateforme de gestion"
+                placeholder="<?= t('agile.project_placeholder') ?>"
                 value="<?= sanitize($project['project_name']) ?>"
                 oninput="scheduleAutoSave()"
             >
         </div>
 
         <div class="form-group">
-            <label for="teamName">Equipe / Participants</label>
+            <label for="teamName"><?= t('agile.team_members') ?></label>
             <input
                 type="text"
                 id="teamName"
-                placeholder="Noms des membres de l'equipe"
+                placeholder="<?= t('agile.team_placeholder') ?>"
                 value="<?= sanitize($project['team_name']) ?>"
                 oninput="scheduleAutoSave()"
             >
@@ -592,44 +590,40 @@ $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goa
 
         <div class="tabs no-print">
             <button class="tab-button active" onclick="switchTab('kanban')">
-                Kanban Board
+                <?= t('agile.kanban') ?>
             </button>
             <button class="tab-button" onclick="switchTab('sprint')">
-                Sprint Planning
+                <?= t('agile.sprint_planning') ?>
             </button>
             <button class="tab-button" onclick="switchTab('stories')">
-                User Stories
+                <?= t('agile.user_stories') ?>
             </button>
             <button class="tab-button" onclick="switchTab('retro')">
-                Retrospective
+                <?= t('agile.retrospective') ?>
             </button>
         </div>
 
         <!-- TAB 1: Kanban Board -->
         <div id="tab-kanban" class="tab-content active">
             <div class="info-box">
-                <h2>Tableau Kanban</h2>
-                <p>
-                    Le tableau Kanban visualise le flux de travail. Chaque carte represente une tache qui progresse
-                    de gauche a droite a travers les differentes etapes : Backlog - A faire - En cours - Termine.
-                </p>
+                <h2><?= t('agile.kanban') ?></h2>
             </div>
 
             <div class="kanban-board">
                 <div class="kanban-column column-backlog">
                     <div class="column-header">
-                        <span>Backlog</span>
+                        <span><?= t('agile.backlog') ?></span>
                         <span class="badge" style="background: var(--backlog); color: white;" id="count-backlog">0</span>
                     </div>
                     <div id="column-backlog" class="column-content"></div>
                     <button class="btn btn-add btn-small no-print" onclick="showAddCardModal('backlog')">
-                        + Nouvelle tache
+                        + <?= t('agile.add_card') ?>
                     </button>
                 </div>
 
                 <div class="kanban-column column-todo">
                     <div class="column-header">
-                        <span>A faire</span>
+                        <span><?= t('agile.todo') ?></span>
                         <span class="badge" style="background: var(--todo); color: white;" id="count-todo">0</span>
                     </div>
                     <div id="column-todo" class="column-content"></div>
@@ -637,7 +631,7 @@ $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goa
 
                 <div class="kanban-column column-inprogress">
                     <div class="column-header">
-                        <span>En cours</span>
+                        <span><?= t('agile.in_progress') ?></span>
                         <span class="badge" style="background: var(--inprogress); color: white;" id="count-inprogress">0</span>
                     </div>
                     <div id="column-inprogress" class="column-content"></div>
@@ -645,7 +639,7 @@ $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goa
 
                 <div class="kanban-column column-done">
                     <div class="column-header">
-                        <span>Termine</span>
+                        <span><?= t('agile.done') ?></span>
                         <span class="badge" style="background: var(--done); color: white;" id="count-done">0</span>
                     </div>
                     <div id="column-done" class="column-content"></div>
@@ -656,57 +650,52 @@ $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goa
         <!-- TAB 2: Sprint Planning -->
         <div id="tab-sprint" class="tab-content">
             <div class="info-box">
-                <h2>Sprint Planning</h2>
-                <p>
-                    Un <strong>sprint</strong> est une periode fixe (generalement 1-4 semaines) durant laquelle l'equipe
-                    s'engage a livrer un ensemble defini de fonctionnalites. Le sprint planning determine ce qui sera
-                    accompli et comment.
-                </p>
+                <h2><?= t('agile.sprint_planning') ?></h2>
             </div>
 
             <div class="sprint-header">
-                <h2>Sprint Actuel</h2>
+                <h2><?= t('agile.current_sprint') ?></h2>
                 <div class="form-row">
                     <div class="form-field">
-                        <label for="sprintNumber">Numero du Sprint</label>
+                        <label for="sprintNumber"><?= t('agile.sprint_number') ?></label>
                         <input type="number" id="sprintNumber" value="1" min="1" oninput="scheduleAutoSave()">
                     </div>
                     <div class="form-field">
-                        <label for="sprintStart">Date de debut</label>
+                        <label for="sprintStart"><?= t('agile.start_date') ?></label>
                         <input type="date" id="sprintStart" oninput="scheduleAutoSave()">
                     </div>
                     <div class="form-field">
-                        <label for="sprintEnd">Date de fin</label>
+                        <label for="sprintEnd"><?= t('agile.end_date') ?></label>
                         <input type="date" id="sprintEnd" oninput="scheduleAutoSave()">
                     </div>
                     <div class="form-field">
-                        <label for="sprintGoal">Objectif du Sprint</label>
-                        <input type="text" id="sprintGoal" placeholder="Ex: Livrer le module d'authentification" oninput="scheduleAutoSave()">
+                        <label for="sprintGoal"><?= t('agile.sprint_goal') ?></label>
+                        <input type="text" id="sprintGoal" placeholder="<?= t('agile.sprint_goal_placeholder') ?>" oninput="scheduleAutoSave()">
                     </div>
                 </div>
 
                 <div class="sprint-info">
                     <div class="sprint-metric">
-                        <div class="metric-label">Taches planifiees</div>
+                        <div class="metric-label"><?= t('agile.tasks_planned') ?></div>
                         <div class="metric-value" id="metric-planned">0</div>
                     </div>
                     <div class="sprint-metric">
-                        <div class="metric-label">Taches en cours</div>
+                        <div class="metric-label"><?= t('agile.tasks_in_progress') ?></div>
                         <div class="metric-value" id="metric-inprogress">0</div>
                     </div>
                     <div class="sprint-metric">
-                        <div class="metric-label">Taches terminees</div>
+                        <div class="metric-label"><?= t('agile.tasks_completed') ?></div>
                         <div class="metric-value" id="metric-done">0</div>
                     </div>
                     <div class="sprint-metric">
-                        <div class="metric-label">Progression</div>
+                        <div class="metric-label"><?= t('agile.progress') ?></div>
                         <div class="metric-value" id="metric-progress">0%</div>
                     </div>
                 </div>
             </div>
 
             <div id="sprint-tasks-list">
-                <h3>Taches du Sprint</h3>
+                <h3><?= t('agile.sprint_tasks') ?></h3>
                 <div id="sprint-tasks" style="margin-top: 16px;"></div>
             </div>
         </div>
@@ -714,56 +703,53 @@ $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goa
         <!-- TAB 3: User Stories -->
         <div id="tab-stories" class="tab-content">
             <div class="info-box">
-                <h2>User Stories</h2>
-                <p>
-                    Une <strong>User Story</strong> decrit une fonctionnalite du point de vue de l'utilisateur final.
-                    Format standard : <em>"En tant que [type d'utilisateur], je veux [action] afin de [benefice]"</em>
-                </p>
+                <h2><?= t('agile.user_stories') ?></h2>
+                <p><?= t('agile.user_story_desc') ?></p>
             </div>
 
             <div class="story-form no-print">
-                <h3>Creer une User Story</h3>
+                <h3><?= t('agile.create_story') ?></h3>
                 <div class="form-row">
                     <div class="form-field">
-                        <label>En tant que (role utilisateur)</label>
-                        <input type="text" id="story-role" placeholder="Ex: utilisateur, administrateur, client">
+                        <label><?= t('agile.as_a') ?></label>
+                        <input type="text" id="story-role" placeholder="<?= t('agile.as_a_placeholder') ?>">
                     </div>
                     <div class="form-field">
-                        <label>Je veux (action)</label>
-                        <input type="text" id="story-action" placeholder="Ex: pouvoir me connecter">
+                        <label><?= t('agile.i_want') ?></label>
+                        <input type="text" id="story-action" placeholder="<?= t('agile.i_want_placeholder') ?>">
                     </div>
                     <div class="form-field">
-                        <label>Afin de (benefice)</label>
-                        <input type="text" id="story-benefit" placeholder="Ex: acceder a mon compte">
+                        <label><?= t('agile.so_that') ?></label>
+                        <input type="text" id="story-benefit" placeholder="<?= t('agile.so_that_placeholder') ?>">
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-field">
-                        <label>Criteres d'acceptation</label>
-                        <textarea id="story-criteria" placeholder="- Critere 1&#10;- Critere 2&#10;- Critere 3"></textarea>
+                        <label><?= t('agile.acceptance_criteria') ?></label>
+                        <textarea id="story-criteria" placeholder="<?= t('agile.criteria_placeholder') ?>"></textarea>
                     </div>
                     <div class="form-field">
-                        <label>Priorite</label>
+                        <label><?= t('agile.priority') ?></label>
                         <select id="story-priority">
-                            <option value="high">Haute</option>
-                            <option value="medium" selected>Moyenne</option>
-                            <option value="low">Basse</option>
+                            <option value="high"><?= t('agile.high') ?></option>
+                            <option value="medium" selected><?= t('agile.medium') ?></option>
+                            <option value="low"><?= t('agile.low') ?></option>
                         </select>
                     </div>
                     <div class="form-field">
-                        <label>Estimation (points)</label>
+                        <label><?= t('agile.estimation') ?></label>
                         <input type="number" id="story-points" min="1" max="13" value="3">
                     </div>
                 </div>
 
                 <button class="btn btn-primary" onclick="addUserStory()">
-                    + Ajouter la User Story
+                    + <?= t('agile.add_story') ?>
                 </button>
             </div>
 
             <div id="stories-list">
-                <h3>User Stories creees</h3>
+                <h3><?= t('agile.stories_created') ?></h3>
                 <div id="stories-container" style="margin-top: 16px;"></div>
             </div>
         </div>
@@ -771,43 +757,40 @@ $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goa
         <!-- TAB 4: Retrospective -->
         <div id="tab-retro" class="tab-content">
             <div class="info-box">
-                <h2>Retrospective de Sprint</h2>
-                <p>
-                    La retrospective est une reunion qui a lieu a la fin de chaque sprint. L'equipe reflechit a ce qui
-                    s'est bien passe, ce qui pourrait etre ameliore, et definit des actions concretes pour le prochain sprint.
-                </p>
+                <h2><?= t('agile.retrospective') ?></h2>
+                <p><?= t('agile.retro_desc') ?></p>
             </div>
 
             <div class="retro-columns">
                 <div class="retro-column">
-                    <h3>Ce qui a bien fonctionne</h3>
+                    <h3><?= t('agile.what_went_well') ?></h3>
                     <div id="retro-good"></div>
                     <input
                         type="text"
                         class="retro-input no-print"
-                        placeholder="Ajouter un point positif..."
+                        placeholder="<?= t('agile.add_positive') ?>"
                         onkeypress="if(event.key==='Enter') addRetroItem('good', this.value, this)"
                     >
                 </div>
 
                 <div class="retro-column">
-                    <h3>A ameliorer</h3>
+                    <h3><?= t('agile.to_improve') ?></h3>
                     <div id="retro-improve"></div>
                     <input
                         type="text"
                         class="retro-input no-print"
-                        placeholder="Ajouter un point d'amelioration..."
+                        placeholder="<?= t('agile.add_improvement') ?>"
                         onkeypress="if(event.key==='Enter') addRetroItem('improve', this.value, this)"
                     >
                 </div>
 
                 <div class="retro-column">
-                    <h3>Actions pour le prochain sprint</h3>
+                    <h3><?= t('agile.next_sprint_actions') ?></h3>
                     <div id="retro-actions"></div>
                     <input
                         type="text"
                         class="retro-input no-print"
-                        placeholder="Ajouter une action..."
+                        placeholder="<?= t('agile.add_action') ?>"
                         onkeypress="if(event.key==='Enter') addRetroItem('actions', this.value, this)"
                     >
                 </div>
@@ -815,42 +798,73 @@ $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goa
         </div>
 
         <div class="actions no-print">
-            <button onclick="manualSave()" class="btn btn-primary">Sauvegarder</button>
-            <button onclick="window.print()" class="btn btn-outline">Imprimer / PDF</button>
-            <button onclick="exportJSON()" class="btn btn-outline">Exporter JSON</button>
-            <button onclick="exportToExcel()" class="btn btn-outline">Exporter Excel</button>
-            <button onclick="resetAll()" class="btn btn-outline">Reinitialiser</button>
+            <button onclick="manualSave()" class="btn btn-primary"><?= t('app.save') ?></button>
+            <button onclick="window.print()" class="btn btn-outline"><?= t('app.print') ?></button>
+            <button onclick="exportJSON()" class="btn btn-outline"><?= t('app.export_json') ?></button>
+            <button onclick="exportToExcel()" class="btn btn-outline"><?= t('app.export_excel') ?></button>
+            <button onclick="resetAll()" class="btn btn-outline"><?= t('app.reset') ?></button>
         </div>
     </div>
 
     <!-- Modal pour ajouter une carte -->
     <div id="cardModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
         <div style="background: white; padding: 32px; border-radius: 8px; max-width: 500px; width: 90%;">
-            <h3 style="margin-bottom: 16px;">Nouvelle tache</h3>
+            <h3 style="margin-bottom: 16px;"><?= t('agile.new_task') ?></h3>
             <div style="margin-bottom: 16px;">
-                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Titre</label>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600;"><?= t('agile.title') ?></label>
                 <input type="text" id="modal-title" style="width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 4px;">
             </div>
             <div style="margin-bottom: 16px;">
-                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Description</label>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600;"><?= t('agile.description') ?></label>
                 <textarea id="modal-description" rows="3" style="width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 4px;"></textarea>
             </div>
             <div style="margin-bottom: 16px;">
-                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Priorite</label>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600;"><?= t('agile.priority') ?></label>
                 <select id="modal-priority" style="width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 4px;">
-                    <option value="high">Haute</option>
-                    <option value="medium" selected>Moyenne</option>
-                    <option value="low">Basse</option>
+                    <option value="high"><?= t('agile.high') ?></option>
+                    <option value="medium" selected><?= t('agile.medium') ?></option>
+                    <option value="low"><?= t('agile.low') ?></option>
                 </select>
             </div>
             <div style="display: flex; gap: 12px; margin-top: 24px;">
-                <button onclick="addCard()" class="btn btn-primary" style="flex: 1;">Ajouter</button>
-                <button onclick="closeCardModal()" class="btn btn-outline" style="flex: 1;">Annuler</button>
+                <button onclick="addCard()" class="btn btn-primary" style="flex: 1;"><?= t('app.add') ?></button>
+                <button onclick="closeCardModal()" class="btn btn-outline" style="flex: 1;"><?= t('app.cancel') ?></button>
             </div>
         </div>
     </div>
 
     <script>
+        // Translations for JavaScript
+        const translations = {
+            saving: '<?= t('app.saving') ?>',
+            saved: '<?= t('app.saved') ?>',
+            error: '<?= t('app.error') ?>',
+            networkError: '<?= t('app.network_error') ?>',
+            serverError: '<?= t('app.server_error') ?>',
+            noTasks: '<?= t('agile.no_tasks') ?>',
+            noStories: '<?= t('agile.no_stories') ?>',
+            noItems: '<?= t('agile.no_items') ?>',
+            noSprintTasks: '<?= t('agile.no_sprint_tasks') ?>',
+            high: '<?= t('agile.high') ?>',
+            medium: '<?= t('agile.medium') ?>',
+            low: '<?= t('agile.low') ?>',
+            done: '<?= t('agile.done') ?>',
+            inProgress: '<?= t('agile.in_progress') ?>',
+            todo: '<?= t('agile.todo') ?>',
+            titleRequired: '<?= t('agile.title_required') ?>',
+            fillRequired: '<?= t('agile.fill_required') ?>',
+            deleteTask: '<?= t('agile.delete_task') ?>',
+            deleteStory: '<?= t('agile.delete_story') ?>',
+            resetConfirm: '<?= t('agile.reset_confirm') ?>',
+            userStory: '<?= t('agile.user_story') ?>',
+            asA: '<?= t('agile.as_a_label') ?>',
+            iWant: '<?= t('agile.i_want_label') ?>',
+            soThat: '<?= t('agile.so_that_label') ?>',
+            criteria: '<?= t('agile.acceptance_criteria') ?>',
+            points: '<?= t('agile.points') ?>',
+            delete: '<?= t('app.delete') ?>'
+        };
+
         let data = {
             cards: <?= $project['cards'] ?>,
             userStories: <?= $project['user_stories'] ?>,
@@ -872,7 +886,7 @@ $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goa
         function scheduleAutoSave() {
             if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
             document.getElementById('saveStatus').className = 'save-status saving';
-            document.getElementById('saveStatus').textContent = 'Sauvegarde...';
+            document.getElementById('saveStatus').textContent = translations.saving;
             autoSaveTimeout = setTimeout(saveData, 1500);
         }
 
@@ -903,28 +917,28 @@ $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goa
                     const result = JSON.parse(text);
                     if (result.success) {
                         document.getElementById('saveStatus').className = 'save-status saved';
-                        document.getElementById('saveStatus').textContent = 'Sauvegarde';
+                        document.getElementById('saveStatus').textContent = translations.saved;
                     } else {
                         document.getElementById('saveStatus').className = 'save-status saving';
-                        document.getElementById('saveStatus').textContent = 'Erreur: ' + (result.error || 'Echec');
-                        if (showAlert) alert('Erreur: ' + (result.error || 'Echec'));
+                        document.getElementById('saveStatus').textContent = translations.error + ': ' + (result.error || 'Echec');
+                        if (showAlert) alert(translations.error + ': ' + (result.error || 'Echec'));
                     }
                 } catch (parseError) {
                     console.error('Reponse non-JSON:', text);
-                    document.getElementById('saveStatus').textContent = 'Erreur serveur';
-                    if (showAlert) alert('Erreur serveur - reponse non-JSON:\n' + text.substring(0, 500));
+                    document.getElementById('saveStatus').textContent = translations.serverError;
+                    if (showAlert) alert(translations.serverError + ':\n' + text.substring(0, 500));
                 }
             } catch (error) {
                 console.error('Erreur de sauvegarde:', error);
                 document.getElementById('saveStatus').className = 'save-status saving';
-                document.getElementById('saveStatus').textContent = 'Erreur reseau';
-                if (showAlert) alert('Erreur reseau: ' + error.message);
+                document.getElementById('saveStatus').textContent = translations.networkError;
+                if (showAlert) alert(translations.networkError + ': ' + error.message);
             }
         }
 
         function manualSave() {
             document.getElementById('saveStatus').className = 'save-status saving';
-            document.getElementById('saveStatus').textContent = 'Sauvegarde...';
+            document.getElementById('saveStatus').textContent = translations.saving;
             saveData(true);
         }
 
@@ -981,7 +995,7 @@ $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goa
             const priority = document.getElementById('modal-priority').value;
 
             if (!title.trim()) {
-                alert('Le titre est obligatoire');
+                alert(translations.titleRequired);
                 return;
             }
 
@@ -1008,7 +1022,7 @@ $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goa
                 const cards = data.cards.filter(c => c.status === column);
 
                 if (cards.length === 0) {
-                    columnEl.innerHTML = '<div class="empty-state">Aucune tache</div>';
+                    columnEl.innerHTML = '<div class="empty-state">' + translations.noTasks + '</div>';
                 } else {
                     columnEl.innerHTML = cards.map(card => `
                         <div class="card" draggable="true" ondragstart="drag(event)" data-id="${card.id}">
@@ -1016,7 +1030,7 @@ $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goa
                             ${card.description ? `<div class="card-description">${escapeHtml(card.description)}</div>` : ''}
                             <div class="card-meta">
                                 <span class="card-priority priority-${card.priority}">
-                                    ${card.priority === 'high' ? 'Haute' : card.priority === 'medium' ? 'Moyenne' : 'Basse'}
+                                    ${card.priority === 'high' ? translations.high : card.priority === 'medium' ? translations.medium : translations.low}
                                 </span>
                                 <button class="btn-remove no-print" onclick="deleteCard(${card.id})" style="background: none; border: none; color: #dc2626; cursor: pointer;">X</button>
                             </div>
@@ -1061,7 +1075,7 @@ $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goa
         }
 
         function deleteCard(id) {
-            if (confirm('Supprimer cette tache ?')) {
+            if (confirm(translations.deleteTask)) {
                 data.cards = data.cards.filter(c => c.id !== id);
                 scheduleAutoSave();
                 renderKanban();
@@ -1078,7 +1092,7 @@ $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goa
             const points = document.getElementById('story-points').value;
 
             if (!role || !action || !benefit) {
-                alert('Veuillez remplir tous les champs obligatoires');
+                alert(translations.fillRequired);
                 return;
             }
 
@@ -1109,38 +1123,38 @@ $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goa
             const container = document.getElementById('stories-container');
 
             if (data.userStories.length === 0) {
-                container.innerHTML = '<div class="empty-state">Aucune user story creee</div>';
+                container.innerHTML = '<div class="empty-state">' + translations.noStories + '</div>';
                 return;
             }
 
             container.innerHTML = data.userStories.map((story, index) => `
                 <div class="card" style="margin-bottom: 16px;">
                     <div class="card-title">
-                        User Story #${index + 1}
+                        ${translations.userStory} #${index + 1}
                         <span class="card-priority priority-${story.priority}" style="float: right;">
-                            ${story.priority === 'high' ? 'Haute' : story.priority === 'medium' ? 'Moyenne' : 'Basse'}
+                            ${story.priority === 'high' ? translations.high : story.priority === 'medium' ? translations.medium : translations.low}
                         </span>
                     </div>
                     <div class="card-description" style="margin: 12px 0; padding: 12px; background: #f9fafb; border-radius: 4px;">
-                        <strong>En tant que</strong> ${escapeHtml(story.role)}, <strong>je veux</strong> ${escapeHtml(story.action)}
-                        <strong>afin de</strong> ${escapeHtml(story.benefit)}
+                        <strong>${translations.asA}</strong> ${escapeHtml(story.role)}, <strong>${translations.iWant}</strong> ${escapeHtml(story.action)}
+                        <strong>${translations.soThat}</strong> ${escapeHtml(story.benefit)}
                     </div>
                     ${story.criteria ? `
                         <div style="margin: 12px 0;">
-                            <strong>Criteres d'acceptation :</strong>
+                            <strong>${translations.criteria} :</strong>
                             <div style="white-space: pre-line; margin-top: 8px; color: var(--secondary);">${escapeHtml(story.criteria)}</div>
                         </div>
                     ` : ''}
                     <div class="card-meta">
-                        <span>${story.points} points</span>
-                        <button class="no-print" onclick="deleteUserStory(${story.id})" style="background: none; border: none; color: #dc2626; cursor: pointer;">Supprimer</button>
+                        <span>${story.points} ${translations.points}</span>
+                        <button class="no-print" onclick="deleteUserStory(${story.id})" style="background: none; border: none; color: #dc2626; cursor: pointer;">${translations.delete}</button>
                     </div>
                 </div>
             `).join('');
         }
 
         function deleteUserStory(id) {
-            if (confirm('Supprimer cette user story ?')) {
+            if (confirm(translations.deleteStory)) {
                 data.userStories = data.userStories.filter(s => s.id !== id);
                 scheduleAutoSave();
                 renderUserStories();
@@ -1162,7 +1176,7 @@ $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goa
                 const items = data.retrospective[type];
 
                 if (items.length === 0) {
-                    container.innerHTML = '<div class="empty-state">Aucun element</div>';
+                    container.innerHTML = '<div class="empty-state">' + translations.noItems + '</div>';
                 } else {
                     container.innerHTML = items.map((item, index) => `
                         <div class="retro-item">
@@ -1196,7 +1210,7 @@ $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goa
             const activeTasks = data.cards.filter(c => c.status !== 'backlog');
 
             if (activeTasks.length === 0) {
-                sprintTasks.innerHTML = '<div class="empty-state">Aucune tache dans le sprint actuel</div>';
+                sprintTasks.innerHTML = '<div class="empty-state">' + translations.noSprintTasks + '</div>';
             } else {
                 sprintTasks.innerHTML = activeTasks.map(card => `
                     <div class="card" style="margin-bottom: 12px;">
@@ -1208,12 +1222,12 @@ $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goa
                                 card.status === 'inprogress' ? 'var(--inprogress)' :
                                 'var(--todo)'
                             }; color: white;">
-                                ${card.status === 'done' ? 'Termine' :
-                                  card.status === 'inprogress' ? 'En cours' :
-                                  'A faire'}
+                                ${card.status === 'done' ? translations.done :
+                                  card.status === 'inprogress' ? translations.inProgress :
+                                  translations.todo}
                             </span>
                             <span class="card-priority priority-${card.priority}">
-                                ${card.priority === 'high' ? 'Haute' : card.priority === 'medium' ? 'Moyenne' : 'Basse'}
+                                ${card.priority === 'high' ? translations.high : card.priority === 'medium' ? translations.medium : translations.low}
                             </span>
                         </div>
                     </div>
@@ -1298,7 +1312,7 @@ $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goa
         }
 
         function resetAll() {
-            if (confirm('Reinitialiser toutes les donnees ?')) {
+            if (confirm(translations.resetConfirm)) {
                 data = {
                     cards: [],
                     userStories: [],
