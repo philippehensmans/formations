@@ -6,12 +6,12 @@ echo "<h2>Test authentification formateur</h2>";
 
 require_once __DIR__ . '/config.php';
 
-echo "<h3>1. Test getDB()</h3>";
-$db = getDB();
-echo "DB OK<br>";
+echo "<h3>1. Test getSharedDB() (base utilisateurs)</h3>";
+$sharedDb = getSharedDB();
+echo "SharedDB OK<br>";
 
 echo "<h3>2. Verification utilisateur 'formateur' dans la base</h3>";
-$stmt = $db->query("SELECT id, username, prenom, nom, is_admin, is_formateur FROM users WHERE username = 'formateur'");
+$stmt = $sharedDb->query("SELECT id, username, prenom, nom, is_admin, is_formateur FROM users WHERE username = 'formateur'");
 $formateur = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if ($formateur) {
@@ -22,7 +22,7 @@ if ($formateur) {
     echo "ERREUR: Utilisateur 'formateur' non trouve dans la base!<br>";
 
     echo "<h3>Liste des utilisateurs:</h3>";
-    $stmt = $db->query("SELECT id, username, is_admin, is_formateur FROM users");
+    $stmt = $sharedDb->query("SELECT id, username, is_admin, is_formateur FROM users");
     $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
     echo "<pre>";
     print_r($users);
