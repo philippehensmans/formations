@@ -25,11 +25,11 @@ $pestelData = json_decode($analyse['pestel_data'], true) ?: getEmptyPestel();
 $isSubmitted = $analyse['is_submitted'] == 1;
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="<?= getCurrentLanguage() ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analyse PESTEL - <?= sanitize($participant['prenom']) ?> <?= sanitize($participant['nom']) ?></title>
+    <title><?= t('pestel.title') ?> - <?= sanitize($participant['prenom']) ?> <?= sanitize($participant['nom']) ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -48,58 +48,58 @@ $isSubmitted = $analyse['is_submitted'] == 1;
                 <span class="text-gray-500 text-sm ml-2"><?= sanitize($participant['session_nom']) ?></span>
             </div>
             <div class="flex items-center gap-3">
+                <?= renderLanguageSelector('text-sm bg-white/20 text-gray-800 px-2 py-1 rounded border border-gray-300') ?>
                 <button onclick="manualSave()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition">
-                    Sauvegarder
+                    <?= t('common.save') ?>
                 </button>
                 <span id="saveStatus" class="text-sm px-3 py-1 rounded-full bg-gray-200">
-                    <?= $isSubmitted ? 'Soumis' : 'Brouillon' ?>
+                    <?= $isSubmitted ? t('app.submitted') : t('app.draft') ?>
                 </span>
-                <span id="completion" class="text-sm text-gray-600">Completion: <strong><?= $analyse['completion_percent'] ?>%</strong></span>
-                <a href="logout.php" class="text-sm bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded transition">Deconnexion</a>
+                <span id="completion" class="text-sm text-gray-600"><?= t('app.completion') ?>: <strong><?= $analyse['completion_percent'] ?>%</strong></span>
+                <a href="logout.php" class="text-sm bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded transition"><?= t('auth.logout') ?></a>
             </div>
         </div>
     </div>
 
     <div class="max-w-6xl mx-auto bg-white rounded-lg shadow-2xl p-6 md:p-8">
         <div class="mb-8 text-center">
-            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Analyse PESTEL</h1>
-            <p class="text-gray-600 italic">Politique - Economique - Socioculturel - Technologique - Environnemental - Legal</p>
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2"><?= t('pestel.title') ?></h1>
+            <p class="text-gray-600 italic"><?= t('pestel.subtitle') ?></p>
         </div>
 
         <!-- Introduction methodologique -->
         <div class="mb-6 bg-gradient-to-r from-blue-50 via-teal-50 to-green-50 p-6 rounded-lg border-2 border-teal-200 shadow-md">
             <h2 class="text-xl font-bold text-teal-800 mb-3 flex items-center">
-                <span class="text-2xl mr-2">📚</span> Qu'est-ce que l'analyse PESTEL ?
+                <span class="text-2xl mr-2">📚</span> <?= t('pestel.what_is') ?>
             </h2>
             <div class="space-y-4 text-gray-700">
                 <p class="leading-relaxed">
-                    L'analyse <strong>PESTEL</strong> est un outil strategique qui permet d'analyser les <strong>facteurs macro-environnementaux</strong>
-                    externes qui peuvent influencer un projet, une organisation ou un secteur d'activite.
+                    <?= t('pestel.intro') ?>
                 </p>
                 <div class="grid md:grid-cols-2 gap-4">
                     <div class="bg-red-50 border-l-4 border-red-500 p-3 rounded">
-                        <p class="font-semibold text-red-800 mb-1">🏛️ Politique</p>
-                        <p class="text-sm text-red-700">Stabilite politique, politiques gouvernementales, reglementations publiques</p>
+                        <p class="font-semibold text-red-800 mb-1">🏛️ <?= t('pestel.political') ?></p>
+                        <p class="text-sm text-red-700"><?= t('pestel.political_help') ?></p>
                     </div>
                     <div class="bg-green-50 border-l-4 border-green-500 p-3 rounded">
-                        <p class="font-semibold text-green-800 mb-1">💰 Economique</p>
-                        <p class="text-sm text-green-700">Croissance economique, inflation, taux de change, pouvoir d'achat</p>
+                        <p class="font-semibold text-green-800 mb-1">💰 <?= t('pestel.economic') ?></p>
+                        <p class="text-sm text-green-700"><?= t('pestel.economic_help') ?></p>
                     </div>
                     <div class="bg-purple-50 border-l-4 border-purple-500 p-3 rounded">
-                        <p class="font-semibold text-purple-800 mb-1">👥 Socioculturel</p>
-                        <p class="text-sm text-purple-700">Demographie, valeurs sociales, tendances culturelles, education</p>
+                        <p class="font-semibold text-purple-800 mb-1">👥 <?= t('pestel.sociocultural') ?></p>
+                        <p class="text-sm text-purple-700"><?= t('pestel.sociocultural_help') ?></p>
                     </div>
                     <div class="bg-blue-50 border-l-4 border-blue-500 p-3 rounded">
-                        <p class="font-semibold text-blue-800 mb-1">🔬 Technologique</p>
-                        <p class="text-sm text-blue-700">Innovations, R&D, automatisation, infrastructure technologique</p>
+                        <p class="font-semibold text-blue-800 mb-1">🔬 <?= t('pestel.technological') ?></p>
+                        <p class="text-sm text-blue-700"><?= t('pestel.technological_help') ?></p>
                     </div>
                     <div class="bg-teal-50 border-l-4 border-teal-500 p-3 rounded">
-                        <p class="font-semibold text-teal-800 mb-1">🌱 Environnemental</p>
-                        <p class="text-sm text-teal-700">Changement climatique, durabilite, ressources naturelles, ecologie</p>
+                        <p class="font-semibold text-teal-800 mb-1">🌱 <?= t('pestel.environmental') ?></p>
+                        <p class="text-sm text-teal-700"><?= t('pestel.environmental_help') ?></p>
                     </div>
                     <div class="bg-amber-50 border-l-4 border-amber-500 p-3 rounded">
-                        <p class="font-semibold text-amber-800 mb-1">⚖️ Legal</p>
-                        <p class="text-sm text-amber-700">Lois et reglementations, normes, propriete intellectuelle, droit du travail</p>
+                        <p class="font-semibold text-amber-800 mb-1">⚖️ <?= t('pestel.legal') ?></p>
+                        <p class="text-sm text-amber-700"><?= t('pestel.legal_help') ?></p>
                     </div>
                 </div>
             </div>
@@ -108,52 +108,52 @@ $isSubmitted = $analyse['is_submitted'] == 1;
         <!-- Informations du projet -->
         <div class="mb-6 bg-gradient-to-r from-purple-50 to-indigo-50 p-4 rounded-lg">
             <label class="block text-lg font-semibold text-gray-800 mb-2">
-                📋 Projet / Organisation / Secteur Analyse
+                📋 <?= t('pestel.project_name') ?>
             </label>
             <input type="text" id="nomProjet"
                 class="w-full px-4 py-2 border-2 border-purple-200 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="Ex: Lancement d'un service de mobilite durable, Secteur de la sante..."
+                placeholder="<?= t('pestel.project_placeholder') ?>"
                 value="<?= sanitize($analyse['nom_projet']) ?>"
                 oninput="scheduleAutoSave()">
         </div>
 
         <div class="mb-6 bg-gradient-to-r from-indigo-50 to-blue-50 p-4 rounded-lg">
             <label class="block text-lg font-semibold text-gray-800 mb-2">
-                👥 Participants a l'Analyse
+                👥 <?= t('pestel.analysis_participants') ?>
             </label>
             <input type="text" id="participantsAnalyse"
                 class="w-full px-4 py-2 border-2 border-indigo-200 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                placeholder="Noms des participants"
+                placeholder="<?= t('app.participants_placeholder') ?>"
                 value="<?= sanitize($analyse['participants_analyse']) ?>"
                 oninput="scheduleAutoSave()">
         </div>
 
         <div class="mb-6 bg-gradient-to-r from-blue-50 to-teal-50 p-4 rounded-lg">
             <label class="block text-lg font-semibold text-gray-800 mb-2">
-                🎯 Zone Geographique / Marche Concerne
+                🎯 <?= t('pestel.geo_zone') ?>
             </label>
             <input type="text" id="zone"
                 class="w-full px-4 py-2 border-2 border-blue-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Ex: Europe, France, Region Bruxelles-Capitale..."
+                placeholder="<?= t('pestel.geo_placeholder') ?>"
                 value="<?= sanitize($analyse['zone']) ?>"
                 oninput="scheduleAutoSave()">
         </div>
 
         <!-- Matrice PESTEL -->
         <div class="mb-6">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">🌍 Analyse des Facteurs PESTEL</h2>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">🌍 <?= t('pestel.factors_analysis') ?></h2>
 
             <div class="pestel-grid">
                 <!-- POLITIQUE -->
                 <div class="bg-red-50 p-5 rounded-lg border-2 border-red-300 shadow-md">
                     <div class="flex justify-between items-center mb-3">
                         <h3 class="text-xl font-bold text-red-800 flex items-center">
-                            <span class="text-2xl mr-2">🏛️</span> Politique
+                            <span class="text-2xl mr-2">🏛️</span> <?= t('pestel.political') ?>
                         </h3>
                         <button type="button" onclick="addItem('politique', 'red')"
                             class="no-print bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 transition text-sm">➕</button>
                     </div>
-                    <p class="text-sm text-red-700 mb-3 italic">Stabilite politique, politiques publiques, relations internationales</p>
+                    <p class="text-sm text-red-700 mb-3 italic"><?= t('pestel.political_desc') ?></p>
                     <div id="politiqueList" class="space-y-2">
                         <?php foreach ($pestelData['politique'] ?? [''] as $item): ?>
                         <div class="pestel-item flex gap-2" data-category="politique">
@@ -170,12 +170,12 @@ $isSubmitted = $analyse['is_submitted'] == 1;
                 <div class="bg-green-50 p-5 rounded-lg border-2 border-green-300 shadow-md">
                     <div class="flex justify-between items-center mb-3">
                         <h3 class="text-xl font-bold text-green-800 flex items-center">
-                            <span class="text-2xl mr-2">💰</span> Economique
+                            <span class="text-2xl mr-2">💰</span> <?= t('pestel.economic') ?>
                         </h3>
                         <button type="button" onclick="addItem('economique', 'green')"
                             class="no-print bg-green-600 text-white px-3 py-1 rounded-md hover:bg-green-700 transition text-sm">➕</button>
                     </div>
-                    <p class="text-sm text-green-700 mb-3 italic">Croissance, inflation, emploi, pouvoir d'achat</p>
+                    <p class="text-sm text-green-700 mb-3 italic"><?= t('pestel.economic_desc') ?></p>
                     <div id="economiqueList" class="space-y-2">
                         <?php foreach ($pestelData['economique'] ?? [''] as $item): ?>
                         <div class="pestel-item flex gap-2" data-category="economique">
@@ -192,12 +192,12 @@ $isSubmitted = $analyse['is_submitted'] == 1;
                 <div class="bg-purple-50 p-5 rounded-lg border-2 border-purple-300 shadow-md">
                     <div class="flex justify-between items-center mb-3">
                         <h3 class="text-xl font-bold text-purple-800 flex items-center">
-                            <span class="text-2xl mr-2">👥</span> Socioculturel
+                            <span class="text-2xl mr-2">👥</span> <?= t('pestel.sociocultural') ?>
                         </h3>
                         <button type="button" onclick="addItem('socioculturel', 'purple')"
                             class="no-print bg-purple-600 text-white px-3 py-1 rounded-md hover:bg-purple-700 transition text-sm">➕</button>
                     </div>
-                    <p class="text-sm text-purple-700 mb-3 italic">Demographie, valeurs, modes de vie, education</p>
+                    <p class="text-sm text-purple-700 mb-3 italic"><?= t('pestel.sociocultural_desc') ?></p>
                     <div id="socioculturelList" class="space-y-2">
                         <?php foreach ($pestelData['socioculturel'] ?? [''] as $item): ?>
                         <div class="pestel-item flex gap-2" data-category="socioculturel">
@@ -214,12 +214,12 @@ $isSubmitted = $analyse['is_submitted'] == 1;
                 <div class="bg-blue-50 p-5 rounded-lg border-2 border-blue-300 shadow-md">
                     <div class="flex justify-between items-center mb-3">
                         <h3 class="text-xl font-bold text-blue-800 flex items-center">
-                            <span class="text-2xl mr-2">🔬</span> Technologique
+                            <span class="text-2xl mr-2">🔬</span> <?= t('pestel.technological') ?>
                         </h3>
                         <button type="button" onclick="addItem('technologique', 'blue')"
                             class="no-print bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 transition text-sm">➕</button>
                     </div>
-                    <p class="text-sm text-blue-700 mb-3 italic">Innovation, R&D, automatisation, digitalisation</p>
+                    <p class="text-sm text-blue-700 mb-3 italic"><?= t('pestel.technological_desc') ?></p>
                     <div id="technologiqueList" class="space-y-2">
                         <?php foreach ($pestelData['technologique'] ?? [''] as $item): ?>
                         <div class="pestel-item flex gap-2" data-category="technologique">
@@ -236,12 +236,12 @@ $isSubmitted = $analyse['is_submitted'] == 1;
                 <div class="bg-teal-50 p-5 rounded-lg border-2 border-teal-300 shadow-md">
                     <div class="flex justify-between items-center mb-3">
                         <h3 class="text-xl font-bold text-teal-800 flex items-center">
-                            <span class="text-2xl mr-2">🌱</span> Environnemental
+                            <span class="text-2xl mr-2">🌱</span> <?= t('pestel.environmental') ?>
                         </h3>
                         <button type="button" onclick="addItem('environnemental', 'teal')"
                             class="no-print bg-teal-600 text-white px-3 py-1 rounded-md hover:bg-teal-700 transition text-sm">➕</button>
                     </div>
-                    <p class="text-sm text-teal-700 mb-3 italic">Climat, durabilite, ressources naturelles, ecologie</p>
+                    <p class="text-sm text-teal-700 mb-3 italic"><?= t('pestel.environmental_desc') ?></p>
                     <div id="environnementalList" class="space-y-2">
                         <?php foreach ($pestelData['environnemental'] ?? [''] as $item): ?>
                         <div class="pestel-item flex gap-2" data-category="environnemental">
@@ -258,12 +258,12 @@ $isSubmitted = $analyse['is_submitted'] == 1;
                 <div class="bg-amber-50 p-5 rounded-lg border-2 border-amber-300 shadow-md">
                     <div class="flex justify-between items-center mb-3">
                         <h3 class="text-xl font-bold text-amber-800 flex items-center">
-                            <span class="text-2xl mr-2">⚖️</span> Legal
+                            <span class="text-2xl mr-2">⚖️</span> <?= t('pestel.legal') ?>
                         </h3>
                         <button type="button" onclick="addItem('legal', 'amber')"
                             class="no-print bg-amber-600 text-white px-3 py-1 rounded-md hover:bg-amber-700 transition text-sm">➕</button>
                     </div>
-                    <p class="text-sm text-amber-700 mb-3 italic">Lois, reglementations, normes, propriete intellectuelle</p>
+                    <p class="text-sm text-amber-700 mb-3 italic"><?= t('pestel.legal_desc') ?></p>
                     <div id="legalList" class="space-y-2">
                         <?php foreach ($pestelData['legal'] ?? [''] as $item): ?>
                         <div class="pestel-item flex gap-2" data-category="legal">
@@ -281,25 +281,25 @@ $isSubmitted = $analyse['is_submitted'] == 1;
         <!-- Synthese -->
         <div class="mb-6 bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg">
             <label class="block text-lg font-semibold text-gray-800 mb-2">
-                🎯 Synthese : Facteurs Cles & Implications
+                🎯 <?= t('pestel.synthesis') ?>
             </label>
             <p class="text-sm text-gray-600 mb-3 italic">
-                Quels sont les 3 a 5 facteurs PESTEL les plus impactants pour votre projet ? Quelles implications strategiques ?
+                <?= t('pestel.synthesis_help') ?>
             </p>
             <textarea id="synthese" rows="5"
                 class="w-full px-4 py-2 border-2 border-indigo-300 rounded-md focus:ring-2 focus:ring-indigo-500"
-                placeholder="Ex: Les tendances technologiques (IA, automatisation) et environnementales (neutralite carbone) creent une opportunite majeure..."
+                placeholder="<?= t('pestel.synthesis_placeholder') ?>"
                 oninput="scheduleAutoSave()"><?= sanitize($analyse['synthese']) ?></textarea>
         </div>
 
         <!-- Notes -->
         <div class="mb-6 bg-gray-50 p-4 rounded-lg">
             <label class="block text-lg font-semibold text-gray-800 mb-2">
-                ✏️ Notes Complementaires
+                ✏️ <?= t('app.notes') ?>
             </label>
             <textarea id="notes" rows="3"
                 class="w-full px-4 py-2 border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-gray-500"
-                placeholder="Observations, sources, precisions..."
+                placeholder="<?= t('app.notes_placeholder') ?>"
                 oninput="scheduleAutoSave()"><?= sanitize($analyse['notes']) ?></textarea>
         </div>
 
@@ -307,15 +307,15 @@ $isSubmitted = $analyse['is_submitted'] == 1;
         <div class="no-print flex flex-wrap gap-3 pt-4 border-t-2 border-gray-200">
             <button type="button" onclick="submitAnalyse()"
                 class="bg-purple-600 text-white px-6 py-3 rounded-md hover:bg-purple-700 transition font-semibold shadow-md">
-                ✅ Soumettre
+                ✅ <?= t('common.submit') ?>
             </button>
             <button type="button" onclick="exportToExcel()"
                 class="bg-emerald-600 text-white px-6 py-3 rounded-md hover:bg-emerald-700 transition font-semibold shadow-md">
-                📊 Exporter Excel
+                📊 <?= t('app.export_excel') ?>
             </button>
             <button type="button" onclick="exportToWord()"
                 class="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition font-semibold shadow-md">
-                📄 Exporter Word
+                📄 <?= t('app.export_word') ?>
             </button>
             <button type="button" onclick="exportJSON()"
                 class="bg-gray-500 text-white px-6 py-3 rounded-md hover:bg-gray-600 transition font-semibold shadow-md">
@@ -323,12 +323,27 @@ $isSubmitted = $analyse['is_submitted'] == 1;
             </button>
             <button type="button" onclick="window.print()"
                 class="bg-gray-600 text-white px-6 py-3 rounded-md hover:bg-gray-700 transition font-semibold shadow-md">
-                🖨️ Imprimer
+                🖨️ <?= t('common.print') ?>
             </button>
         </div>
     </div>
 
+    <?= renderLanguageScript() ?>
     <script>
+        // Traductions JavaScript
+        const jsTranslations = {
+            saving: '<?= t('app.saving') ?>',
+            saved: '<?= t('app.saved') ?>',
+            error: '<?= t('common.error') ?>',
+            networkError: '<?= t('app.network_error') ?>',
+            submitted: '<?= t('app.submitted') ?>',
+            completion: '<?= t('app.completion') ?>',
+            confirmSubmit: '<?= t('app.confirm_submit_analysis') ?>',
+            submitSuccess: '<?= t('app.submit_success') ?>',
+            keepOneMinimum: '<?= t('app.keep_one_minimum') ?>',
+            newItem: '<?= t('app.new_item') ?>'
+        };
+
         let autoSaveTimeout = null;
 
         function addItem(category, color) {
@@ -338,7 +353,7 @@ $isSubmitted = $analyse['is_submitted'] == 1;
             item.dataset.category = category;
             item.innerHTML = `
                 <textarea rows="2" class="flex-1 px-3 py-2 border-2 border-${color}-300 rounded-md focus:ring-2 focus:ring-${color}-500 text-sm resize-none"
-                    placeholder="Nouveau facteur..."
+                    placeholder="${jsTranslations.newItem}"
                     oninput="scheduleAutoSave()"></textarea>
                 <button type="button" onclick="removeItem(this)" class="no-print text-${color}-700 hover:text-${color}-900 px-2">❌</button>
             `;
@@ -353,7 +368,7 @@ $isSubmitted = $analyse['is_submitted'] == 1;
                 parent.remove();
                 scheduleAutoSave();
             } else {
-                alert('Vous devez conserver au moins un element par categorie.');
+                alert(jsTranslations.keepOneMinimum);
             }
         }
 
@@ -368,7 +383,7 @@ $isSubmitted = $analyse['is_submitted'] == 1;
 
         function scheduleAutoSave() {
             if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
-            document.getElementById('saveStatus').textContent = 'Sauvegarde...';
+            document.getElementById('saveStatus').textContent = jsTranslations.saving;
             document.getElementById('saveStatus').className = 'text-sm px-3 py-1 rounded-full bg-yellow-400 text-yellow-900';
             autoSaveTimeout = setTimeout(saveData, 1000);
         }
@@ -399,16 +414,16 @@ $isSubmitted = $analyse['is_submitted'] == 1;
                 const result = await response.json();
 
                 if (result.success) {
-                    document.getElementById('saveStatus').textContent = 'Enregistre';
+                    document.getElementById('saveStatus').textContent = jsTranslations.saved;
                     document.getElementById('saveStatus').className = 'text-sm px-3 py-1 rounded-full bg-green-500 text-white';
-                    document.getElementById('completion').innerHTML = 'Completion: <strong>' + result.completion + '%</strong>';
+                    document.getElementById('completion').innerHTML = jsTranslations.completion + ': <strong>' + result.completion + '%</strong>';
                 } else {
-                    document.getElementById('saveStatus').textContent = 'Erreur';
+                    document.getElementById('saveStatus').textContent = jsTranslations.error;
                     document.getElementById('saveStatus').className = 'text-sm px-3 py-1 rounded-full bg-red-500 text-white';
                 }
             } catch (error) {
                 console.error('Erreur:', error);
-                document.getElementById('saveStatus').textContent = 'Erreur reseau';
+                document.getElementById('saveStatus').textContent = jsTranslations.networkError;
             }
         }
 
@@ -418,16 +433,16 @@ $isSubmitted = $analyse['is_submitted'] == 1;
         }
 
         async function submitAnalyse() {
-            if (!confirm('Soumettre votre analyse PESTEL ?')) return;
+            if (!confirm(jsTranslations.confirmSubmit)) return;
             await saveData();
 
             try {
                 const response = await fetch('api/submit.php', { method: 'POST' });
                 const result = await response.json();
                 if (result.success) {
-                    document.getElementById('saveStatus').textContent = 'Soumis';
+                    document.getElementById('saveStatus').textContent = jsTranslations.submitted;
                     document.getElementById('saveStatus').className = 'text-sm px-3 py-1 rounded-full bg-purple-500 text-white';
-                    alert('Analyse PESTEL soumise avec succes !');
+                    alert(jsTranslations.submitSuccess);
                 } else {
                     alert(result.error || 'Erreur lors de la soumission');
                 }

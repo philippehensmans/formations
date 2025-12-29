@@ -34,11 +34,11 @@ $smartHelp = getSmartHelp();
 $exemples = getExemplesParDomaine();
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="<?= getCurrentLanguage() ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Objectifs SMART - <?= sanitize($participant['prenom']) ?></title>
+    <title><?= t('smart.title') ?> - <?= sanitize($participant['prenom']) ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -56,18 +56,20 @@ $exemples = getExemplesParDomaine();
         .tooltip-content { display: none; position: absolute; z-index: 50; background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
     </style>
 </head>
+<?= renderLanguageScript() ?>
 <body class="bg-gray-100 min-h-screen">
     <!-- Header -->
     <header class="bg-emerald-700 text-white shadow-lg">
         <div class="max-w-5xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-4">
             <div>
-                <h1 class="text-xl font-bold">Objectifs SMART</h1>
+                <h1 class="text-xl font-bold"><?= t('smart.title') ?></h1>
                 <p class="text-emerald-200 text-sm"><?= sanitize($participant['prenom']) ?> <?= sanitize($participant['nom']) ?> | <?= sanitize($participant['session_code']) ?></p>
             </div>
             <div class="flex items-center gap-3">
+                <?= renderLanguageSelector('text-sm bg-emerald-600 text-white px-2 py-1 rounded border border-emerald-500') ?>
                 <span id="saveStatus" class="text-sm text-emerald-200"></span>
-                <button onclick="manualSave()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded text-sm">Sauvegarder</button>
-                <a href="logout.php" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm">Deconnexion</a>
+                <button onclick="manualSave()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded text-sm"><?= t('common.save') ?></button>
+                <a href="logout.php" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm"><?= t('auth.logout') ?></a>
             </div>
         </div>
     </header>
@@ -78,17 +80,17 @@ $exemples = getExemplesParDomaine();
             <div class="flex items-center justify-between">
                 <button onclick="goToStep(1)" class="flex items-center gap-2 px-4 py-2 rounded-lg transition step-btn" data-step="1">
                     <span class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold step-circle" data-step="1">1</span>
-                    <span class="hidden sm:inline">Analyser</span>
+                    <span class="hidden sm:inline"><?= t('smart.step_analyze') ?></span>
                 </button>
                 <div class="flex-1 h-1 mx-2 bg-gray-200"><div class="h-full bg-emerald-500 transition-all" id="progress1" style="width: 0%"></div></div>
                 <button onclick="goToStep(2)" class="flex items-center gap-2 px-4 py-2 rounded-lg transition step-btn" data-step="2">
                     <span class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold step-circle" data-step="2">2</span>
-                    <span class="hidden sm:inline">Reformuler</span>
+                    <span class="hidden sm:inline"><?= t('smart.step_reformulate') ?></span>
                 </button>
                 <div class="flex-1 h-1 mx-2 bg-gray-200"><div class="h-full bg-emerald-500 transition-all" id="progress2" style="width: 0%"></div></div>
                 <button onclick="goToStep(3)" class="flex items-center gap-2 px-4 py-2 rounded-lg transition step-btn" data-step="3">
                     <span class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold step-circle" data-step="3">3</span>
-                    <span class="hidden sm:inline">Creer</span>
+                    <span class="hidden sm:inline"><?= t('smart.step_create') ?></span>
                 </button>
             </div>
         </div>
@@ -97,7 +99,7 @@ $exemples = getExemplesParDomaine();
     <?php if ($isSubmitted): ?>
         <div class="max-w-5xl mx-auto px-4 mb-4">
             <div class="bg-green-100 border-l-4 border-green-500 p-4 rounded">
-                <p class="text-green-700 font-medium">Travail marque comme termine (modifications toujours possibles)</p>
+                <p class="text-green-700 font-medium"><?= t('smart.work_complete') ?></p>
             </div>
         </div>
     <?php endif; ?>
@@ -106,14 +108,14 @@ $exemples = getExemplesParDomaine();
         <!-- ETAPE 1: Analyser -->
         <div id="step1" class="step-content hidden">
             <div class="bg-white rounded-lg shadow p-6 mb-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-2">Etape 1 : Analyser des objectifs</h2>
-                <p class="text-gray-600 mb-4">Evaluez si chaque objectif respecte les criteres SMART.</p>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2"><?= t('smart.step1_title') ?></h2>
+                <p class="text-gray-600 mb-4"><?= t('smart.step1_desc') ?></p>
 
                 <div id="analyseContainer"></div>
 
                 <div class="mt-6 flex justify-end">
                     <button onclick="goToStep(2)" class="bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 font-medium">
-                        Passer a l'etape 2 →
+                        <?= t('smart.go_step2') ?> →
                     </button>
                 </div>
             </div>
@@ -122,17 +124,17 @@ $exemples = getExemplesParDomaine();
         <!-- ETAPE 2: Reformuler -->
         <div id="step2" class="step-content hidden">
             <div class="bg-white rounded-lg shadow p-6 mb-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-2">Etape 2 : Reformuler des objectifs</h2>
-                <p class="text-gray-600 mb-4">Transformez ces objectifs vagues en objectifs SMART complets.</p>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2"><?= t('smart.step2_title') ?></h2>
+                <p class="text-gray-600 mb-4"><?= t('smart.step2_desc') ?></p>
 
                 <div id="reformulationContainer"></div>
 
                 <div class="mt-6 flex justify-between">
                     <button onclick="goToStep(1)" class="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600">
-                        ← Retour
+                        ← <?= t('smart.back') ?>
                     </button>
                     <button onclick="goToStep(3)" class="bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 font-medium">
-                        Passer a l'etape 3 →
+                        <?= t('smart.go_step3') ?> →
                     </button>
                 </div>
             </div>
@@ -141,26 +143,26 @@ $exemples = getExemplesParDomaine();
         <!-- ETAPE 3: Creer -->
         <div id="step3" class="step-content hidden">
             <div class="bg-white rounded-lg shadow p-6 mb-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-2">Etape 3 : Creer vos objectifs SMART</h2>
-                <p class="text-gray-600 mb-4">Formulez vos propres objectifs en appliquant la methode SMART.</p>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2"><?= t('smart.step3_title') ?></h2>
+                <p class="text-gray-600 mb-4"><?= t('smart.step3_desc') ?></p>
 
                 <div id="creationContainer"></div>
 
                 <button onclick="addCreation()" class="mt-4 bg-emerald-100 text-emerald-700 px-4 py-2 rounded-lg hover:bg-emerald-200 font-medium">
-                    + Ajouter un objectif
+                    + <?= t('smart.add_objective') ?>
                 </button>
 
                 <div class="mt-6 flex flex-wrap justify-between gap-4">
                     <button onclick="goToStep(2)" class="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600">
-                        ← Retour
+                        ← <?= t('smart.back') ?>
                     </button>
                     <div class="flex gap-3">
                         <button onclick="exportExcel()" class="bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700">Excel</button>
                         <button onclick="exportWord()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Word</button>
-                        <button onclick="window.print()" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">Imprimer</button>
+                        <button onclick="window.print()" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"><?= t('common.print') ?></button>
                         <?php if (!$isSubmitted): ?>
                             <button onclick="submitWork()" class="bg-emerald-800 text-white px-6 py-3 rounded-lg hover:bg-emerald-900 font-medium">
-                                Marquer comme termine
+                                <?= t('smart.mark_complete') ?>
                             </button>
                         <?php endif; ?>
                     </div>
@@ -172,15 +174,47 @@ $exemples = getExemplesParDomaine();
     <!-- Help Panel -->
     <div id="helpPanel" class="fixed inset-y-0 right-0 w-80 bg-white shadow-xl transform translate-x-full transition-transform duration-300 z-50">
         <div class="p-4 bg-emerald-700 text-white flex justify-between items-center">
-            <h3 class="font-bold">Aide SMART</h3>
+            <h3 class="font-bold"><?= t('smart.help_smart') ?></h3>
             <button onclick="toggleHelp()" class="text-2xl">&times;</button>
         </div>
         <div class="p-4 overflow-y-auto" style="height: calc(100% - 60px);" id="helpContent"></div>
     </div>
 
-    <button onclick="toggleHelp()" class="fixed bottom-6 right-6 bg-emerald-600 text-white w-14 h-14 rounded-full shadow-xl hover:bg-emerald-700 text-2xl font-bold z-40 flex items-center justify-center animate-pulse hover:animate-none" title="Aide SMART">?</button>
+    <button onclick="toggleHelp()" class="fixed bottom-6 right-6 bg-emerald-600 text-white w-14 h-14 rounded-full shadow-xl hover:bg-emerald-700 text-2xl font-bold z-40 flex items-center justify-center animate-pulse hover:animate-none" title="<?= t('smart.help_smart') ?>">?</button>
 
     <script>
+        // Traductions JavaScript
+        const jsTranslations = {
+            modifications: '<?= t('smart.modifications') ?>',
+            saving: '<?= t('smart.saving') ?>',
+            savedOk: '<?= t('smart.saved_ok') ?>',
+            error: '<?= t('common.error') ?>',
+            networkError: '<?= t('smart.network_error') ?>',
+            confirmComplete: '<?= t('smart.confirm_complete') ?>',
+            markedComplete: '<?= t('smart.marked_complete') ?>',
+            smartExample: '<?= t('smart.smart_example') ?>',
+            objective: '<?= t('smart.objective') ?>',
+            score: '<?= t('smart.score') ?>',
+            yes: '<?= t('smart.yes') ?>',
+            partial: '<?= t('smart.partial') ?>',
+            no: '<?= t('smart.no') ?>',
+            justification: '<?= t('smart.justification') ?>',
+            vagueObjective: '<?= t('smart.vague_objective') ?>',
+            smartReformulated: '<?= t('smart.smart_reformulated') ?>',
+            domain: '<?= t('smart.domain') ?>',
+            professional: '<?= t('smart.professional') ?>',
+            personal: '<?= t('smart.personal') ?>',
+            associative: '<?= t('smart.associative') ?>',
+            thematic: '<?= t('smart.thematic') ?>',
+            thematicPlaceholder: '<?= t('smart.thematic_placeholder') ?>',
+            delete: '<?= t('smart.delete') ?>',
+            yourSmartObjective: '<?= t('smart.your_smart_objective') ?>',
+            myObjectives: '<?= t('smart.my_objectives') ?>',
+            createdObjectives: '<?= t('smart.created_objectives') ?>',
+            analyses: '<?= t('smart.analyses') ?>',
+            reformulations: '<?= t('smart.reformulations') ?>'
+        };
+
         // Data
         const objectifsAnalyse = <?= json_encode($objectifsAnalyse) ?>;
         const objectifsReform = <?= json_encode($objectifsReform) ?>;
@@ -557,7 +591,7 @@ $exemples = getExemplesParDomaine();
         // ===== SAVE =====
         function scheduleSave() {
             if (saveTimeout) clearTimeout(saveTimeout);
-            document.getElementById('saveStatus').textContent = 'Modifications...';
+            document.getElementById('saveStatus').textContent = jsTranslations.modifications;
             saveTimeout = setTimeout(doSave, 1000);
         }
 
@@ -567,7 +601,7 @@ $exemples = getExemplesParDomaine();
         }
 
         function doSave() {
-            document.getElementById('saveStatus').textContent = 'Sauvegarde...';
+            document.getElementById('saveStatus').textContent = jsTranslations.saving;
             fetch('api/save.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -580,19 +614,19 @@ $exemples = getExemplesParDomaine();
             })
             .then(r => r.json())
             .then(result => {
-                document.getElementById('saveStatus').textContent = result.success ? 'Sauvegarde OK' : 'Erreur';
+                document.getElementById('saveStatus').textContent = result.success ? jsTranslations.savedOk : jsTranslations.error;
                 setTimeout(() => document.getElementById('saveStatus').textContent = '', 2000);
             })
-            .catch(() => document.getElementById('saveStatus').textContent = 'Erreur reseau');
+            .catch(() => document.getElementById('saveStatus').textContent = jsTranslations.networkError);
         }
 
         function submitWork() {
-            if (!confirm('Marquer comme termine ?')) return;
+            if (!confirm(jsTranslations.confirmComplete)) return;
             fetch('api/submit.php', { method: 'POST' })
             .then(r => r.json())
             .then(result => {
                 if (result.success) {
-                    alert('Marque comme termine !');
+                    alert(jsTranslations.markedComplete);
                     location.reload();
                 }
             });
