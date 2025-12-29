@@ -16,11 +16,11 @@ $db = getDB();
 $scenario = getActiveScenario($db, $sessionId);
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="<?= getCurrentLanguage() ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌱 Empreinte Carbone IA</title>
+    <title>🌱 <?= t('carbone.title') ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .emoji-btn {
@@ -70,18 +70,19 @@ $scenario = getActiveScenario($db, $sessionId);
         <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
             <div class="flex justify-between items-center">
                 <div>
-                    <h1 class="text-2xl font-bold text-green-800">🌱 Évaluation Empreinte Carbone IA</h1>
-                    <p class="text-gray-600">Évaluez collectivement l'impact environnemental des solutions</p>
+                    <h1 class="text-2xl font-bold text-green-800">🌱 <?= t('carbone.title') ?></h1>
+                    <p class="text-gray-600"><?= t('carbone.subtitle') ?></p>
                 </div>
                 <div class="flex items-center gap-4">
+                    <?= renderLanguageSelector('lang-select') ?>
                     <span class="text-sm text-gray-500">
                         <span id="syncIndicator" class="pulse">🔄</span>
-                        <span id="voterCount">0</span> participant(s)
+                        <span id="voterCount">0</span> <?= t('carbone.participant') ?>
                     </span>
                     <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
                         <?= htmlspecialchars($user['prenom'] ?? $user['username']) ?>
                     </span>
-                    <a href="logout.php" class="text-gray-500 hover:text-red-500 text-sm">Déconnexion</a>
+                    <a href="logout.php" class="text-gray-500 hover:text-red-500 text-sm"><?= t('auth.logout') ?></a>
                 </div>
             </div>
         </div>
@@ -90,9 +91,9 @@ $scenario = getActiveScenario($db, $sessionId);
         <!-- Pas de scénario actif -->
         <div class="bg-white rounded-xl shadow-lg p-12 text-center">
             <div class="text-6xl mb-4">⏳</div>
-            <h2 class="text-xl font-bold text-gray-700 mb-2">En attente du formateur</h2>
-            <p class="text-gray-500">Le formateur n'a pas encore lancé de scénario d'évaluation.</p>
-            <p class="text-gray-400 text-sm mt-4">Cette page se rafraîchira automatiquement.</p>
+            <h2 class="text-xl font-bold text-gray-700 mb-2"><?= t('carbone.waiting_trainer') ?></h2>
+            <p class="text-gray-500"><?= t('carbone.no_scenario') ?></p>
+            <p class="text-gray-400 text-sm mt-4"><?= t('carbone.auto_refresh') ?></p>
         </div>
         <?php else: ?>
         <!-- Scénario actif -->
@@ -105,19 +106,19 @@ $scenario = getActiveScenario($db, $sessionId);
 
         <!-- Légende des critères -->
         <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
-            <h3 class="font-bold text-yellow-800 mb-2">📋 Comment voter ?</h3>
+            <h3 class="font-bold text-yellow-800 mb-2">📋 <?= t('carbone.how_to_vote') ?></h3>
             <div class="grid md:grid-cols-3 gap-4 text-sm">
                 <div>
-                    <span class="font-medium">🌍 Impact environnemental</span><br>
-                    <span class="text-gray-600">1 planète = faible impact<br>3 planètes = fort impact</span>
+                    <span class="font-medium">🌍 <?= t('carbone.env_impact') ?></span><br>
+                    <span class="text-gray-600"><?= t('carbone.env_desc') ?></span>
                 </div>
                 <div>
-                    <span class="font-medium">⭐ Qualité du résultat</span><br>
-                    <span class="text-gray-600">1 étoile = qualité faible<br>5 étoiles = excellente qualité</span>
+                    <span class="font-medium">⭐ <?= t('carbone.quality') ?></span><br>
+                    <span class="text-gray-600"><?= t('carbone.quality_desc') ?></span>
                 </div>
                 <div>
-                    <span class="font-medium">⏱️ Gain de temps</span><br>
-                    <span class="text-gray-600">1 horloge = peu de gain<br>3 horloges = gain important</span>
+                    <span class="font-medium">⏱️ <?= t('carbone.time_gain') ?></span><br>
+                    <span class="text-gray-600"><?= t('carbone.time_desc') ?></span>
                 </div>
             </div>
         </div>
@@ -136,7 +137,7 @@ $scenario = getActiveScenario($db, $sessionId);
 
                     <!-- Vote Impact -->
                     <div class="mb-4">
-                        <label class="text-sm font-medium text-gray-700 block mb-2">🌍 Impact environnemental</label>
+                        <label class="text-sm font-medium text-gray-700 block mb-2">🌍 <?= t('carbone.env_impact') ?></label>
                         <div class="flex gap-2" data-criteria="impact" data-max="3">
                             <span class="emoji-btn" data-value="1">🌍</span>
                             <span class="emoji-btn" data-value="2">🌍</span>
@@ -146,7 +147,7 @@ $scenario = getActiveScenario($db, $sessionId);
 
                     <!-- Vote Qualité -->
                     <div class="mb-4">
-                        <label class="text-sm font-medium text-gray-700 block mb-2">⭐ Qualité du résultat</label>
+                        <label class="text-sm font-medium text-gray-700 block mb-2">⭐ <?= t('carbone.quality') ?></label>
                         <div class="flex gap-1" data-criteria="qualite" data-max="5">
                             <span class="emoji-btn" data-value="1">⭐</span>
                             <span class="emoji-btn" data-value="2">⭐</span>
@@ -158,7 +159,7 @@ $scenario = getActiveScenario($db, $sessionId);
 
                     <!-- Vote Temps -->
                     <div class="mb-2">
-                        <label class="text-sm font-medium text-gray-700 block mb-2">⏱️ Gain de temps</label>
+                        <label class="text-sm font-medium text-gray-700 block mb-2">⏱️ <?= t('carbone.time_gain') ?></label>
                         <div class="flex gap-2" data-criteria="temps" data-max="3">
                             <span class="emoji-btn" data-value="1">⏱️</span>
                             <span class="emoji-btn" data-value="2">⏱️</span>
@@ -172,7 +173,7 @@ $scenario = getActiveScenario($db, $sessionId);
 
         <!-- Résultats agrégés -->
         <div class="bg-white rounded-xl shadow-lg p-6">
-            <h3 class="font-bold text-green-800 text-lg mb-4">📊 Résultats du groupe</h3>
+            <h3 class="font-bold text-green-800 text-lg mb-4">📊 <?= t('carbone.group_results') ?></h3>
 
             <div class="grid md:grid-cols-3 gap-6" id="resultsGrid">
                 <?php for ($i = 1; $i <= 3; $i++): ?>
@@ -182,7 +183,7 @@ $scenario = getActiveScenario($db, $sessionId);
                     <div class="space-y-2 text-sm">
                         <div>
                             <div class="flex justify-between mb-1">
-                                <span>🌍 Impact</span>
+                                <span>🌍 <?= t('carbone.impact') ?></span>
                                 <span id="avg-impact-<?= $i ?>">-</span>
                             </div>
                             <div class="bg-gray-200 rounded-full h-2">
@@ -192,7 +193,7 @@ $scenario = getActiveScenario($db, $sessionId);
 
                         <div>
                             <div class="flex justify-between mb-1">
-                                <span>⭐ Qualité</span>
+                                <span>⭐ <?= t('carbone.quality_short') ?></span>
                                 <span id="avg-qualite-<?= $i ?>">-</span>
                             </div>
                             <div class="bg-gray-200 rounded-full h-2">
@@ -202,7 +203,7 @@ $scenario = getActiveScenario($db, $sessionId);
 
                         <div>
                             <div class="flex justify-between mb-1">
-                                <span>⏱️ Temps</span>
+                                <span>⏱️ <?= t('carbone.time') ?></span>
                                 <span id="avg-temps-<?= $i ?>">-</span>
                             </div>
                             <div class="bg-gray-200 rounded-full h-2">
@@ -213,11 +214,11 @@ $scenario = getActiveScenario($db, $sessionId);
 
                     <div class="mt-4 pt-3 border-t">
                         <div class="flex justify-between items-center">
-                            <span class="font-medium">Score global</span>
+                            <span class="font-medium"><?= t('carbone.global_score') ?></span>
                             <span class="text-2xl font-bold text-green-600" id="score-<?= $i ?>">-</span>
                         </div>
                         <div class="text-xs text-gray-500 mt-1">
-                            <span id="voters-<?= $i ?>">0</span> vote(s)
+                            <span id="voters-<?= $i ?>">0</span> <?= t('carbone.vote') ?>
                         </div>
                     </div>
                 </div>
@@ -229,8 +230,8 @@ $scenario = getActiveScenario($db, $sessionId);
                 <div class="flex items-center gap-3">
                     <span class="text-3xl">🏆</span>
                     <div>
-                        <div class="font-bold text-green-800">Recommandation du groupe</div>
-                        <div class="text-green-700" id="recommendationText">En attente des votes...</div>
+                        <div class="font-bold text-green-800"><?= t('carbone.group_recommendation') ?></div>
+                        <div class="text-green-700" id="recommendationText"><?= t('carbone.waiting_votes') ?></div>
                     </div>
                 </div>
             </div>
@@ -238,11 +239,19 @@ $scenario = getActiveScenario($db, $sessionId);
         <?php endif; ?>
     </div>
 
+    <?= renderLanguageScript() ?>
+
     <script>
         const scenarioId = <?= $scenario ? $scenario['id'] : 'null' ?>;
         const participantId = <?= $user['id'] ?>;
         let myVotes = {1: {}, 2: {}, 3: {}};
         let lastUpdate = null;
+
+        // Translations for JavaScript
+        const trans = {
+            scoreWith: '<?= t('carbone.score_with') ?>',
+            waitingVotes: '<?= t('carbone.waiting_votes') ?>'
+        };
 
         // Gestion des clics sur les emojis
         document.querySelectorAll('.option-card').forEach(card => {
@@ -347,7 +356,7 @@ $scenario = getActiveScenario($db, $sessionId);
 
                 const optionName = document.querySelector(`.option-card[data-option="${bestOption}"] h3`).textContent;
                 document.getElementById('recommendationText').textContent =
-                    `${optionName} avec un score de ${maxScore}/100`;
+                    `${optionName} ${trans.scoreWith} ${maxScore}/100`;
             }
 
             // Nombre de participants
