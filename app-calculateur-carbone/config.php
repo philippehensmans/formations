@@ -108,7 +108,7 @@ function saveEstimations($data) {
  */
 function getEstimationById($id) {
     $estimations = getEstimations();
-    return $estimations[$id] ?? null;
+    return $estimations['use_cases'][$id] ?? null;
 }
 
 /**
