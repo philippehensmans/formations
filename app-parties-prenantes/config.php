@@ -118,6 +118,34 @@ function initDatabase($db) {
         // participant_id n'existe pas, c'est normal pour les nouvelles installations
     }
 
+    // Migration: recreer la table participants avec le nouveau schema
+    // L'ancienne table avait des colonnes prenom, nom NOT NULL
+    try {
+        // Verifier si l'ancienne structure existe (avec prenom NOT NULL)
+        $result = $db->query("PRAGMA table_info(participants)");
+        $columns = $result->fetchAll();
+        $hasPrenom = false;
+        foreach ($columns as $col) {
+            if ($col['name'] === 'prenom') {
+                $hasPrenom = true;
+                break;
+            }
+        }
+        if ($hasPrenom) {
+            // Ancienne structure, la supprimer et recreer
+            $db->exec("DROP TABLE participants");
+            $db->exec("CREATE TABLE participants (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id INTEGER NOT NULL,
+                user_id INTEGER NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(session_id, user_id)
+            )");
+        }
+    } catch (Exception $e) {
+        // Ignorer les erreurs
+    }
+
     // Migration: ajouter user_id a participants si elle n'existe pas
     try {
         $db->exec("ALTER TABLE participants ADD COLUMN user_id INTEGER");
