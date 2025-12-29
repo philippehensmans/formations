@@ -3,6 +3,7 @@
  * Interface de travail - Analyse PESTEL
  */
 require_once 'config/database.php';
+require_once __DIR__ . '/../shared-auth/lang.php';
 requireParticipant();
 
 $db = getDB();
