@@ -282,8 +282,8 @@ $isSubmitted = ($carto['is_submitted'] ?? 0) == 1;
             concerned: '<?= t('stakeholders.concerned') ?>'
         };
 
-        const categoryColors = <?= json_encode(array_map(fn($c) => $c['color'], $categories)) ?>;
-        const categoryLabels = <?= json_encode(array_map(fn($c) => $c['label'], $categories)) ?>;
+        const categoryColors = <?= json_encode(array_map(function($c) { return $c['color']; }, $categories)) ?>;
+        const categoryLabels = <?= json_encode(array_map(function($c) { return $c['label']; }, $categories)) ?>;
         let stakeholders = <?= json_encode($stakeholders) ?>;
         let autoSaveTimeout = null;
 
