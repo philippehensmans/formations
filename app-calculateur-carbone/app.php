@@ -138,6 +138,9 @@ $totalCO2 = array_sum(array_column($mesCalculs, 'co2_total'));
                         <p class="flex justify-between"><span>En kg:</span><span id="totalKg"><?= number_format($totalCO2/1000, 2, ',', ' ') ?></span></p>
                         <p class="flex justify-between"><span>Km voiture:</span><span id="totalKm"><?= round($totalCO2/1000/0.21, 1) ?></span></p>
                     </div>
+                    <a href="export.php?type=participant" class="mt-4 block w-full py-2 bg-white/20 hover:bg-white/30 text-center rounded-lg text-sm transition-colors">
+                        Exporter mon bilan (Excel)
+                    </a>
                 </div>
 
                 <!-- Liste des calculs -->
