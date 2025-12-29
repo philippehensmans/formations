@@ -149,10 +149,20 @@ if ($selectedSessionId) {
 
     if ($selectedSession) {
         // Participants - requete locale puis enrichissement depuis shared DB
+        // Calcul des occurrences = multiplicateur de frequence × quantite
         $stmt = $db->prepare("
             SELECT p.user_id,
                    COALESCE(SUM(c.co2_total), 0) as total_co2,
-                   COUNT(c.id) as nb_calculs
+                   COUNT(c.id) as nb_calculs,
+                   COALESCE(SUM(
+                       CASE c.frequence
+                           WHEN 'quotidien' THEN 250
+                           WHEN 'hebdomadaire' THEN 52
+                           WHEN 'mensuel' THEN 12
+                           WHEN 'trimestriel' THEN 4
+                           ELSE 1
+                       END * c.quantite
+                   ), 0) as nb_occurrences
             FROM participants p
             LEFT JOIN calculs c ON c.user_id = p.user_id AND c.session_id = p.session_id
             WHERE p.session_id = ?
@@ -172,7 +182,8 @@ if ($selectedSessionId) {
             if ($userData) {
                 $participants[] = array_merge($userData, [
                     'total_co2' => $p['total_co2'],
-                    'nb_calculs' => $p['nb_calculs']
+                    'nb_calculs' => $p['nb_calculs'],
+                    'nb_occurrences' => $p['nb_occurrences']
                 ]);
             }
         }
@@ -182,9 +193,20 @@ if ($selectedSessionId) {
         $stmt->execute([$selectedSessionId]);
         $totalSession = $stmt->fetch()['total'] ?? 0;
 
-        // Top use cases
+        // Top use cases avec occurrences
         $stmt = $db->prepare("
-            SELECT use_case_id, COUNT(*) as nb, SUM(co2_total) as total_co2
+            SELECT use_case_id,
+                   COUNT(*) as nb,
+                   SUM(co2_total) as total_co2,
+                   SUM(
+                       CASE frequence
+                           WHEN 'quotidien' THEN 250
+                           WHEN 'hebdomadaire' THEN 52
+                           WHEN 'mensuel' THEN 12
+                           WHEN 'trimestriel' THEN 4
+                           ELSE 1
+                       END * quantite
+                   ) as nb_occurrences
             FROM calculs WHERE session_id = ?
             GROUP BY use_case_id ORDER BY total_co2 DESC LIMIT 10
         ");
@@ -357,7 +379,7 @@ if ($selectedSessionId) {
                             </div>
                             <div class="text-right">
                                 <span class="font-semibold text-emerald-600"><?= number_format($p['total_co2'], 0, ',', ' ') ?>g</span>
-                                <span class="text-xs text-gray-500 block"><?= $p['nb_calculs'] ?> usages</span>
+                                <span class="text-xs text-gray-500 block"><?= $p['nb_occurrences'] ?> occurrences/an</span>
                             </div>
                         </div>
                         <?php endforeach; ?>
@@ -377,7 +399,7 @@ if ($selectedSessionId) {
                         <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
                             <div>
                                 <p class="font-medium"><?= h($ucData['nom'] ?? $uc['use_case_id']) ?></p>
-                                <p class="text-xs text-gray-500"><?= $uc['nb'] ?> utilisations</p>
+                                <p class="text-xs text-gray-500"><?= $uc['nb_occurrences'] ?> occurrences/an</p>
                             </div>
                             <span class="font-semibold text-emerald-600"><?= number_format($uc['total_co2'], 0, ',', ' ') ?>g</span>
                         </div>
