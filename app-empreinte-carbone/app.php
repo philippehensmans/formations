@@ -79,7 +79,7 @@ $scenario = getActiveScenario($db, $sessionId);
                         <span id="voterCount">0</span> participant(s)
                     </span>
                     <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                        <?= htmlspecialchars($user['name']) ?>
+                        <?= htmlspecialchars($user['prenom'] ?? $user['username']) ?>
                     </span>
                     <a href="logout.php" class="text-gray-500 hover:text-red-500 text-sm">Déconnexion</a>
                 </div>
