@@ -10,17 +10,23 @@ if (!isset($_SESSION['participant_id'])) {
     exit;
 }
 
+// Système de traduction
+require_once __DIR__ . '/../shared-auth/lang.php';
+
 $participantId = $_SESSION['participant_id'];
 $participantNom = $_SESSION['participant_nom'];
 $participantPrenom = $_SESSION['participant_prenom'];
 $sessionName = $_SESSION['session_name'];
+
+// Obtenir la langue actuelle
+$currentLang = getCurrentLanguage();
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="<?= $currentLang ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analyse SWOT/TOWS - <?= htmlspecialchars($participantPrenom . ' ' . $participantNom) ?></title>
+    <title><?= t('swot.title') ?> - <?= htmlspecialchars($participantPrenom . ' ' . $participantNom) ?></title>
     <style>
         * {
             margin: 0;
@@ -565,10 +571,12 @@ $sessionName = $_SESSION['session_name'];
             </div>
         </div>
         <div class="user-actions">
-            <span class="status-badge status-draft" id="statusBadge">Brouillon</span>
-            <button class="btn-logout" onclick="logout()">Deconnexion</button>
+            <?= renderLanguageSelector('text-sm border rounded px-2 py-1') ?>
+            <span class="status-badge status-draft" id="statusBadge"><?= t('swot.draft') ?></span>
+            <button class="btn-logout" onclick="logout()"><?= t('swot.logout') ?></button>
         </div>
     </div>
+    <?= renderLanguageScript() ?>
 
     <!-- Indicateur de sauvegarde -->
     <div class="save-indicator" id="saveIndicator"></div>
@@ -576,38 +584,38 @@ $sessionName = $_SESSION['session_name'];
     <!-- Section SWOT -->
     <div class="container" id="swotSection">
         <div class="header">
-            <h1>Analyse SWOT</h1>
-            <p>Outil d'analyse strategique pour associations et organisations du secteur non marchand</p>
+            <h1><?= t('swot.swot_title') ?></h1>
+            <p><?= t('swot.subtitle') ?></p>
         </div>
 
         <div class="ngo-suggestions">
-            <div class="suggestion-title">Conseils pour les associations :</div>
+            <div class="suggestion-title"><?= t('swot.tips_for_ngo') ?></div>
             <div class="suggestion-text">
-                Pensez a vos ressources humaines (benevoles, salaries), votre mission sociale, vos partenariats, votre financement, votre ancrage territorial, et l'evolution du contexte reglementaire.
+                <?= t('swot.tips_general') ?>
             </div>
         </div>
 
         <div class="controls">
-            <button class="btn btn-primary" onclick="exportSWOT()">Exporter l'analyse</button>
-            <button class="btn btn-secondary" onclick="clearAll()">Tout effacer</button>
-            <button class="btn btn-success" onclick="submitAnalysis()">Soumettre mon analyse</button>
+            <button class="btn btn-primary" onclick="exportSWOT()"><?= t('swot.export_analysis') ?></button>
+            <button class="btn btn-secondary" onclick="clearAll()"><?= t('swot.clear_all') ?></button>
+            <button class="btn btn-success" onclick="submitAnalysis()"><?= t('swot.submit_analysis') ?></button>
         </div>
 
         <div class="swot-grid">
             <!-- FORCES -->
             <div class="swot-quadrant strengths">
                 <div class="quadrant-title">
-                    <span class="quadrant-icon">Forces</span>
+                    <span class="quadrant-icon"><?= t('swot.strengths') ?></span>
                     (Strengths)
                 </div>
                 <div class="ngo-suggestions">
-                    <div class="suggestion-title">Exemples pour associations :</div>
-                    <div class="suggestion-text">Equipe engagee, expertise metier, reseau de partenaires, legitimite aupres des beneficiaires, ancrage local</div>
+                    <div class="suggestion-title"><?= t('swot.examples_for_ngo') ?></div>
+                    <div class="suggestion-text"><?= t('swot.examples_strengths') ?></div>
                 </div>
                 <div class="input-section">
                     <div class="input-group">
-                        <input type="text" class="item-input" id="strengths-input" placeholder="Ajoutez une force...">
-                        <button class="add-btn" onclick="addItem('strengths')">Ajouter</button>
+                        <input type="text" class="item-input" id="strengths-input" placeholder="<?= t('swot.add_strength') ?>">
+                        <button class="add-btn" onclick="addItem('strengths')"><?= t('swot.add') ?></button>
                     </div>
                 </div>
                 <ul class="items-list" id="strengths-list"></ul>
@@ -616,17 +624,17 @@ $sessionName = $_SESSION['session_name'];
             <!-- FAIBLESSES -->
             <div class="swot-quadrant weaknesses">
                 <div class="quadrant-title">
-                    <span class="quadrant-icon">Faiblesses</span>
+                    <span class="quadrant-icon"><?= t('swot.weaknesses') ?></span>
                     (Weaknesses)
                 </div>
                 <div class="ngo-suggestions">
-                    <div class="suggestion-title">Exemples pour associations :</div>
-                    <div class="suggestion-text">Ressources financieres limitees, dependance aux subventions, manque de visibilite, outils numeriques obsoletes</div>
+                    <div class="suggestion-title"><?= t('swot.examples_for_ngo') ?></div>
+                    <div class="suggestion-text"><?= t('swot.examples_weaknesses') ?></div>
                 </div>
                 <div class="input-section">
                     <div class="input-group">
-                        <input type="text" class="item-input" id="weaknesses-input" placeholder="Ajoutez une faiblesse...">
-                        <button class="add-btn" onclick="addItem('weaknesses')">Ajouter</button>
+                        <input type="text" class="item-input" id="weaknesses-input" placeholder="<?= t('swot.add_weakness') ?>">
+                        <button class="add-btn" onclick="addItem('weaknesses')"><?= t('swot.add') ?></button>
                     </div>
                 </div>
                 <ul class="items-list" id="weaknesses-list"></ul>
@@ -635,17 +643,17 @@ $sessionName = $_SESSION['session_name'];
             <!-- OPPORTUNITES -->
             <div class="swot-quadrant opportunities">
                 <div class="quadrant-title">
-                    <span class="quadrant-icon">Opportunites</span>
+                    <span class="quadrant-icon"><?= t('swot.opportunities') ?></span>
                     (Opportunities)
                 </div>
                 <div class="ngo-suggestions">
-                    <div class="suggestion-title">Exemples pour associations :</div>
-                    <div class="suggestion-text">Nouveaux financements europeens, digitalisation, partenariats public-prive, evolution des besoins sociaux</div>
+                    <div class="suggestion-title"><?= t('swot.examples_for_ngo') ?></div>
+                    <div class="suggestion-text"><?= t('swot.examples_opportunities') ?></div>
                 </div>
                 <div class="input-section">
                     <div class="input-group">
-                        <input type="text" class="item-input" id="opportunities-input" placeholder="Ajoutez une opportunite...">
-                        <button class="add-btn" onclick="addItem('opportunities')">Ajouter</button>
+                        <input type="text" class="item-input" id="opportunities-input" placeholder="<?= t('swot.add_opportunity') ?>">
+                        <button class="add-btn" onclick="addItem('opportunities')"><?= t('swot.add') ?></button>
                     </div>
                 </div>
                 <ul class="items-list" id="opportunities-list"></ul>
@@ -654,17 +662,17 @@ $sessionName = $_SESSION['session_name'];
             <!-- MENACES -->
             <div class="swot-quadrant threats">
                 <div class="quadrant-title">
-                    <span class="quadrant-icon">Menaces</span>
+                    <span class="quadrant-icon"><?= t('swot.threats') ?></span>
                     (Threats)
                 </div>
                 <div class="ngo-suggestions">
-                    <div class="suggestion-title">Exemples pour associations :</div>
-                    <div class="suggestion-text">Reduction des subventions publiques, concurrence d'autres acteurs, complexification administrative, crise economique</div>
+                    <div class="suggestion-title"><?= t('swot.examples_for_ngo') ?></div>
+                    <div class="suggestion-text"><?= t('swot.examples_threats') ?></div>
                 </div>
                 <div class="input-section">
                     <div class="input-group">
-                        <input type="text" class="item-input" id="threats-input" placeholder="Ajoutez une menace...">
-                        <button class="add-btn" onclick="addItem('threats')">Ajouter</button>
+                        <input type="text" class="item-input" id="threats-input" placeholder="<?= t('swot.add_threat') ?>">
+                        <button class="add-btn" onclick="addItem('threats')"><?= t('swot.add') ?></button>
                     </div>
                 </div>
                 <ul class="items-list" id="threats-list"></ul>
@@ -672,12 +680,12 @@ $sessionName = $_SESSION['session_name'];
         </div>
 
         <div class="export-section">
-            <div class="export-title">Pret pour l'analyse strategique ?</div>
+            <div class="export-title"><?= t('swot.ready_for_strategic') ?></div>
             <p style="color: #7f8c8d; margin-bottom: 20px;">
-                Une fois votre SWOT completee, passez a l'analyse TOWS pour definir vos strategies d'action.
+                <?= t('swot.complete_swot_first') ?>
             </p>
             <button class="btn btn-primary" onclick="goToTOWS()" style="margin-top: 10px;">
-                Passer a l'analyse TOWS
+                <?= t('swot.go_to_tows') ?>
             </button>
         </div>
     </div>
@@ -685,46 +693,46 @@ $sessionName = $_SESSION['session_name'];
     <!-- Section TOWS -->
     <div class="container" id="towsSection">
         <div class="header">
-            <h1>Analyse TOWS</h1>
-            <p>Matrice strategique : Transformez votre SWOT en plans d'action concrets</p>
+            <h1><?= t('swot.tows_title') ?></h1>
+            <p><?= t('swot.tows_subtitle') ?></p>
             <button class="btn btn-secondary" onclick="backToSWOT()" style="margin-top: 15px;">
-                Retour au SWOT
+                <?= t('swot.back_to_swot') ?>
             </button>
         </div>
 
         <div class="ngo-suggestions">
-            <div class="suggestion-title">Methode TOWS pour associations :</div>
+            <div class="suggestion-title"><?= t('swot.tows_method') ?></div>
             <div class="suggestion-text">
-                Croisez vos elements SWOT pour identifier 4 types de strategies : Maxi-Maxi (Forces+Opportunites), Mini-Maxi (Faiblesses+Opportunites), Maxi-Mini (Forces+Menaces), Mini-Mini (Faiblesses+Menaces).
+                <?= t('swot.tows_method_desc') ?>
             </div>
         </div>
 
         <div class="controls">
-            <button class="btn btn-primary" onclick="exportTOWS()">Exporter TOWS</button>
-            <button class="btn btn-secondary" onclick="clearTOWS()">Effacer TOWS</button>
-            <button class="btn btn-secondary" onclick="generateTOWSSuggestions()">Suggestions automatiques</button>
-            <button class="btn btn-success" onclick="submitAnalysis()">Soumettre mon analyse</button>
+            <button class="btn btn-primary" onclick="exportTOWS()"><?= t('swot.export_tows') ?></button>
+            <button class="btn btn-secondary" onclick="clearTOWS()"><?= t('swot.clear_tows') ?></button>
+            <button class="btn btn-secondary" onclick="generateTOWSSuggestions()"><?= t('swot.auto_suggestions') ?></button>
+            <button class="btn btn-success" onclick="submitAnalysis()"><?= t('swot.submit_analysis') ?></button>
         </div>
 
         <div class="swot-grid">
             <!-- SO: Forces + Opportunites -->
             <div class="swot-quadrant strengths">
                 <div class="quadrant-title">
-                    <span class="quadrant-icon">Strategies SO</span>
-                    (Forces + Opportunites)
+                    <span class="quadrant-icon"><?= t('swot.strategies_so') ?></span>
+                    (<?= t('swot.so_desc') ?>)
                 </div>
                 <div class="ngo-suggestions">
-                    <div class="suggestion-title">Strategie Maxi-Maxi :</div>
-                    <div class="suggestion-text">Comment utiliser vos forces pour saisir les opportunites ?</div>
+                    <div class="suggestion-title"><?= t('swot.maxi_maxi') ?></div>
+                    <div class="suggestion-text"><?= t('swot.how_use_strengths_opp') ?></div>
                 </div>
                 <div class="tows-source">
-                    <strong>Base sur vos Forces :</strong> <span id="so-strengths">Ajoutez d'abord des elements dans le SWOT</span><br>
-                    <strong>Base sur vos Opportunites :</strong> <span id="so-opportunities">Ajoutez d'abord des elements dans le SWOT</span>
+                    <strong><?= t('swot.based_on_strengths') ?></strong> <span id="so-strengths"><?= t('swot.add_swot_first') ?></span><br>
+                    <strong><?= t('swot.based_on_opportunities') ?></strong> <span id="so-opportunities"><?= t('swot.add_swot_first') ?></span>
                 </div>
                 <div class="input-section">
                     <div class="input-group">
-                        <input type="text" class="item-input" id="so-input" placeholder="Strategie Forces + Opportunites...">
-                        <button class="add-btn" onclick="addTOWSItem('so')">Ajouter</button>
+                        <input type="text" class="item-input" id="so-input" placeholder="<?= t('swot.strategy_so') ?>">
+                        <button class="add-btn" onclick="addTOWSItem('so')"><?= t('swot.add') ?></button>
                     </div>
                 </div>
                 <ul class="items-list" id="so-list"></ul>
@@ -733,21 +741,21 @@ $sessionName = $_SESSION['session_name'];
             <!-- WO: Faiblesses + Opportunites -->
             <div class="swot-quadrant opportunities">
                 <div class="quadrant-title">
-                    <span class="quadrant-icon">Strategies WO</span>
-                    (Faiblesses + Opportunites)
+                    <span class="quadrant-icon"><?= t('swot.strategies_wo') ?></span>
+                    (<?= t('swot.wo_desc') ?>)
                 </div>
                 <div class="ngo-suggestions">
-                    <div class="suggestion-title">Strategie Mini-Maxi :</div>
-                    <div class="suggestion-text">Comment surmonter vos faiblesses pour saisir les opportunites ?</div>
+                    <div class="suggestion-title"><?= t('swot.mini_maxi') ?></div>
+                    <div class="suggestion-text"><?= t('swot.how_overcome_weaknesses') ?></div>
                 </div>
                 <div class="tows-source">
-                    <strong>Base sur vos Faiblesses :</strong> <span id="wo-weaknesses">Ajoutez d'abord des elements dans le SWOT</span><br>
-                    <strong>Base sur vos Opportunites :</strong> <span id="wo-opportunities">Ajoutez d'abord des elements dans le SWOT</span>
+                    <strong><?= t('swot.based_on_weaknesses') ?></strong> <span id="wo-weaknesses"><?= t('swot.add_swot_first') ?></span><br>
+                    <strong><?= t('swot.based_on_opportunities') ?></strong> <span id="wo-opportunities"><?= t('swot.add_swot_first') ?></span>
                 </div>
                 <div class="input-section">
                     <div class="input-group">
-                        <input type="text" class="item-input" id="wo-input" placeholder="Strategie Faiblesses + Opportunites...">
-                        <button class="add-btn" onclick="addTOWSItem('wo')">Ajouter</button>
+                        <input type="text" class="item-input" id="wo-input" placeholder="<?= t('swot.strategy_wo') ?>">
+                        <button class="add-btn" onclick="addTOWSItem('wo')"><?= t('swot.add') ?></button>
                     </div>
                 </div>
                 <ul class="items-list" id="wo-list"></ul>
@@ -756,21 +764,21 @@ $sessionName = $_SESSION['session_name'];
             <!-- ST: Forces + Menaces -->
             <div class="swot-quadrant threats">
                 <div class="quadrant-title">
-                    <span class="quadrant-icon">Strategies ST</span>
-                    (Forces + Menaces)
+                    <span class="quadrant-icon"><?= t('swot.strategies_st') ?></span>
+                    (<?= t('swot.st_desc') ?>)
                 </div>
                 <div class="ngo-suggestions">
-                    <div class="suggestion-title">Strategie Maxi-Mini :</div>
-                    <div class="suggestion-text">Comment utiliser vos forces pour contrer les menaces ?</div>
+                    <div class="suggestion-title"><?= t('swot.maxi_mini') ?></div>
+                    <div class="suggestion-text"><?= t('swot.how_use_strengths_threats') ?></div>
                 </div>
                 <div class="tows-source">
-                    <strong>Base sur vos Forces :</strong> <span id="st-strengths">Ajoutez d'abord des elements dans le SWOT</span><br>
-                    <strong>Base sur vos Menaces :</strong> <span id="st-threats">Ajoutez d'abord des elements dans le SWOT</span>
+                    <strong><?= t('swot.based_on_strengths') ?></strong> <span id="st-strengths"><?= t('swot.add_swot_first') ?></span><br>
+                    <strong><?= t('swot.based_on_threats') ?></strong> <span id="st-threats"><?= t('swot.add_swot_first') ?></span>
                 </div>
                 <div class="input-section">
                     <div class="input-group">
-                        <input type="text" class="item-input" id="st-input" placeholder="Strategie Forces + Menaces...">
-                        <button class="add-btn" onclick="addTOWSItem('st')">Ajouter</button>
+                        <input type="text" class="item-input" id="st-input" placeholder="<?= t('swot.strategy_st') ?>">
+                        <button class="add-btn" onclick="addTOWSItem('st')"><?= t('swot.add') ?></button>
                     </div>
                 </div>
                 <ul class="items-list" id="st-list"></ul>
@@ -779,21 +787,21 @@ $sessionName = $_SESSION['session_name'];
             <!-- WT: Faiblesses + Menaces -->
             <div class="swot-quadrant weaknesses">
                 <div class="quadrant-title">
-                    <span class="quadrant-icon">Strategies WT</span>
-                    (Faiblesses + Menaces)
+                    <span class="quadrant-icon"><?= t('swot.strategies_wt') ?></span>
+                    (<?= t('swot.wt_desc') ?>)
                 </div>
                 <div class="ngo-suggestions">
-                    <div class="suggestion-title">Strategie Mini-Mini :</div>
-                    <div class="suggestion-text">Comment minimiser vos faiblesses face aux menaces ?</div>
+                    <div class="suggestion-title"><?= t('swot.mini_mini') ?></div>
+                    <div class="suggestion-text"><?= t('swot.how_minimize_weaknesses') ?></div>
                 </div>
                 <div class="tows-source">
-                    <strong>Base sur vos Faiblesses :</strong> <span id="wt-weaknesses">Ajoutez d'abord des elements dans le SWOT</span><br>
-                    <strong>Base sur vos Menaces :</strong> <span id="wt-threats">Ajoutez d'abord des elements dans le SWOT</span>
+                    <strong><?= t('swot.based_on_weaknesses') ?></strong> <span id="wt-weaknesses"><?= t('swot.add_swot_first') ?></span><br>
+                    <strong><?= t('swot.based_on_threats') ?></strong> <span id="wt-threats"><?= t('swot.add_swot_first') ?></span>
                 </div>
                 <div class="input-section">
                     <div class="input-group">
-                        <input type="text" class="item-input" id="wt-input" placeholder="Strategie Faiblesses + Menaces...">
-                        <button class="add-btn" onclick="addTOWSItem('wt')">Ajouter</button>
+                        <input type="text" class="item-input" id="wt-input" placeholder="<?= t('swot.strategy_wt') ?>">
+                        <button class="add-btn" onclick="addTOWSItem('wt')"><?= t('swot.add') ?></button>
                     </div>
                 </div>
                 <ul class="items-list" id="wt-list"></ul>
@@ -801,9 +809,9 @@ $sessionName = $_SESSION['session_name'];
         </div>
 
         <div class="export-section">
-            <div class="export-title">Plan d'action strategique</div>
+            <div class="export-title"><?= t('swot.action_plan') ?></div>
             <p style="color: #7f8c8d; margin-bottom: 20px;">
-                Priorisez maintenant vos strategies TOWS et definissez un plan d'action avec echeances et responsables.
+                <?= t('swot.prioritize_strategies') ?>
             </p>
         </div>
     </div>
@@ -812,13 +820,13 @@ $sessionName = $_SESSION['session_name'];
     <div id="exportModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Analyse SWOT - Export</h2>
+                <h2><?= t('swot.swot_export') ?></h2>
                 <span class="close" onclick="closeModal()">&times;</span>
             </div>
             <div class="controls" style="margin-bottom: 20px;">
-                <button class="btn btn-primary" onclick="printSWOT()">Imprimer</button>
-                <button class="btn btn-primary" onclick="exportToPDF()">Export PDF</button>
-                <button class="btn btn-secondary" onclick="copySWOT()">Copier le texte</button>
+                <button class="btn btn-primary" onclick="printSWOT()"><?= t('swot.print') ?></button>
+                <button class="btn btn-primary" onclick="exportToPDF()"><?= t('swot.export_pdf') ?></button>
+                <button class="btn btn-secondary" onclick="copySWOT()"><?= t('swot.copy_text') ?></button>
             </div>
             <div id="exportContent" class="export-content"></div>
         </div>
@@ -828,13 +836,13 @@ $sessionName = $_SESSION['session_name'];
     <div id="exportTOWSModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Analyse TOWS - Export</h2>
+                <h2><?= t('swot.tows_export') ?></h2>
                 <span class="close" onclick="closeTOWSModal()">&times;</span>
             </div>
             <div class="controls" style="margin-bottom: 20px;">
-                <button class="btn btn-primary" onclick="printTOWS()">Imprimer</button>
-                <button class="btn btn-primary" onclick="exportTOWSToPDF()">Export PDF</button>
-                <button class="btn btn-secondary" onclick="copyTOWS()">Copier le texte</button>
+                <button class="btn btn-primary" onclick="printTOWS()"><?= t('swot.print') ?></button>
+                <button class="btn btn-primary" onclick="exportTOWSToPDF()"><?= t('swot.export_pdf') ?></button>
+                <button class="btn btn-secondary" onclick="copyTOWS()"><?= t('swot.copy_text') ?></button>
             </div>
             <div id="exportTOWSContent" class="export-content"></div>
         </div>
@@ -842,6 +850,54 @@ $sessionName = $_SESSION['session_name'];
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
+        // Traductions pour JavaScript
+        const T = {
+            draft: <?= json_encode(t('swot.draft')) ?>,
+            submitted: <?= json_encode(t('swot.submitted')) ?>,
+            saving: <?= json_encode(t('swot.saving')) ?>,
+            save_ok: <?= json_encode(t('swot.save_ok')) ?>,
+            save_error: <?= json_encode(t('swot.save_error')) ?>,
+            enter_text_first: <?= json_encode(t('swot.enter_text_first')) ?>,
+            enter_strategy_first: <?= json_encode(t('swot.enter_strategy_first')) ?>,
+            confirm_clear_swot: <?= json_encode(t('swot.confirm_clear_swot')) ?>,
+            confirm_clear_tows: <?= json_encode(t('swot.confirm_clear_tows')) ?>,
+            complete_swot_quadrants: <?= json_encode(t('swot.complete_swot_quadrants')) ?>,
+            complete_before_submit: <?= json_encode(t('swot.complete_before_submit')) ?>,
+            confirm_submit: <?= json_encode(t('swot.confirm_submit')) ?>,
+            submit_success: <?= json_encode(t('swot.submit_success')) ?>,
+            suggestions_added: <?= json_encode(t('swot.suggestions_added')) ?>,
+            enough_strategies: <?= json_encode(t('swot.enough_strategies')) ?>,
+            swot_copied: <?= json_encode(t('swot.swot_copied')) ?>,
+            tows_copied: <?= json_encode(t('swot.tows_copied')) ?>,
+            copy_error: <?= json_encode(t('swot.copy_error')) ?>,
+            pdf_success: <?= json_encode(t('swot.pdf_success')) ?>,
+            pdf_tows_success: <?= json_encode(t('swot.pdf_tows_success')) ?>,
+            pdf_error: <?= json_encode(t('swot.pdf_error')) ?>,
+            pdf_tows_error: <?= json_encode(t('swot.pdf_tows_error')) ?>,
+            network_error: <?= json_encode(t('swot.network_error')) ?>,
+            no_strength_defined: <?= json_encode(t('swot.no_strength_defined')) ?>,
+            no_weakness_defined: <?= json_encode(t('swot.no_weakness_defined')) ?>,
+            no_opportunity_defined: <?= json_encode(t('swot.no_opportunity_defined')) ?>,
+            no_threat_defined: <?= json_encode(t('swot.no_threat_defined')) ?>,
+            no_element_added: <?= json_encode(t('swot.no_element_added')) ?>,
+            no_strategy_defined: <?= json_encode(t('swot.no_strategy_defined')) ?>,
+            swot_title: <?= json_encode(t('swot.swot_title')) ?>,
+            tows_title: <?= json_encode(t('swot.tows_title')) ?>,
+            by: <?= json_encode(t('swot.by')) ?>,
+            strengths: <?= json_encode(t('swot.strengths')) ?>,
+            weaknesses: <?= json_encode(t('swot.weaknesses')) ?>,
+            opportunities: <?= json_encode(t('swot.opportunities')) ?>,
+            threats: <?= json_encode(t('swot.threats')) ?>,
+            strategies_so: <?= json_encode(t('swot.strategies_so')) ?>,
+            strategies_wo: <?= json_encode(t('swot.strategies_wo')) ?>,
+            strategies_st: <?= json_encode(t('swot.strategies_st')) ?>,
+            strategies_wt: <?= json_encode(t('swot.strategies_wt')) ?>,
+            so_desc: <?= json_encode(t('swot.so_desc')) ?>,
+            wo_desc: <?= json_encode(t('swot.wo_desc')) ?>,
+            st_desc: <?= json_encode(t('swot.st_desc')) ?>,
+            wt_desc: <?= json_encode(t('swot.wt_desc')) ?>
+        };
+
         // Donnees SWOT et TOWS
         let swotData = {
             strengths: [],
@@ -867,14 +923,14 @@ $sessionName = $_SESSION['session_name'];
             indicator.className = 'save-indicator ' + status;
 
             if (status === 'saving') {
-                indicator.textContent = 'Sauvegarde en cours...';
+                indicator.textContent = T.saving;
             } else if (status === 'saved') {
-                indicator.textContent = 'Sauvegarde OK';
+                indicator.textContent = T.save_ok;
                 setTimeout(() => {
                     indicator.style.opacity = '0';
                 }, 2000);
             } else if (status === 'error') {
-                indicator.textContent = 'Erreur de sauvegarde';
+                indicator.textContent = T.save_error;
                 setTimeout(() => {
                     indicator.style.opacity = '0';
                 }, 3000);
@@ -944,10 +1000,10 @@ $sessionName = $_SESSION['session_name'];
         function updateStatusBadge() {
             const badge = document.getElementById('statusBadge');
             if (isSubmitted) {
-                badge.textContent = 'Soumis';
+                badge.textContent = T.submitted;
                 badge.className = 'status-badge status-submitted';
             } else {
-                badge.textContent = 'Brouillon';
+                badge.textContent = T.draft;
                 badge.className = 'status-badge status-draft';
             }
         }
@@ -957,11 +1013,11 @@ $sessionName = $_SESSION['session_name'];
             const totalTows = Object.values(towsData).reduce((sum, arr) => sum + arr.length, 0);
 
             if (totalSwot < 4) {
-                alert('Veuillez completer au moins un element dans chaque quadrant SWOT avant de soumettre.');
+                alert(T.complete_before_submit);
                 return;
             }
 
-            if (!confirm('Voulez-vous soumettre votre analyse ? Vous pourrez toujours la modifier apres.')) {
+            if (!confirm(T.confirm_submit)) {
                 return;
             }
 
@@ -973,13 +1029,13 @@ $sessionName = $_SESSION['session_name'];
                 if (data.success) {
                     isSubmitted = true;
                     updateStatusBadge();
-                    alert('Votre analyse a ete soumise avec succes !');
+                    alert(T.submit_success);
                 } else {
-                    alert('Erreur: ' + data.error);
+                    alert('Error: ' + data.error);
                 }
             })
             .catch(error => {
-                alert('Erreur reseau lors de la soumission.');
+                alert(T.network_error);
                 console.error(error);
             });
         }
@@ -995,7 +1051,7 @@ $sessionName = $_SESSION['session_name'];
             const text = input.value.trim();
 
             if (text === '') {
-                alert('Veuillez saisir du texte avant d\'ajouter un element.');
+                alert(T.enter_text_first);
                 return;
             }
 
@@ -1033,7 +1089,7 @@ $sessionName = $_SESSION['session_name'];
         }
 
         function clearAll() {
-            if (confirm('Etes-vous sur de vouloir effacer toute l\'analyse SWOT ?')) {
+            if (confirm(T.confirm_clear_swot)) {
                 swotData = {
                     strengths: [],
                     weaknesses: [],
@@ -1053,7 +1109,7 @@ $sessionName = $_SESSION['session_name'];
         function goToTOWS() {
             const totalItems = Object.values(swotData).reduce((sum, arr) => sum + arr.length, 0);
             if (totalItems < 4) {
-                alert('Veuillez d\'abord completer votre analyse SWOT avec au moins un element dans chaque quadrant.');
+                alert(T.complete_swot_quadrants);
                 return;
             }
 
@@ -1072,7 +1128,7 @@ $sessionName = $_SESSION['session_name'];
             const text = input.value.trim();
 
             if (text === '') {
-                alert('Veuillez saisir du texte avant d\'ajouter une strategie.');
+                alert(T.enter_strategy_first);
                 return;
             }
 
@@ -1105,28 +1161,28 @@ $sessionName = $_SESSION['session_name'];
 
         function updateTOWSSource() {
             document.getElementById('so-strengths').textContent =
-                swotData.strengths.length > 0 ? swotData.strengths.slice(0, 2).join(', ') + '...' : 'Aucune force definie';
+                swotData.strengths.length > 0 ? swotData.strengths.slice(0, 2).join(', ') + '...' : T.no_strength_defined;
             document.getElementById('so-opportunities').textContent =
-                swotData.opportunities.length > 0 ? swotData.opportunities.slice(0, 2).join(', ') + '...' : 'Aucune opportunite definie';
+                swotData.opportunities.length > 0 ? swotData.opportunities.slice(0, 2).join(', ') + '...' : T.no_opportunity_defined;
 
             document.getElementById('wo-weaknesses').textContent =
-                swotData.weaknesses.length > 0 ? swotData.weaknesses.slice(0, 2).join(', ') + '...' : 'Aucune faiblesse definie';
+                swotData.weaknesses.length > 0 ? swotData.weaknesses.slice(0, 2).join(', ') + '...' : T.no_weakness_defined;
             document.getElementById('wo-opportunities').textContent =
-                swotData.opportunities.length > 0 ? swotData.opportunities.slice(0, 2).join(', ') + '...' : 'Aucune opportunite definie';
+                swotData.opportunities.length > 0 ? swotData.opportunities.slice(0, 2).join(', ') + '...' : T.no_opportunity_defined;
 
             document.getElementById('st-strengths').textContent =
-                swotData.strengths.length > 0 ? swotData.strengths.slice(0, 2).join(', ') + '...' : 'Aucune force definie';
+                swotData.strengths.length > 0 ? swotData.strengths.slice(0, 2).join(', ') + '...' : T.no_strength_defined;
             document.getElementById('st-threats').textContent =
-                swotData.threats.length > 0 ? swotData.threats.slice(0, 2).join(', ') + '...' : 'Aucune menace definie';
+                swotData.threats.length > 0 ? swotData.threats.slice(0, 2).join(', ') + '...' : T.no_threat_defined;
 
             document.getElementById('wt-weaknesses').textContent =
-                swotData.weaknesses.length > 0 ? swotData.weaknesses.slice(0, 2).join(', ') + '...' : 'Aucune faiblesse definie';
+                swotData.weaknesses.length > 0 ? swotData.weaknesses.slice(0, 2).join(', ') + '...' : T.no_weakness_defined;
             document.getElementById('wt-threats').textContent =
-                swotData.threats.length > 0 ? swotData.threats.slice(0, 2).join(', ') + '...' : 'Aucune menace definie';
+                swotData.threats.length > 0 ? swotData.threats.slice(0, 2).join(', ') + '...' : T.no_threat_defined;
         }
 
         function clearTOWS() {
-            if (confirm('Etes-vous sur de vouloir effacer toute l\'analyse TOWS ?')) {
+            if (confirm(T.confirm_clear_tows)) {
                 towsData = { so: [], wo: [], st: [], wt: [] };
                 Object.keys(towsData).forEach(category => {
                     updateTOWSList(category);
@@ -1170,10 +1226,10 @@ $sessionName = $_SESSION['session_name'];
             });
 
             if (added) {
-                alert('Suggestions ajoutees ! Personnalisez-les selon votre contexte.');
+                alert(T.suggestions_added);
                 saveToServer();
             } else {
-                alert('Vous avez deja suffisamment de strategies dans chaque quadrant.');
+                alert(T.enough_strategies);
             }
         }
 
@@ -1184,16 +1240,16 @@ $sessionName = $_SESSION['session_name'];
             const content = document.getElementById('exportContent');
 
             const categories = {
-                strengths: { title: 'Forces (Strengths)', color: '#27ae60' },
-                weaknesses: { title: 'Faiblesses (Weaknesses)', color: '#e74c3c' },
-                opportunities: { title: 'Opportunites (Opportunities)', color: '#3498db' },
-                threats: { title: 'Menaces (Threats)', color: '#f39c12' }
+                strengths: { title: T.strengths + ' (Strengths)', color: '#27ae60' },
+                weaknesses: { title: T.weaknesses + ' (Weaknesses)', color: '#e74c3c' },
+                opportunities: { title: T.opportunities + ' (Opportunities)', color: '#3498db' },
+                threats: { title: T.threats + ' (Threats)', color: '#f39c12' }
             };
 
             let html = `
                 <div style="text-align: center; margin-bottom: 30px;">
-                    <h1 style="color: #2c3e50; margin-bottom: 10px;">Analyse SWOT</h1>
-                    <p style="color: #7f8c8d;">Par <?= htmlspecialchars($participantPrenom . ' ' . $participantNom) ?> - ${new Date().toLocaleDateString('fr-FR')}</p>
+                    <h1 style="color: #2c3e50; margin-bottom: 10px;">${T.swot_title}</h1>
+                    <p style="color: #7f8c8d;">${T.by} <?= htmlspecialchars($participantPrenom . ' ' . $participantNom) ?> - ${new Date().toLocaleDateString()}</p>
                 </div>
             `;
 
@@ -1211,7 +1267,7 @@ $sessionName = $_SESSION['session_name'];
                     });
                     html += '</ul>';
                 } else {
-                    html += '<p style="color: #95a5a6; font-style: italic;">Aucun element ajoute</p>';
+                    html += `<p style="color: #95a5a6; font-style: italic;">${T.no_element_added}</p>`;
                 }
 
                 html += '</div>';
@@ -1231,15 +1287,15 @@ $sessionName = $_SESSION['session_name'];
 
         function copySWOT() {
             const categories = {
-                strengths: 'FORCES (STRENGTHS)',
-                weaknesses: 'FAIBLESSES (WEAKNESSES)',
-                opportunities: 'OPPORTUNITES (OPPORTUNITIES)',
-                threats: 'MENACES (THREATS)'
+                strengths: T.strengths.toUpperCase() + ' (STRENGTHS)',
+                weaknesses: T.weaknesses.toUpperCase() + ' (WEAKNESSES)',
+                opportunities: T.opportunities.toUpperCase() + ' (OPPORTUNITIES)',
+                threats: T.threats.toUpperCase() + ' (THREATS)'
             };
 
-            let text = `ANALYSE SWOT\n`;
-            text += `Par: <?= htmlspecialchars($participantPrenom . ' ' . $participantNom) ?>\n`;
-            text += `Date: ${new Date().toLocaleDateString('fr-FR')}\n\n`;
+            let text = `${T.swot_title.toUpperCase()}\n`;
+            text += `${T.by}: <?= htmlspecialchars($participantPrenom . ' ' . $participantNom) ?>\n`;
+            text += `Date: ${new Date().toLocaleDateString()}\n\n`;
 
             Object.keys(categories).forEach(category => {
                 text += `${categories[category]}\n`;
@@ -1250,15 +1306,15 @@ $sessionName = $_SESSION['session_name'];
                         text += `- ${item}\n`;
                     });
                 } else {
-                    text += 'Aucun element ajoute\n';
+                    text += T.no_element_added + '\n';
                 }
                 text += '\n';
             });
 
             navigator.clipboard.writeText(text).then(() => {
-                alert('Analyse SWOT copiee dans le presse-papier !');
+                alert(T.swot_copied);
             }).catch(() => {
-                alert('Erreur lors de la copie.');
+                alert(T.copy_error);
             });
         }
 
@@ -1274,21 +1330,21 @@ $sessionName = $_SESSION['session_name'];
 
                 pdf.setFontSize(20);
                 pdf.setTextColor(44, 62, 80);
-                pdf.text('ANALYSE SWOT', pageWidth / 2, currentY, { align: 'center' });
+                pdf.text(T.swot_title.toUpperCase(), pageWidth / 2, currentY, { align: 'center' });
 
                 currentY += 10;
                 pdf.setFontSize(12);
                 pdf.setTextColor(127, 140, 141);
-                pdf.text('Par: <?= htmlspecialchars($participantPrenom . ' ' . $participantNom) ?>', pageWidth / 2, currentY, { align: 'center' });
-                pdf.text(`Date: ${new Date().toLocaleDateString('fr-FR')}`, pageWidth / 2, currentY + 5, { align: 'center' });
+                pdf.text(`${T.by}: <?= htmlspecialchars($participantPrenom . ' ' . $participantNom) ?>`, pageWidth / 2, currentY, { align: 'center' });
+                pdf.text(`Date: ${new Date().toLocaleDateString()}`, pageWidth / 2, currentY + 5, { align: 'center' });
 
                 currentY += 25;
 
                 const categories = {
-                    strengths: { title: 'FORCES (STRENGTHS)', color: [39, 174, 96] },
-                    weaknesses: { title: 'FAIBLESSES (WEAKNESSES)', color: [231, 76, 60] },
-                    opportunities: { title: 'OPPORTUNITES (OPPORTUNITIES)', color: [52, 152, 219] },
-                    threats: { title: 'MENACES (THREATS)', color: [243, 156, 18] }
+                    strengths: { title: T.strengths.toUpperCase() + ' (STRENGTHS)', color: [39, 174, 96] },
+                    weaknesses: { title: T.weaknesses.toUpperCase() + ' (WEAKNESSES)', color: [231, 76, 60] },
+                    opportunities: { title: T.opportunities.toUpperCase() + ' (OPPORTUNITIES)', color: [52, 152, 219] },
+                    threats: { title: T.threats.toUpperCase() + ' (THREATS)', color: [243, 156, 18] }
                 };
 
                 Object.keys(categories).forEach(category => {
@@ -1326,7 +1382,7 @@ $sessionName = $_SESSION['session_name'];
                         });
                     } else {
                         pdf.setTextColor(149, 165, 166);
-                        pdf.text('Aucun element ajoute', margin, currentY);
+                        pdf.text(T.no_element_added, margin, currentY);
                         currentY += lineHeight;
                     }
 
@@ -1335,10 +1391,10 @@ $sessionName = $_SESSION['session_name'];
 
                 const fileName = `SWOT_<?= preg_replace('/[^a-zA-Z0-9]/', '_', $participantPrenom . '_' . $participantNom) ?>_${new Date().toISOString().split('T')[0]}.pdf`;
                 pdf.save(fileName);
-                alert('PDF genere avec succes !');
+                alert(T.pdf_success);
 
             } catch (error) {
-                alert('Erreur lors de la generation du PDF.');
+                alert(T.pdf_error);
                 console.error(error);
             }
         }
@@ -1348,16 +1404,16 @@ $sessionName = $_SESSION['session_name'];
             const content = document.getElementById('exportTOWSContent');
 
             const categories = {
-                so: { title: 'Strategies SO (Forces + Opportunites)', color: '#27ae60' },
-                wo: { title: 'Strategies WO (Faiblesses + Opportunites)', color: '#3498db' },
-                st: { title: 'Strategies ST (Forces + Menaces)', color: '#f39c12' },
-                wt: { title: 'Strategies WT (Faiblesses + Menaces)', color: '#e74c3c' }
+                so: { title: T.strategies_so + ' (' + T.so_desc + ')', color: '#27ae60' },
+                wo: { title: T.strategies_wo + ' (' + T.wo_desc + ')', color: '#3498db' },
+                st: { title: T.strategies_st + ' (' + T.st_desc + ')', color: '#f39c12' },
+                wt: { title: T.strategies_wt + ' (' + T.wt_desc + ')', color: '#e74c3c' }
             };
 
             let html = `
                 <div style="text-align: center; margin-bottom: 30px;">
-                    <h1 style="color: #2c3e50; margin-bottom: 10px;">Analyse TOWS</h1>
-                    <p style="color: #7f8c8d;">Par <?= htmlspecialchars($participantPrenom . ' ' . $participantNom) ?> - ${new Date().toLocaleDateString('fr-FR')}</p>
+                    <h1 style="color: #2c3e50; margin-bottom: 10px;">${T.tows_title}</h1>
+                    <p style="color: #7f8c8d;">${T.by} <?= htmlspecialchars($participantPrenom . ' ' . $participantNom) ?> - ${new Date().toLocaleDateString()}</p>
                 </div>
             `;
 
@@ -1375,7 +1431,7 @@ $sessionName = $_SESSION['session_name'];
                     });
                     html += '</ul>';
                 } else {
-                    html += '<p style="color: #95a5a6; font-style: italic;">Aucune strategie definie</p>';
+                    html += `<p style="color: #95a5a6; font-style: italic;">${T.no_strategy_defined}</p>`;
                 }
 
                 html += '</div>';
@@ -1395,15 +1451,15 @@ $sessionName = $_SESSION['session_name'];
 
         function copyTOWS() {
             const categories = {
-                so: 'STRATEGIES SO (FORCES + OPPORTUNITES)',
-                wo: 'STRATEGIES WO (FAIBLESSES + OPPORTUNITES)',
-                st: 'STRATEGIES ST (FORCES + MENACES)',
-                wt: 'STRATEGIES WT (FAIBLESSES + MENACES)'
+                so: T.strategies_so.toUpperCase() + ' (' + T.so_desc.toUpperCase() + ')',
+                wo: T.strategies_wo.toUpperCase() + ' (' + T.wo_desc.toUpperCase() + ')',
+                st: T.strategies_st.toUpperCase() + ' (' + T.st_desc.toUpperCase() + ')',
+                wt: T.strategies_wt.toUpperCase() + ' (' + T.wt_desc.toUpperCase() + ')'
             };
 
-            let text = `ANALYSE TOWS\n`;
-            text += `Par: <?= htmlspecialchars($participantPrenom . ' ' . $participantNom) ?>\n`;
-            text += `Date: ${new Date().toLocaleDateString('fr-FR')}\n\n`;
+            let text = `${T.tows_title.toUpperCase()}\n`;
+            text += `${T.by}: <?= htmlspecialchars($participantPrenom . ' ' . $participantNom) ?>\n`;
+            text += `Date: ${new Date().toLocaleDateString()}\n\n`;
 
             Object.keys(categories).forEach(category => {
                 text += `${categories[category]}\n`;
@@ -1414,15 +1470,15 @@ $sessionName = $_SESSION['session_name'];
                         text += `- ${item}\n`;
                     });
                 } else {
-                    text += 'Aucune strategie definie\n';
+                    text += T.no_strategy_defined + '\n';
                 }
                 text += '\n';
             });
 
             navigator.clipboard.writeText(text).then(() => {
-                alert('Analyse TOWS copiee dans le presse-papier !');
+                alert(T.tows_copied);
             }).catch(() => {
-                alert('Erreur lors de la copie.');
+                alert(T.copy_error);
             });
         }
 
@@ -1438,21 +1494,21 @@ $sessionName = $_SESSION['session_name'];
 
                 pdf.setFontSize(20);
                 pdf.setTextColor(44, 62, 80);
-                pdf.text('ANALYSE TOWS', pageWidth / 2, currentY, { align: 'center' });
+                pdf.text(T.tows_title.toUpperCase(), pageWidth / 2, currentY, { align: 'center' });
 
                 currentY += 10;
                 pdf.setFontSize(12);
                 pdf.setTextColor(127, 140, 141);
-                pdf.text('Par: <?= htmlspecialchars($participantPrenom . ' ' . $participantNom) ?>', pageWidth / 2, currentY, { align: 'center' });
-                pdf.text(`Date: ${new Date().toLocaleDateString('fr-FR')}`, pageWidth / 2, currentY + 5, { align: 'center' });
+                pdf.text(`${T.by}: <?= htmlspecialchars($participantPrenom . ' ' . $participantNom) ?>`, pageWidth / 2, currentY, { align: 'center' });
+                pdf.text(`Date: ${new Date().toLocaleDateString()}`, pageWidth / 2, currentY + 5, { align: 'center' });
 
                 currentY += 25;
 
                 const categories = {
-                    so: { title: 'STRATEGIES SO (FORCES + OPPORTUNITES)', color: [39, 174, 96] },
-                    wo: { title: 'STRATEGIES WO (FAIBLESSES + OPPORTUNITES)', color: [52, 152, 219] },
-                    st: { title: 'STRATEGIES ST (FORCES + MENACES)', color: [243, 156, 18] },
-                    wt: { title: 'STRATEGIES WT (FAIBLESSES + MENACES)', color: [231, 76, 60] }
+                    so: { title: T.strategies_so.toUpperCase() + ' (' + T.so_desc.toUpperCase() + ')', color: [39, 174, 96] },
+                    wo: { title: T.strategies_wo.toUpperCase() + ' (' + T.wo_desc.toUpperCase() + ')', color: [52, 152, 219] },
+                    st: { title: T.strategies_st.toUpperCase() + ' (' + T.st_desc.toUpperCase() + ')', color: [243, 156, 18] },
+                    wt: { title: T.strategies_wt.toUpperCase() + ' (' + T.wt_desc.toUpperCase() + ')', color: [231, 76, 60] }
                 };
 
                 Object.keys(categories).forEach(category => {
@@ -1490,7 +1546,7 @@ $sessionName = $_SESSION['session_name'];
                         });
                     } else {
                         pdf.setTextColor(149, 165, 166);
-                        pdf.text('Aucune strategie definie', margin, currentY);
+                        pdf.text(T.no_strategy_defined, margin, currentY);
                         currentY += lineHeight;
                     }
 
@@ -1499,10 +1555,10 @@ $sessionName = $_SESSION['session_name'];
 
                 const fileName = `TOWS_<?= preg_replace('/[^a-zA-Z0-9]/', '_', $participantPrenom . '_' . $participantNom) ?>_${new Date().toISOString().split('T')[0]}.pdf`;
                 pdf.save(fileName);
-                alert('PDF TOWS genere avec succes !');
+                alert(T.pdf_tows_success);
 
             } catch (error) {
-                alert('Erreur lors de la generation du PDF TOWS.');
+                alert(T.pdf_tows_error);
                 console.error(error);
             }
         }
