@@ -135,6 +135,11 @@ $sessions = getActiveSessions($db);
                     <input type="password" name="password" required
                            class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-<?= $appColor ?>-500 focus:ring-2 focus:ring-<?= $appColor ?>-200"
                            placeholder="<?= t('auth.your_password') ?>">
+                    <div class="text-right mt-1">
+                        <a href="../shared-auth/forgot-password.php" class="text-sm text-<?= $appColor ?>-600 hover:text-<?= $appColor ?>-800">
+                            <?= t('auth.forgot_password') ?>
+                        </a>
+                    </div>
                 </div>
 
                 <button type="submit" <?= empty($sessions) ? 'disabled' : '' ?>

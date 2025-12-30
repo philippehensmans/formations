@@ -39,6 +39,32 @@ return [
         'interactive_training' => 'Formation interactive',
     ],
 
+    // Reinitialisation mot de passe
+    'reset' => [
+        'forgot_password' => 'Mot de passe oublie',
+        'forgot_password_desc' => 'Entrez votre email ou identifiant pour recevoir un lien de reinitialisation.',
+        'email_or_username' => 'Email ou Identifiant',
+        'email_or_username_placeholder' => 'Votre email ou identifiant',
+        'send_reset_link' => 'Envoyer le lien',
+        'back_to_login' => 'Retour a la connexion',
+        'enter_email_or_username' => 'Veuillez entrer votre email ou identifiant.',
+        'email_sent' => 'Un email de reinitialisation a ete envoye a',
+        'user_not_found' => 'Aucun compte trouve avec cet identifiant ou email.',
+        'no_email_registered' => 'Aucun email n\'est associe a ce compte. Contactez l\'administrateur.',
+        'email_error' => 'Erreur lors de l\'envoi de l\'email. Veuillez reessayer.',
+        'error_occurred' => 'Une erreur s\'est produite. Veuillez reessayer.',
+        'reset_password' => 'Reinitialiser le mot de passe',
+        'new_password' => 'Nouveau mot de passe',
+        'enter_new_password' => 'Veuillez entrer un nouveau mot de passe.',
+        'choose_new_password' => 'Choisissez votre nouveau mot de passe.',
+        'change_password' => 'Changer le mot de passe',
+        'password_changed' => 'Votre mot de passe a ete modifie avec succes !',
+        'invalid_or_expired_link' => 'Ce lien de reinitialisation est invalide ou a expire.',
+        'request_new_link' => 'Demander un nouveau lien',
+        'can_now_login' => 'Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.',
+        'go_to_login' => 'Aller a la connexion',
+    ],
+
     // Authentification
     'auth' => [
         'login' => 'Connexion',
@@ -86,6 +112,7 @@ return [
         'want_session' => 'Vous souhaitez une session ?',
         'contact_us' => 'Cliquez ici pour prendre contact avec nous.',
         'back_to_app' => 'Retour a l\'application',
+        'forgot_password' => 'Mot de passe oublie ?',
     ],
 
     // Formateur
