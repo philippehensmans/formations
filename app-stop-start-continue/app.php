@@ -2,43 +2,43 @@
 /**
  * Interface de travail - Stop Start Continue
  */
-require_once 'config/database.php';
-requireParticipant();
+require_once __DIR__ . '/config.php';
+requireLoginWithSession();
 
 $db = getDB();
-$participant = getCurrentParticipant();
+$user = getLoggedUser();
 
-// Verifier que le participant existe
-if (!$participant) {
+// Verifier que l'utilisateur existe
+if (!$user) {
     session_destroy();
     header('Location: index.php');
     exit;
 }
 
-// Charger la retrospective
-$stmt = $db->prepare("SELECT * FROM retrospectives WHERE participant_id = ?");
-$stmt->execute([$participant['id']]);
+// Charger ou creer la retrospective
+$stmt = $db->prepare("SELECT * FROM retrospectives WHERE user_id = ? AND session_id = ?");
+$stmt->execute([$user['id'], $_SESSION['current_session_id']]);
 $retro = $stmt->fetch();
 
 if (!$retro) {
-    $stmt = $db->prepare("INSERT INTO retrospectives (participant_id, session_id) VALUES (?, ?)");
-    $stmt->execute([$participant['id'], $participant['session_id']]);
-    $stmt = $db->prepare("SELECT * FROM retrospectives WHERE participant_id = ?");
-    $stmt->execute([$participant['id']]);
+    $stmt = $db->prepare("INSERT INTO retrospectives (user_id, session_id) VALUES (?, ?)");
+    $stmt->execute([$user['id'], $_SESSION['current_session_id']]);
+    $stmt = $db->prepare("SELECT * FROM retrospectives WHERE user_id = ? AND session_id = ?");
+    $stmt->execute([$user['id'], $_SESSION['current_session_id']]);
     $retro = $stmt->fetch();
 }
 
-$itemsCesser = json_decode($retro['items_cesser'], true) ?: [];
-$itemsCommencer = json_decode($retro['items_commencer'], true) ?: [];
-$itemsContinuer = json_decode($retro['items_continuer'], true) ?: [];
-$isSubmitted = $retro['is_submitted'] == 1;
+$itemsCesser = json_decode($retro['stop_items'] ?? '[]', true) ?: [];
+$itemsCommencer = json_decode($retro['start_items'] ?? '[]', true) ?: [];
+$itemsContinuer = json_decode($retro['continue_items'] ?? '[]', true) ?: [];
+$isSubmitted = ($retro['is_shared'] ?? 0) == 1;
 ?>
 <!DOCTYPE html>
 <html lang="<?= getCurrentLanguage() ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= t('ssc.title') ?> - <?= sanitize($participant['prenom']) ?> <?= sanitize($participant['nom']) ?></title>
+    <title><?= t('ssc.title') ?> - <?= h($user['prenom'] ?? '') ?> <?= h($user['nom'] ?? '') ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -63,11 +63,11 @@ $isSubmitted = $retro['is_submitted'] == 1;
                 <div>
                     <h1 class="text-xl font-bold"><?= t('ssc.title') ?></h1>
                     <p class="text-blue-200 text-sm">
-                        <?= sanitize($participant['prenom']) ?> <?= sanitize($participant['nom']) ?>
-                        <?php if ($participant['organisation']): ?>
-                            - <?= sanitize($participant['organisation']) ?>
+                        <?= h($user['prenom'] ?? '') ?> <?= h($user['nom'] ?? '') ?>
+                        <?php if (!empty($user['organisation'])): ?>
+                            - <?= h($user['organisation']) ?>
                         <?php endif; ?>
-                        | <?= t('ssc.session') ?>: <?= sanitize($participant['session_code']) ?>
+                        | <?= t('ssc.session') ?>: <?= h($_SESSION['current_session_code'] ?? '') ?>
                     </p>
                 </div>
                 <div class="flex items-center gap-3">
@@ -99,14 +99,14 @@ $isSubmitted = $retro['is_submitted'] == 1;
             <div class="grid md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1"><?= t('ssc.project_name') ?></label>
-                    <input type="text" id="projetNom" value="<?= sanitize($retro['projet_nom']) ?>"
+                    <input type="text" id="projetNom" value="<?= h($retro['projet_nom'] ?? '') ?>"
 
                            class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 "
                            placeholder="<?= t('ssc.project_name_placeholder') ?>">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1"><?= t('ssc.context') ?></label>
-                    <input type="text" id="projetContexte" value="<?= sanitize($retro['projet_contexte']) ?>"
+                    <input type="text" id="projetContexte" value="<?= h($retro['projet_contexte'] ?? '') ?>"
 
                            class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 "
                            placeholder="<?= t('ssc.context_placeholder') ?>">
@@ -191,7 +191,7 @@ $isSubmitted = $retro['is_submitted'] == 1;
             <h3 class="font-semibold mb-3"><?= t('ssc.additional_notes') ?></h3>
             <textarea id="notes" rows="3"
                       class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 "
-                      placeholder="<?= t('ssc.notes_placeholder') ?>"><?= sanitize($retro['notes']) ?></textarea>
+                      placeholder="<?= t('ssc.notes_placeholder') ?>"><?= h($retro['notes'] ?? '') ?></textarea>
         </div>
 
         <!-- Boutons d'action -->

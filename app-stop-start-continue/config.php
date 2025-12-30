@@ -66,24 +66,29 @@ function initDatabase($db) {
         user_id INTEGER NOT NULL,
         session_id INTEGER,
         titre TEXT,
+        projet_nom TEXT DEFAULT '',
+        projet_contexte TEXT DEFAULT '',
         stop_items TEXT DEFAULT '[]',
         start_items TEXT DEFAULT '[]',
         continue_items TEXT DEFAULT '[]',
+        notes TEXT DEFAULT '',
         is_shared INTEGER DEFAULT 0,
+        completion_percent INTEGER DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )");
 
-    // Migration: ajouter session_id si la colonne n'existe pas
-    try {
-        $db->exec("ALTER TABLE retrospectives ADD COLUMN session_id INTEGER");
-    } catch (Exception $e) {
-        // Colonne existe deja
-    }
-    try {
-        $db->exec("ALTER TABLE retrospectives ADD COLUMN is_shared INTEGER DEFAULT 0");
-    } catch (Exception $e) {
-        // Colonne existe deja
+    // Migrations
+    $migrations = [
+        "ALTER TABLE retrospectives ADD COLUMN session_id INTEGER",
+        "ALTER TABLE retrospectives ADD COLUMN is_shared INTEGER DEFAULT 0",
+        "ALTER TABLE retrospectives ADD COLUMN projet_nom TEXT DEFAULT ''",
+        "ALTER TABLE retrospectives ADD COLUMN projet_contexte TEXT DEFAULT ''",
+        "ALTER TABLE retrospectives ADD COLUMN notes TEXT DEFAULT ''",
+        "ALTER TABLE retrospectives ADD COLUMN completion_percent INTEGER DEFAULT 0"
+    ];
+    foreach ($migrations as $sql) {
+        try { $db->exec($sql); } catch (Exception $e) { /* Colonne existe deja */ }
     }
 }
 

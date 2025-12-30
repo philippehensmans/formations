@@ -3,17 +3,18 @@
  * API Soumission - Stop Start Continue
  */
 header('Content-Type: application/json');
-require_once '../config/database.php';
+require_once __DIR__ . '/../config.php';
 
-if (!isParticipantLoggedIn()) {
+if (!isLoggedIn() || !isset($_SESSION['current_session_id'])) {
     echo json_encode(['success' => false, 'error' => 'Non connecte']);
     exit;
 }
 
 $db = getDB();
+$user = getLoggedUser();
 
-$stmt = $db->prepare("SELECT id, is_submitted FROM retrospectives WHERE participant_id = ?");
-$stmt->execute([$_SESSION['participant_id']]);
+$stmt = $db->prepare("SELECT id, is_shared FROM retrospectives WHERE user_id = ? AND session_id = ?");
+$stmt->execute([$user['id'], $_SESSION['current_session_id']]);
 $retro = $stmt->fetch();
 
 if (!$retro) {
@@ -21,12 +22,12 @@ if (!$retro) {
     exit;
 }
 
-if ($retro['is_submitted']) {
+if ($retro['is_shared']) {
     echo json_encode(['success' => false, 'error' => 'Deja soumis']);
     exit;
 }
 
-$stmt = $db->prepare("UPDATE retrospectives SET is_submitted = 1, updated_at = CURRENT_TIMESTAMP WHERE participant_id = ?");
-$stmt->execute([$_SESSION['participant_id']]);
+$stmt = $db->prepare("UPDATE retrospectives SET is_shared = 1, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND session_id = ?");
+$stmt->execute([$user['id'], $_SESSION['current_session_id']]);
 
 echo json_encode(['success' => true]);
