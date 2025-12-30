@@ -1300,5 +1300,7 @@ return [
         'network_error' => 'Error de red',
         'confirm_complete' => 'Marcar como terminado? Podra seguir modificando despues.',
         'marked_complete' => 'Marcado como terminado!',
+        'export_all_prompts' => 'Exportar todos los prompts',
+        'export_session_prompts' => 'Exportar prompts de la sesion',
     ],
 ];
