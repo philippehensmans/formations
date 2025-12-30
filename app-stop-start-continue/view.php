@@ -71,7 +71,15 @@ $continueItems = $retro ? json_decode($retro['continue_items'] ?? '[]', true) : 
     <div class="max-w-7xl mx-auto p-4">
         <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
             <h1 class="text-2xl font-bold text-gray-800 mb-2">Retrospective Stop Start Continue</h1>
-            <p class="text-gray-600">Titre: <?= h($retro['titre'] ?? 'Non defini') ?></p>
+            <?php if (!empty($retro['projet_nom'])): ?>
+                <p class="text-lg text-gray-700"><strong>Projet:</strong> <?= h($retro['projet_nom']) ?></p>
+            <?php endif; ?>
+            <?php if (!empty($retro['projet_contexte'])): ?>
+                <p class="text-gray-600"><strong>Contexte:</strong> <?= h($retro['projet_contexte']) ?></p>
+            <?php endif; ?>
+            <?php if (!empty($retro['notes'])): ?>
+                <p class="text-gray-500 mt-2"><strong>Notes:</strong> <?= h($retro['notes']) ?></p>
+            <?php endif; ?>
         </div>
 
         <div class="grid md:grid-cols-3 gap-6">
