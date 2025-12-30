@@ -37,6 +37,12 @@ return [
         'actions' => 'Actions',
         'not_specified' => 'Non renseigne',
         'interactive_training' => 'Formation interactive',
+        'confirm_delete' => 'Supprimer cet element ?',
+        'save_success' => 'Sauvegarde reussie !',
+        'save_error' => 'Erreur lors de la sauvegarde',
+        'submit_success' => 'Soumission reussie !',
+        'submit_error' => 'Erreur lors de la soumission',
+        'notes' => 'Notes',
     ],
 
     // Reinitialisation mot de passe

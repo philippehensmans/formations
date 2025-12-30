@@ -37,6 +37,12 @@ return [
         'actions' => 'Actions',
         'not_specified' => 'Not specified',
         'interactive_training' => 'Interactive training',
+        'confirm_delete' => 'Delete this element?',
+        'save_success' => 'Saved successfully!',
+        'save_error' => 'Error while saving',
+        'submit_success' => 'Submitted successfully!',
+        'submit_error' => 'Error while submitting',
+        'notes' => 'Notes',
     ],
 
     // Password reset

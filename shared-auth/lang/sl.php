@@ -37,6 +37,12 @@ return [
         'actions' => 'Dejanja',
         'not_specified' => 'Ni navedeno',
         'interactive_training' => 'Interaktivno usposabljanje',
+        'confirm_delete' => 'Izbrisati ta element?',
+        'save_success' => 'Uspesno shranjeno!',
+        'save_error' => 'Napaka pri shranjevanju',
+        'submit_success' => 'Uspesno oddano!',
+        'submit_error' => 'Napaka pri oddaji',
+        'notes' => 'Opombe',
     ],
 
     // Ponastavitev gesla
