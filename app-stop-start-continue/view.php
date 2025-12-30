@@ -84,7 +84,22 @@ $continueItems = $retro ? json_decode($retro['continue_items'] ?? '[]', true) : 
                     <?php else: ?>
                         <ul class="space-y-2">
                             <?php foreach ($stopItems as $item): ?>
-                                <li class="p-3 bg-red-50 rounded-lg border-l-4 border-red-500"><?= h(is_array($item) ? ($item['text'] ?? '') : $item) ?></li>
+                                <li class="p-3 bg-red-50 rounded-lg border-l-4 border-red-500">
+                                    <div class="font-medium"><?= h(is_array($item) ? ($item['description'] ?? '') : $item) ?></div>
+                                    <?php if (is_array($item) && !empty($item['raison'])): ?>
+                                        <div class="text-sm text-gray-600 mt-1"><?= h($item['raison']) ?></div>
+                                    <?php endif; ?>
+                                    <?php if (is_array($item) && (!empty($item['priorite']) || !empty($item['responsable']))): ?>
+                                        <div class="flex gap-2 mt-2 text-xs">
+                                            <?php if (!empty($item['priorite'])): ?>
+                                                <span class="px-2 py-0.5 bg-gray-200 rounded"><?= h($item['priorite']) ?></span>
+                                            <?php endif; ?>
+                                            <?php if (!empty($item['responsable'])): ?>
+                                                <span class="px-2 py-0.5 bg-gray-100 rounded"><?= h($item['responsable']) ?></span>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endif; ?>
+                                </li>
                             <?php endforeach; ?>
                         </ul>
                     <?php endif; ?>
@@ -100,7 +115,22 @@ $continueItems = $retro ? json_decode($retro['continue_items'] ?? '[]', true) : 
                     <?php else: ?>
                         <ul class="space-y-2">
                             <?php foreach ($startItems as $item): ?>
-                                <li class="p-3 bg-green-50 rounded-lg border-l-4 border-green-500"><?= h(is_array($item) ? ($item['text'] ?? '') : $item) ?></li>
+                                <li class="p-3 bg-green-50 rounded-lg border-l-4 border-green-500">
+                                    <div class="font-medium"><?= h(is_array($item) ? ($item['description'] ?? '') : $item) ?></div>
+                                    <?php if (is_array($item) && !empty($item['raison'])): ?>
+                                        <div class="text-sm text-gray-600 mt-1"><?= h($item['raison']) ?></div>
+                                    <?php endif; ?>
+                                    <?php if (is_array($item) && (!empty($item['priorite']) || !empty($item['responsable']))): ?>
+                                        <div class="flex gap-2 mt-2 text-xs">
+                                            <?php if (!empty($item['priorite'])): ?>
+                                                <span class="px-2 py-0.5 bg-gray-200 rounded"><?= h($item['priorite']) ?></span>
+                                            <?php endif; ?>
+                                            <?php if (!empty($item['responsable'])): ?>
+                                                <span class="px-2 py-0.5 bg-gray-100 rounded"><?= h($item['responsable']) ?></span>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endif; ?>
+                                </li>
                             <?php endforeach; ?>
                         </ul>
                     <?php endif; ?>
@@ -116,7 +146,22 @@ $continueItems = $retro ? json_decode($retro['continue_items'] ?? '[]', true) : 
                     <?php else: ?>
                         <ul class="space-y-2">
                             <?php foreach ($continueItems as $item): ?>
-                                <li class="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-500"><?= h(is_array($item) ? ($item['text'] ?? '') : $item) ?></li>
+                                <li class="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+                                    <div class="font-medium"><?= h(is_array($item) ? ($item['description'] ?? '') : $item) ?></div>
+                                    <?php if (is_array($item) && !empty($item['raison'])): ?>
+                                        <div class="text-sm text-gray-600 mt-1"><?= h($item['raison']) ?></div>
+                                    <?php endif; ?>
+                                    <?php if (is_array($item) && (!empty($item['priorite']) || !empty($item['responsable']))): ?>
+                                        <div class="flex gap-2 mt-2 text-xs">
+                                            <?php if (!empty($item['priorite'])): ?>
+                                                <span class="px-2 py-0.5 bg-gray-200 rounded"><?= h($item['priorite']) ?></span>
+                                            <?php endif; ?>
+                                            <?php if (!empty($item['responsable'])): ?>
+                                                <span class="px-2 py-0.5 bg-gray-100 rounded"><?= h($item['responsable']) ?></span>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endif; ?>
+                                </li>
                             <?php endforeach; ?>
                         </ul>
                     <?php endif; ?>
