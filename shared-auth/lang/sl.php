@@ -1300,5 +1300,7 @@ return [
         'network_error' => 'Napaka omrezja',
         'confirm_complete' => 'Oznaciti kot dokoncano? Lahko se vedno spreminjate.',
         'marked_complete' => 'Oznaceno kot dokoncano!',
+        'export_all_prompts' => 'Izvozi vse prompte',
+        'export_session_prompts' => 'Izvozi prompte seje',
     ],
 ];

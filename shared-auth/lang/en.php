@@ -1266,5 +1266,7 @@ return [
         'guide_intro_placeholder' => 'Write an introduction about using AI in your organization...',
         'preview_placeholder' => 'Preview will appear here once templates are created...',
         'export_guide' => 'Export guide',
+        'export_all_prompts' => 'Export all prompts',
+        'export_session_prompts' => 'Export session prompts',
     ],
 ];

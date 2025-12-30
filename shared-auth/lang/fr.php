@@ -1266,5 +1266,7 @@ return [
         'guide_intro_placeholder' => 'Redigez une introduction sur l\'utilisation des IA dans votre organisation...',
         'preview_placeholder' => 'L\'apercu apparaitra ici une fois les templates crees...',
         'export_guide' => 'Exporter le guide',
+        'export_all_prompts' => 'Exporter tous les prompts',
+        'export_session_prompts' => 'Exporter les prompts de la session',
     ],
 ];
