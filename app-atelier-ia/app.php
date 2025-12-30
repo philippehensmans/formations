@@ -26,6 +26,15 @@ if (!$atelier) {
         'notes' => '',
         'is_shared' => 0
     ];
+} else {
+    // S'assurer que les valeurs ne sont jamais null
+    $atelier['post_its'] = $atelier['post_its'] ?: '[]';
+    $atelier['themes'] = $atelier['themes'] ?: '[]';
+    $atelier['interactions'] = $atelier['interactions'] ?: '[]';
+    $atelier['conditions_reussite'] = $atelier['conditions_reussite'] ?: '[]';
+    $atelier['association_nom'] = $atelier['association_nom'] ?? '';
+    $atelier['association_mission'] = $atelier['association_mission'] ?? '';
+    $atelier['notes'] = $atelier['notes'] ?? '';
 }
 
 $isSubmitted = $atelier['is_shared'] == 1;
