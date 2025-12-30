@@ -3,9 +3,9 @@
  * API Sauvegarde - Stop Start Continue
  */
 header('Content-Type: application/json');
-require_once '../config/database.php';
+require_once __DIR__ . '/../config.php';
 
-if (!isParticipantLoggedIn()) {
+if (!isLoggedIn() || !isset($_SESSION['current_session_id'])) {
     echo json_encode(['success' => false, 'error' => 'Non connecte']);
     exit;
 }
@@ -17,10 +17,11 @@ if (!$input) {
 }
 
 $db = getDB();
+$user = getLoggedUser();
 
-// Verifier que le participant a une retrospective
-$stmt = $db->prepare("SELECT id, is_submitted FROM retrospectives WHERE participant_id = ?");
-$stmt->execute([$_SESSION['participant_id']]);
+// Verifier que l'utilisateur a une retrospective
+$stmt = $db->prepare("SELECT id, is_shared FROM retrospectives WHERE user_id = ? AND session_id = ?");
+$stmt->execute([$user['id'], $_SESSION['current_session_id']]);
 $retro = $stmt->fetch();
 
 if (!$retro) {
@@ -28,10 +29,7 @@ if (!$retro) {
     exit;
 }
 
-// Permettre les modifications meme apres soumission
-
 // Calculer completion
-$completion = 0;
 $total = 5;
 $filled = 0;
 if (!empty($input['projet_nom'])) $filled++;
@@ -45,13 +43,13 @@ $completion = round(($filled / $total) * 100);
 $stmt = $db->prepare("UPDATE retrospectives SET
     projet_nom = ?,
     projet_contexte = ?,
-    items_cesser = ?,
-    items_commencer = ?,
-    items_continuer = ?,
+    stop_items = ?,
+    start_items = ?,
+    continue_items = ?,
     notes = ?,
     completion_percent = ?,
     updated_at = CURRENT_TIMESTAMP
-    WHERE participant_id = ?");
+    WHERE user_id = ? AND session_id = ?");
 
 $stmt->execute([
     $input['projet_nom'] ?? '',
@@ -61,7 +59,8 @@ $stmt->execute([
     json_encode($input['items_continuer'] ?? []),
     $input['notes'] ?? '',
     $completion,
-    $_SESSION['participant_id']
+    $user['id'],
+    $_SESSION['current_session_id']
 ]);
 
 echo json_encode(['success' => true, 'completion' => $completion]);
