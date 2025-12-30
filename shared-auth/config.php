@@ -74,6 +74,15 @@ function initSharedDB($db) {
         $db->exec("ALTER TABLE users ADD COLUMN email_consent INTEGER DEFAULT 0");
     } catch (Exception $e) { /* Colonne existe deja */ }
 
+    // Colonnes pour la reinitialisation du mot de passe
+    try {
+        $db->exec("ALTER TABLE users ADD COLUMN reset_token VARCHAR(64)");
+    } catch (Exception $e) { /* Colonne existe deja */ }
+
+    try {
+        $db->exec("ALTER TABLE users ADD COLUMN reset_token_expires DATETIME");
+    } catch (Exception $e) { /* Colonne existe deja */ }
+
     // Creer le compte super-admin par defaut s'il n'existe pas
     $stmt = $db->query("SELECT COUNT(*) FROM users WHERE username = 'formateur'");
     if ($stmt->fetchColumn() == 0) {
@@ -372,4 +381,130 @@ function getFormateurAssignments($formateurId) {
     $stmt = $db->prepare("SELECT app_name, session_id FROM formateur_sessions WHERE formateur_id = ?");
     $stmt->execute([$formateurId]);
     return $stmt->fetchAll();
+}
+
+/**
+ * Generer un token de reinitialisation de mot de passe
+ */
+function generatePasswordResetToken($emailOrUsername) {
+    $db = getSharedDB();
+
+    // Chercher l'utilisateur par email ou username
+    $stmt = $db->prepare("SELECT id, email, username, prenom, nom FROM users WHERE email = ? OR username = ?");
+    $stmt->execute([$emailOrUsername, $emailOrUsername]);
+    $user = $stmt->fetch();
+
+    if (!$user) {
+        return ['success' => false, 'error' => 'user_not_found'];
+    }
+
+    if (empty($user['email'])) {
+        return ['success' => false, 'error' => 'no_email'];
+    }
+
+    // Generer un token securise
+    $token = bin2hex(random_bytes(32));
+    $expires = date('Y-m-d H:i:s', strtotime('+1 hour'));
+
+    // Sauvegarder le token
+    $stmt = $db->prepare("UPDATE users SET reset_token = ?, reset_token_expires = ? WHERE id = ?");
+    $stmt->execute([$token, $expires, $user['id']]);
+
+    // Envoyer l'email
+    $sent = sendPasswordResetEmail($user['email'], $token, $user['prenom'], $user['nom'], $user['username']);
+
+    if ($sent) {
+        return ['success' => true, 'email' => maskEmail($user['email'])];
+    } else {
+        return ['success' => false, 'error' => 'email_failed'];
+    }
+}
+
+/**
+ * Envoyer l'email de reinitialisation
+ */
+function sendPasswordResetEmail($email, $token, $prenom, $nom, $username) {
+    $host = $_SERVER['HTTP_HOST'] ?? 'k1m.be';
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+
+    // Determiner le chemin de base
+    $requestUri = $_SERVER['REQUEST_URI'] ?? '';
+    $basePath = dirname(dirname($requestUri)); // Remonter d'un niveau depuis shared-auth ou app
+    $resetUrl = "{$protocol}://{$host}{$basePath}/shared-auth/reset-password.php?token={$token}";
+
+    $appName = defined('APP_NAME') ? APP_NAME : 'Formation';
+    $subject = "[{$appName}] Reinitialisation de votre mot de passe";
+
+    $nomComplet = trim(($prenom ?? '') . ' ' . ($nom ?? ''));
+    if (empty($nomComplet)) {
+        $nomComplet = $username;
+    }
+
+    $message = "Bonjour {$nomComplet},\n\n";
+    $message .= "Vous avez demande la reinitialisation de votre mot de passe.\n\n";
+    $message .= "Cliquez sur le lien ci-dessous pour definir un nouveau mot de passe :\n";
+    $message .= $resetUrl . "\n\n";
+    $message .= "Ce lien est valable pendant 1 heure.\n\n";
+    $message .= "Si vous n'avez pas demande cette reinitialisation, ignorez simplement ce message.\n\n";
+    $message .= "Cordialement,\n";
+    $message .= "L'equipe de formation";
+
+    $headers = "From: noreply@{$host}\r\n";
+    $headers .= "Reply-To: noreply@{$host}\r\n";
+    $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+
+    return @mail($email, $subject, $message, $headers);
+}
+
+/**
+ * Masquer partiellement une adresse email
+ */
+function maskEmail($email) {
+    $parts = explode('@', $email);
+    if (count($parts) !== 2) return '***@***.***';
+
+    $name = $parts[0];
+    $domain = $parts[1];
+
+    $maskedName = substr($name, 0, 2) . str_repeat('*', max(0, strlen($name) - 2));
+    $domainParts = explode('.', $domain);
+    $maskedDomain = substr($domainParts[0], 0, 1) . '***.' . end($domainParts);
+
+    return $maskedName . '@' . $maskedDomain;
+}
+
+/**
+ * Valider un token de reinitialisation
+ */
+function validatePasswordResetToken($token) {
+    if (empty($token) || strlen($token) !== 64) {
+        return false;
+    }
+
+    $db = getSharedDB();
+    $stmt = $db->prepare("SELECT id, username, prenom, nom FROM users WHERE reset_token = ? AND reset_token_expires > CURRENT_TIMESTAMP");
+    $stmt->execute([$token]);
+    return $stmt->fetch();
+}
+
+/**
+ * Reinitialiser le mot de passe avec un token
+ */
+function resetPasswordWithToken($token, $newPassword) {
+    $user = validatePasswordResetToken($token);
+    if (!$user) {
+        return ['success' => false, 'error' => 'invalid_token'];
+    }
+
+    if (strlen($newPassword) < 4) {
+        return ['success' => false, 'error' => 'password_too_short'];
+    }
+
+    $db = getSharedDB();
+    $hash = password_hash($newPassword, PASSWORD_DEFAULT);
+
+    $stmt = $db->prepare("UPDATE users SET password = ?, reset_token = NULL, reset_token_expires = NULL WHERE id = ?");
+    $stmt->execute([$hash, $user['id']]);
+
+    return ['success' => true];
 }

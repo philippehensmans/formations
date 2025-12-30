@@ -39,6 +39,32 @@ return [
         'interactive_training' => 'Interaktivno usposabljanje',
     ],
 
+    // Ponastavitev gesla
+    'reset' => [
+        'forgot_password' => 'Pozabljeno geslo',
+        'forgot_password_desc' => 'Vnesite svoj e-postni naslov ali uporabnisko ime za prejem povezave za ponastavitev.',
+        'email_or_username' => 'E-posta ali uporabnisko ime',
+        'email_or_username_placeholder' => 'Vas e-postni naslov ali uporabnisko ime',
+        'send_reset_link' => 'Poslji povezavo',
+        'back_to_login' => 'Nazaj na prijavo',
+        'enter_email_or_username' => 'Prosimo, vnesite svoj e-postni naslov ali uporabnisko ime.',
+        'email_sent' => 'E-posta za ponastavitev je bila poslana na',
+        'user_not_found' => 'Noben racun ni bil najden s tem uporabniskim imenom ali e-posto.',
+        'no_email_registered' => 'S tem racunom ni povezan noben e-postni naslov. Obrnite se na skrbnika.',
+        'email_error' => 'Napaka pri posiljanju e-poste. Prosimo, poskusite znova.',
+        'error_occurred' => 'Prislo je do napake. Prosimo, poskusite znova.',
+        'reset_password' => 'Ponastavi geslo',
+        'new_password' => 'Novo geslo',
+        'enter_new_password' => 'Prosimo, vnesite novo geslo.',
+        'choose_new_password' => 'Izberite svoje novo geslo.',
+        'change_password' => 'Spremeni geslo',
+        'password_changed' => 'Vase geslo je bilo uspesno spremenjeno!',
+        'invalid_or_expired_link' => 'Ta povezava za ponastavitev je neveljavna ali je potekla.',
+        'request_new_link' => 'Zahtevaj novo povezavo',
+        'can_now_login' => 'Zdaj se lahko prijavite z novim geslom.',
+        'go_to_login' => 'Pojdi na prijavo',
+    ],
+
     // Avtentikacija
     'auth' => [
         'login' => 'Prijava',
@@ -86,6 +112,7 @@ return [
         'want_session' => 'Zelite sejo?',
         'contact_us' => 'Kliknite tukaj za stik z nami.',
         'back_to_app' => 'Nazaj na aplikacijo',
+        'forgot_password' => 'Ste pozabili geslo?',
     ],
 
     // Trener

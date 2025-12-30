@@ -39,6 +39,32 @@ return [
         'interactive_training' => 'Formacion interactiva',
     ],
 
+    // Restablecimiento de contrasena
+    'reset' => [
+        'forgot_password' => 'Contrasena olvidada',
+        'forgot_password_desc' => 'Ingrese su correo o usuario para recibir un enlace de restablecimiento.',
+        'email_or_username' => 'Correo o Usuario',
+        'email_or_username_placeholder' => 'Su correo o usuario',
+        'send_reset_link' => 'Enviar enlace',
+        'back_to_login' => 'Volver al inicio de sesion',
+        'enter_email_or_username' => 'Por favor ingrese su correo o usuario.',
+        'email_sent' => 'Se ha enviado un correo de restablecimiento a',
+        'user_not_found' => 'No se encontro ninguna cuenta con este usuario o correo.',
+        'no_email_registered' => 'No hay correo asociado a esta cuenta. Contacte al administrador.',
+        'email_error' => 'Error al enviar el correo. Por favor intente de nuevo.',
+        'error_occurred' => 'Ocurrio un error. Por favor intente de nuevo.',
+        'reset_password' => 'Restablecer contrasena',
+        'new_password' => 'Nueva contrasena',
+        'enter_new_password' => 'Por favor ingrese una nueva contrasena.',
+        'choose_new_password' => 'Elija su nueva contrasena.',
+        'change_password' => 'Cambiar contrasena',
+        'password_changed' => 'Su contrasena ha sido cambiada con exito!',
+        'invalid_or_expired_link' => 'Este enlace de restablecimiento es invalido o ha expirado.',
+        'request_new_link' => 'Solicitar un nuevo enlace',
+        'can_now_login' => 'Ahora puede iniciar sesion con su nueva contrasena.',
+        'go_to_login' => 'Ir al inicio de sesion',
+    ],
+
     // Autenticacion
     'auth' => [
         'login' => 'Iniciar sesion',
@@ -86,6 +112,7 @@ return [
         'want_session' => 'Desea una sesion?',
         'contact_us' => 'Haga clic aqui para contactarnos.',
         'back_to_app' => 'Volver a la aplicacion',
+        'forgot_password' => 'Olvido su contrasena?',
     ],
 
     // Formador

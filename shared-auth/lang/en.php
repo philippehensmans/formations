@@ -39,6 +39,32 @@ return [
         'interactive_training' => 'Interactive training',
     ],
 
+    // Password reset
+    'reset' => [
+        'forgot_password' => 'Forgot password',
+        'forgot_password_desc' => 'Enter your email or username to receive a reset link.',
+        'email_or_username' => 'Email or Username',
+        'email_or_username_placeholder' => 'Your email or username',
+        'send_reset_link' => 'Send reset link',
+        'back_to_login' => 'Back to login',
+        'enter_email_or_username' => 'Please enter your email or username.',
+        'email_sent' => 'A reset email has been sent to',
+        'user_not_found' => 'No account found with this username or email.',
+        'no_email_registered' => 'No email is associated with this account. Contact the administrator.',
+        'email_error' => 'Error sending email. Please try again.',
+        'error_occurred' => 'An error occurred. Please try again.',
+        'reset_password' => 'Reset password',
+        'new_password' => 'New password',
+        'enter_new_password' => 'Please enter a new password.',
+        'choose_new_password' => 'Choose your new password.',
+        'change_password' => 'Change password',
+        'password_changed' => 'Your password has been changed successfully!',
+        'invalid_or_expired_link' => 'This reset link is invalid or has expired.',
+        'request_new_link' => 'Request a new link',
+        'can_now_login' => 'You can now log in with your new password.',
+        'go_to_login' => 'Go to login',
+    ],
+
     // Authentication
     'auth' => [
         'login' => 'Login',
@@ -86,6 +112,7 @@ return [
         'want_session' => 'Want a session?',
         'contact_us' => 'Click here to contact us.',
         'back_to_app' => 'Back to application',
+        'forgot_password' => 'Forgot password?',
     ],
 
     // Trainer
