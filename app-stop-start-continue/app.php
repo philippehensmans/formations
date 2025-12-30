@@ -73,11 +73,9 @@ $isSubmitted = ($retro['is_shared'] ?? 0) == 1;
                 <div class="flex items-center gap-3">
                     <?= renderLanguageSelector('lang-select') ?>
                     <span id="saveStatus" class="text-sm text-blue-200"></span>
-                    <?php if (!$isSubmitted): ?>
-                        <button onclick="manualSave()" class="bg-blue-700 hover:bg-blue-600 px-4 py-2 rounded text-sm">
-                            <?= t('ssc.save') ?>
-                        </button>
-                    <?php endif; ?>
+                    <button onclick="manualSave()" class="bg-blue-700 hover:bg-blue-600 px-4 py-2 rounded text-sm">
+                        <?= t('ssc.save') ?>
+                    </button>
                     <a href="logout.php" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm">
                         <?= t('ssc.logout') ?>
                     </a>
@@ -134,11 +132,9 @@ $isSubmitted = ($retro['is_shared'] ?? 0) == 1;
                 <div id="listCesser" class="space-y-3 mb-4">
                     <!-- Items dynamiques -->
                 </div>
-                <?php if (!$isSubmitted): ?>
-                    <button onclick="addItem('cesser')" class="w-full btn-stop text-white py-2 rounded-lg text-sm font-medium">
-                        + <?= t('ssc.add_element') ?>
-                    </button>
-                <?php endif; ?>
+                <button onclick="addItem('cesser')" class="w-full btn-stop text-white py-2 rounded-lg text-sm font-medium">
+                    + <?= t('ssc.add_element') ?>
+                </button>
             </div>
 
             <!-- COMMENCER (Start) -->
@@ -156,11 +152,9 @@ $isSubmitted = ($retro['is_shared'] ?? 0) == 1;
                 <div id="listCommencer" class="space-y-3 mb-4">
                     <!-- Items dynamiques -->
                 </div>
-                <?php if (!$isSubmitted): ?>
-                    <button onclick="addItem('commencer')" class="w-full btn-start text-white py-2 rounded-lg text-sm font-medium">
-                        + <?= t('ssc.add_element') ?>
-                    </button>
-                <?php endif; ?>
+                <button onclick="addItem('commencer')" class="w-full btn-start text-white py-2 rounded-lg text-sm font-medium">
+                    + <?= t('ssc.add_element') ?>
+                </button>
             </div>
 
             <!-- CONTINUER (Continue) -->
@@ -178,11 +172,9 @@ $isSubmitted = ($retro['is_shared'] ?? 0) == 1;
                 <div id="listContinuer" class="space-y-3 mb-4">
                     <!-- Items dynamiques -->
                 </div>
-                <?php if (!$isSubmitted): ?>
-                    <button onclick="addItem('continuer')" class="w-full btn-continue text-white py-2 rounded-lg text-sm font-medium">
-                        + <?= t('ssc.add_element') ?>
-                    </button>
-                <?php endif; ?>
+                <button onclick="addItem('continuer')" class="w-full btn-continue text-white py-2 rounded-lg text-sm font-medium">
+                    + <?= t('ssc.add_element') ?>
+                </button>
             </div>
         </div>
 
@@ -299,11 +291,9 @@ $isSubmitted = ($retro['is_shared'] ?? 0) == 1;
         document.addEventListener('DOMContentLoaded', function() {
             renderAll();
 
-            if (!isSubmitted) {
-                document.getElementById('projetNom').addEventListener('input', scheduleSave);
-                document.getElementById('projetContexte').addEventListener('input', scheduleSave);
-                document.getElementById('notes').addEventListener('input', scheduleSave);
-            }
+            document.getElementById('projetNom').addEventListener('input', scheduleSave);
+            document.getElementById('projetContexte').addEventListener('input', scheduleSave);
+            document.getElementById('notes').addEventListener('input', scheduleSave);
         });
 
         function renderAll() {
@@ -337,20 +327,18 @@ $isSubmitted = ($retro['is_shared'] ?? 0) == 1;
                 <div class="item-card ${colors[color].bg} border ${colors[color].border} rounded-lg p-3">
                     <div class="flex justify-between items-start gap-2">
                         <p class="text-sm font-medium flex-1">${escapeHtml(item.description)}</p>
-                        ${!isSubmitted ? `
-                            <div class="flex gap-1">
-                                <button onclick="editItem('${category}', ${index})" class="text-gray-400 hover:text-blue-600 p-1">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                    </svg>
-                                </button>
-                                <button onclick="deleteItem('${category}', ${index})" class="text-gray-400 hover:text-red-600 p-1">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        ` : ''}
+                        <div class="flex gap-1">
+                            <button onclick="editItem('${category}', ${index})" class="text-gray-400 hover:text-blue-600 p-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                            </button>
+                            <button onclick="deleteItem('${category}', ${index})" class="text-gray-400 hover:text-red-600 p-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                     ${item.raison ? `<p class="text-xs text-gray-500 mt-2">${escapeHtml(item.raison)}</p>` : ''}
                     <div class="flex gap-2 mt-2 flex-wrap">
