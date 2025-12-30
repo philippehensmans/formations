@@ -788,8 +788,7 @@ $isSubmitted = $atelier['is_shared'] == 1;
                 alert(trans.submitError);
             }
         }
-
-        <?= renderLanguageScript() ?>
     </script>
+    <?= renderLanguageScript() ?>
 </body>
 </html>
