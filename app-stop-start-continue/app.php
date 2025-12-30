@@ -279,20 +279,20 @@ $isSubmitted = ($retro['is_shared'] ?? 0) == 1;
 
         // Translations
         const trans = {
-            noElement: '<?= t('ssc.no_element') ?>',
-            addStop: '<?= t('ssc.add_stop') ?>',
-            addStart: '<?= t('ssc.add_start') ?>',
-            addContinue: '<?= t('ssc.add_continue') ?>',
-            editItem: '<?= t('ssc.edit_item') ?>',
-            enterDescription: '<?= t('ssc.enter_description') ?>',
-            deleteConfirm: '<?= t('ssc.delete_confirm') ?>',
-            modifying: '<?= t('ssc.modifying') ?>',
-            saving: '<?= t('ssc.saving') ?>',
-            saveOk: '<?= t('ssc.save_ok') ?>',
-            error: '<?= t('ssc.error') ?>',
-            networkError: '<?= t('ssc.network_error') ?>',
-            confirmComplete: '<?= t('ssc.confirm_complete') ?>',
-            markedComplete: '<?= t('ssc.marked_complete') ?>'
+            noElement: <?= json_encode(t('ssc.no_element')) ?>,
+            addStop: <?= json_encode(t('ssc.add_stop')) ?>,
+            addStart: <?= json_encode(t('ssc.add_start')) ?>,
+            addContinue: <?= json_encode(t('ssc.add_continue')) ?>,
+            editItem: <?= json_encode(t('ssc.edit_item')) ?>,
+            enterDescription: <?= json_encode(t('ssc.enter_description')) ?>,
+            deleteConfirm: <?= json_encode(t('ssc.delete_confirm')) ?>,
+            modifying: <?= json_encode(t('ssc.modifying')) ?>,
+            saving: <?= json_encode(t('ssc.saving')) ?>,
+            saveOk: <?= json_encode(t('ssc.save_ok')) ?>,
+            error: <?= json_encode(t('ssc.error')) ?>,
+            networkError: <?= json_encode(t('ssc.network_error')) ?>,
+            confirmComplete: <?= json_encode(t('ssc.confirm_complete')) ?>,
+            markedComplete: <?= json_encode(t('ssc.marked_complete')) ?>
         };
 
         // Initialisation
