@@ -37,6 +37,12 @@ return [
         'actions' => 'Acciones',
         'not_specified' => 'No especificado',
         'interactive_training' => 'Formacion interactiva',
+        'confirm_delete' => 'Eliminar este elemento?',
+        'save_success' => 'Guardado con exito!',
+        'save_error' => 'Error al guardar',
+        'submit_success' => 'Enviado con exito!',
+        'submit_error' => 'Error al enviar',
+        'notes' => 'Notas',
     ],
 
     // Restablecimiento de contrasena
