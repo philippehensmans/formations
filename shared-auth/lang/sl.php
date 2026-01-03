@@ -1338,4 +1338,105 @@ return [
         'error_code_required' => 'Koda seje je obvezna.',
         'error_session_not_found' => 'Seja ni najdena ali ni aktivna.',
     ],
+
+    // Domaca stran
+    'home' => [
+        'title' => 'Interaktivno usposabljanje',
+        'subtitle' => 'Sodelovalna pedagoska orodja',
+        'description' => 'Izberite aplikacijo za zacetek seje usposabljanja.',
+        'apps_available' => 'aplikacij na voljo',
+        'open_app' => 'Odpri',
+        'trainer_section' => 'Prostor za izvajalce',
+        'trainer_description' => 'Dostop do vmesnikov za upravljanje sej za izvajalce.',
+        'footer' => 'Interaktivno usposabljanje - Sodelovalna pedagoska orodja',
+    ],
+
+    // Aplikacije
+    'apps' => [
+        'agile' => [
+            'title' => 'Agilne metode',
+            'description' => 'Nacrtovanje in retrospektive z metodologijami Agile in Scrum.',
+            'color' => 'green',
+        ],
+        'arbreproblemes' => [
+            'title' => 'Drevo problemov',
+            'description' => 'Analiza vzrokov in posledic za identifikacijo korenskih problemov.',
+            'color' => 'orange',
+        ],
+        'atelier-ia' => [
+            'title' => 'Delavnica UI',
+            'description' => 'Odkrivanje in eksperimentiranje z umetno inteligenco.',
+            'color' => 'purple',
+        ],
+        'cadrelogique' => [
+            'title' => 'Logicni okvir',
+            'description' => 'Gradnja logicnih okvirov za upravljanje projektov.',
+            'color' => 'blue',
+        ],
+        'cahier-charges' => [
+            'title' => 'Specifikacije',
+            'description' => 'Sodelovalno pisanje specifikacij projekta.',
+            'color' => 'gray',
+        ],
+        'calculateur-carbone' => [
+            'title' => 'Kalkulator ogljika',
+            'description' => 'Ocena ogljikovega odtisa dejavnosti.',
+            'color' => 'green',
+        ],
+        'carte-projet' => [
+            'title' => 'Zemljevid projekta',
+            'description' => 'Vizualizacija in nacrtovanje projektov.',
+            'color' => 'indigo',
+        ],
+        'empreinte-carbone' => [
+            'title' => 'Ogljicni odtis',
+            'description' => 'Podrobna analiza okoljskega vpliva.',
+            'color' => 'emerald',
+        ],
+        'guide-prompting' => [
+            'title' => 'Vodic za pozive',
+            'description' => 'Ustvarjanje prilagojenih vodicev za uporabo UI.',
+            'color' => 'violet',
+        ],
+        'mesure-impact' => [
+            'title' => 'Merjenje vpliva',
+            'description' => 'Evalvacija in spremljanje vpliva projektov.',
+            'color' => 'teal',
+        ],
+        'mindmap' => [
+            'title' => 'Miselni zemljevid',
+            'description' => 'Sodelovalno ustvarjanje miselnih zemljevidov.',
+            'color' => 'pink',
+        ],
+        'objectifs-smart' => [
+            'title' => 'Cilji SMART',
+            'description' => 'Dolocanje Specificnih, Merljivih, Dosegljivih, Realisticnih in Casovno dolocenih ciljev.',
+            'color' => 'yellow',
+        ],
+        'parties-prenantes' => [
+            'title' => 'Deležniki',
+            'description' => 'Kartiranje in analiza deleznikov projekta.',
+            'color' => 'cyan',
+        ],
+        'pestel' => [
+            'title' => 'Analiza PESTEL',
+            'description' => 'Politicna, Ekonomska, Socialna, Tehnoloska, Okoljska in Pravna analiza.',
+            'color' => 'red',
+        ],
+        'stop-start-continue' => [
+            'title' => 'Stop Start Continue',
+            'description' => 'Retrospektiva za identifikacijo kaj prenehati, zaceti ali nadaljevati.',
+            'color' => 'amber',
+        ],
+        'swot' => [
+            'title' => 'Analiza SWOT',
+            'description' => 'Analiza prednosti, slabosti, priloznosti in nevarnosti.',
+            'color' => 'blue',
+        ],
+        'whiteboard' => [
+            'title' => 'Tabla',
+            'description' => 'Sodelovalna tabla s post-iti, risbami in oblikami.',
+            'color' => 'indigo',
+        ],
+    ],
 ];
