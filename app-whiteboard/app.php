@@ -433,14 +433,16 @@ foreach ($participantIds as $pid) {
             let startX, startY, origX, origY;
 
             el.addEventListener('mousedown', (e) => {
-                if (currentTool !== 'select' && currentTool !== 'eraser') return;
+                // Toujours stopper la propagation pour eviter de creer un nouvel element
+                e.stopPropagation();
 
                 if (currentTool === 'eraser') {
                     deleteElement(el);
                     return;
                 }
 
-                e.stopPropagation();
+                // Si pas en mode selection, on ne fait rien d'autre
+                if (currentTool !== 'select') return;
 
                 // Select element
                 document.querySelectorAll('.element').forEach(elem => {
