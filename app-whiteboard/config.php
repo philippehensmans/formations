@@ -193,3 +193,24 @@ function getElementTypes() {
         'line' => ['label' => 'Ligne', 'icon' => '─'],
     ];
 }
+
+/**
+ * Exiger connexion avec session
+ */
+function requireLoginWithSession() {
+    if (!isLoggedIn()) {
+        header('Location: login.php');
+        exit;
+    }
+    if (!isset($_SESSION['current_session_id'])) {
+        header('Location: login.php');
+        exit;
+    }
+}
+
+/**
+ * Exiger droits admin/formateur
+ */
+function requireAdmin() {
+    requireFormateur();
+}

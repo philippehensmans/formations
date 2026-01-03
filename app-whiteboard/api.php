@@ -3,7 +3,12 @@ require_once __DIR__ . '/config.php';
 
 header('Content-Type: application/json');
 
-$user = requireAuth();
+if (!isLoggedIn()) {
+    echo json_encode(['success' => false, 'error' => 'Not authenticated']);
+    exit;
+}
+
+$user = getLoggedUser();
 $db = getDB();
 
 // Handle GET requests (polling)
