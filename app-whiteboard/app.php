@@ -163,9 +163,9 @@ foreach ($participantIds as $pid) {
                 <button class="p-3 rounded-lg text-white hover:bg-gray-700" id="color-btn">
                     <div class="w-6 h-6 rounded border-2 border-white" id="current-color" style="background-color: #fef08a;"></div>
                 </button>
-                <div class="hidden absolute left-full ml-2 bottom-0 bg-white rounded-lg shadow-xl p-2 grid grid-cols-4 gap-1" id="color-menu">
+                <div class="hidden absolute left-full ml-2 bottom-0 bg-white rounded-lg shadow-xl p-2 grid grid-cols-4 gap-1 z-50" id="color-menu">
                     <?php foreach ($colors as $name => $color): ?>
-                        <button class="w-8 h-8 rounded border hover:scale-110 transition"
+                        <button class="color-choice w-8 h-8 rounded border hover:scale-110 transition"
                                 style="background-color: <?= $color['hex'] ?>;"
                                 data-color="<?= $name ?>" data-hex="<?= $color['hex'] ?>"></button>
                     <?php endforeach; ?>
@@ -261,17 +261,26 @@ foreach ($participantIds as $pid) {
         });
 
         // Color picker
-        document.getElementById('color-btn').addEventListener('click', () => {
+        document.getElementById('color-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
             document.getElementById('color-menu').classList.toggle('hidden');
         });
 
-        document.querySelectorAll('#color-menu button').forEach(btn => {
-            btn.addEventListener('click', () => {
+        document.querySelectorAll('.color-choice').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 currentColor = btn.dataset.color;
                 currentColorHex = btn.dataset.hex;
                 document.getElementById('current-color').style.backgroundColor = currentColorHex;
                 document.getElementById('color-menu').classList.add('hidden');
             });
+        });
+
+        // Fermer le menu couleur si on clique ailleurs
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#color-picker')) {
+                document.getElementById('color-menu').classList.add('hidden');
+            }
         });
 
         // Stroke width
