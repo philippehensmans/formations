@@ -115,7 +115,7 @@ foreach ($participantIds as $pid) {
             </div>
             <div class="flex items-center gap-4">
                 <span class="text-indigo-200"><?= htmlspecialchars($user['prenom'] . ' ' . $user['nom']) ?></span>
-                <?php include __DIR__ . '/../shared-auth/lang-switcher.php'; ?>
+                <?= renderLanguageSelector('bg-indigo-500 text-white border-0 rounded px-2 py-1 cursor-pointer text-sm') ?>
                 <a href="logout.php" class="bg-indigo-500 hover:bg-indigo-400 px-3 py-1 rounded text-sm">
                     <?= t('auth.logout') ?>
                 </a>
@@ -620,5 +620,6 @@ foreach ($participantIds as $pid) {
             }
         });
     </script>
+    <?= renderLanguageScript() ?>
 </body>
 </html>
