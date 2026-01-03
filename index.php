@@ -54,7 +54,7 @@ $user = isLoggedIn() ? getLoggedUser() : null;
                     <p class="text-indigo-200 mt-1"><?= t('home.subtitle') ?></p>
                 </div>
                 <div class="flex items-center gap-4">
-                    <?php include __DIR__ . '/shared-auth/lang-switcher.php'; ?>
+                    <?= renderLanguageSelector('bg-white/20 text-white border-0 rounded px-2 py-1 cursor-pointer') ?>
                     <?php if ($user): ?>
                         <span class="text-indigo-200"><?= htmlspecialchars($user['prenom'] . ' ' . $user['nom']) ?></span>
                     <?php endif; ?>
@@ -134,5 +134,7 @@ $user = isLoggedIn() ? getLoggedUser() : null;
             <p><?= t('home.footer') ?></p>
         </div>
     </footer>
+
+    <?= renderLanguageScript() ?>
 </body>
 </html>
