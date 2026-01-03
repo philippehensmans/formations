@@ -1,36 +1,47 @@
 <?php
 require_once __DIR__ . '/config.php';
 
-// Verification de l'authentification
-$user = requireAuth();
-$sessions = getUserSessions($user['id'], APP_NAME);
-$selectedSession = null;
-$whiteboard = null;
-$elements = [];
-$paths = [];
+// Verification de l'authentification avec session
+requireLoginWithSession();
 
-// Gestion de la session selectionnee
-if (isset($_GET['session'])) {
-    $code = $_GET['session'];
-    foreach ($sessions as $s) {
-        if ($s['code'] === $code) {
-            $selectedSession = $s;
-            break;
-        }
-    }
+$user = getLoggedUser();
+$db = getDB();
+$sessionId = $_SESSION['current_session_id'];
 
-    if ($selectedSession) {
-        $whiteboard = getOrCreateWhiteboard($selectedSession['id']);
-        $elements = getElements($whiteboard['id']);
-        $paths = getPaths($whiteboard['id']);
-    }
+// Verifier que la session existe et est active
+$stmt = $db->prepare("SELECT * FROM sessions WHERE id = ? AND is_active = 1");
+$stmt->execute([$sessionId]);
+$session = $stmt->fetch();
+
+if (!$session) {
+    unset($_SESSION['current_session_id']);
+    header('Location: login.php');
+    exit;
 }
 
+// Recuperer ou creer le tableau blanc
+$whiteboard = getOrCreateWhiteboard($sessionId);
+$elements = getElements($whiteboard['id']);
+$paths = getPaths($whiteboard['id']);
 $colors = getColors();
 $elementTypes = getElementTypes();
+
+// Participants connectes
+$stmt = $db->prepare("SELECT p.user_id FROM participants p WHERE p.session_id = ?");
+$stmt->execute([$sessionId]);
+$participantIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+$sharedDb = getSharedDB();
+$participants = [];
+foreach ($participantIds as $pid) {
+    $pStmt = $sharedDb->prepare("SELECT prenom, nom FROM users WHERE id = ?");
+    $pStmt->execute([$pid]);
+    $p = $pStmt->fetch();
+    if ($p) $participants[] = $p['prenom'] . ' ' . substr($p['nom'], 0, 1) . '.';
+}
 ?>
 <!DOCTYPE html>
-<html lang="<?= getCurrentLang() ?>">
+<html lang="<?= getCurrentLanguage() ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -97,12 +108,10 @@ $elementTypes = getElementTypes();
     <header class="bg-indigo-600 text-white shadow-lg">
         <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
             <div class="flex items-center gap-4">
-                <a href="app.php" class="text-2xl font-bold">🎨 <?= APP_NAME ?></a>
-                <?php if ($selectedSession): ?>
-                    <span class="text-indigo-200">|</span>
-                    <span class="text-indigo-100"><?= htmlspecialchars($selectedSession['nom']) ?></span>
-                    <span class="bg-indigo-500 px-2 py-1 rounded text-sm"><?= $selectedSession['code'] ?></span>
-                <?php endif; ?>
+                <span class="text-2xl font-bold">🎨 <?= APP_NAME ?></span>
+                <span class="text-indigo-200">|</span>
+                <span class="text-indigo-100"><?= htmlspecialchars($session['nom']) ?></span>
+                <span class="bg-indigo-500 px-2 py-1 rounded text-sm"><?= $session['code'] ?></span>
             </div>
             <div class="flex items-center gap-4">
                 <span class="text-indigo-200"><?= htmlspecialchars($user['prenom'] . ' ' . $user['nom']) ?></span>
@@ -113,45 +122,6 @@ $elementTypes = getElementTypes();
             </div>
         </div>
     </header>
-
-    <?php if (!$selectedSession): ?>
-    <!-- Session Selection -->
-    <div class="max-w-2xl mx-auto mt-12 p-6">
-        <div class="bg-white rounded-xl shadow-lg p-8">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6"><?= t('wb.select_session') ?></h2>
-
-            <?php if (empty($sessions)): ?>
-                <p class="text-gray-500 mb-6"><?= t('wb.no_session') ?></p>
-            <?php else: ?>
-                <div class="space-y-3 mb-6">
-                    <?php foreach ($sessions as $s): ?>
-                        <a href="?session=<?= $s['code'] ?>"
-                           class="block p-4 border-2 border-gray-200 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition">
-                            <div class="flex justify-between items-center">
-                                <span class="font-medium text-gray-800"><?= htmlspecialchars($s['nom']) ?></span>
-                                <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded font-mono"><?= $s['code'] ?></span>
-                            </div>
-                        </a>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
-
-            <!-- Join Session -->
-            <div class="border-t pt-6">
-                <h3 class="font-medium text-gray-700 mb-3"><?= t('wb.join_session') ?></h3>
-                <form method="POST" action="join.php" class="flex gap-3">
-                    <input type="text" name="code" placeholder="<?= t('wb.session_code') ?>"
-                           class="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 uppercase"
-                           maxlength="6" pattern="[A-Za-z0-9]{6}" required>
-                    <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700">
-                        <?= t('wb.join') ?>
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <?php else: ?>
     <!-- Whiteboard Interface -->
     <div class="flex h-[calc(100vh-60px)]">
         <!-- Toolbar -->
@@ -636,6 +606,5 @@ $elementTypes = getElementTypes();
             }
         });
     </script>
-    <?php endif; ?>
 </body>
 </html>
