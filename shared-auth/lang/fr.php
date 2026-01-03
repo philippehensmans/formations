@@ -1314,4 +1314,28 @@ return [
         'export_all_prompts' => 'Exporter tous les prompts',
         'export_session_prompts' => 'Exporter les prompts de la session',
     ],
+
+    // Tableau Blanc Collaboratif
+    'wb' => [
+        'title' => 'Tableau Blanc',
+        'select_session' => 'Selectionnez une session',
+        'no_session' => 'Vous n\'avez pas encore rejoint de session.',
+        'join_session' => 'Rejoindre une session',
+        'session_code' => 'Code session',
+        'join' => 'Rejoindre',
+        'participants' => 'Participants',
+        'you' => 'vous',
+        'clear_all' => 'Tout effacer',
+        'confirm_clear' => 'Voulez-vous vraiment effacer tout le tableau ?',
+        'new_postit' => 'Nouveau post-it',
+        'tool_select' => 'Selection',
+        'tool_postit' => 'Post-it',
+        'tool_text' => 'Texte',
+        'tool_rect' => 'Rectangle',
+        'tool_circle' => 'Cercle',
+        'tool_draw' => 'Dessiner',
+        'tool_eraser' => 'Gomme',
+        'error_code_required' => 'Le code de session est requis.',
+        'error_session_not_found' => 'Session non trouvee ou inactive.',
+    ],
 ];
