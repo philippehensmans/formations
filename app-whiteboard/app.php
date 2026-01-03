@@ -117,7 +117,7 @@ foreach ($participantIds as $pid) {
                 <span class="text-indigo-200"><?= htmlspecialchars($user['prenom'] . ' ' . $user['nom']) ?></span>
                 <?php include __DIR__ . '/../shared-auth/lang-switcher.php'; ?>
                 <a href="logout.php" class="bg-indigo-500 hover:bg-indigo-400 px-3 py-1 rounded text-sm">
-                    <?= t('common.logout') ?>
+                    <?= t('auth.logout') ?>
                 </a>
             </div>
         </div>
@@ -286,6 +286,9 @@ foreach ($participantIds as $pid) {
         const svg = document.getElementById('drawing-canvas');
 
         container.addEventListener('mousedown', (e) => {
+            // Ne pas creer d'element si on clique sur un element existant
+            if (e.target.closest('.element')) return;
+
             if (currentTool === 'draw') {
                 startDrawing(e);
             } else if (currentTool === 'postit' || currentTool === 'text' || currentTool === 'rect' || currentTool === 'circle') {
