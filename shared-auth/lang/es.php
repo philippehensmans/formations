@@ -1338,4 +1338,105 @@ return [
         'error_code_required' => 'El codigo de sesion es obligatorio.',
         'error_session_not_found' => 'Sesion no encontrada o inactiva.',
     ],
+
+    // Pagina de inicio
+    'home' => [
+        'title' => 'Formacion Interactiva',
+        'subtitle' => 'Herramientas pedagogicas colaborativas',
+        'description' => 'Seleccione una aplicacion para comenzar su sesion de formacion.',
+        'apps_available' => 'aplicaciones disponibles',
+        'open_app' => 'Abrir',
+        'trainer_section' => 'Area del Formador',
+        'trainer_description' => 'Acceso a las interfaces de gestion de sesiones para formadores.',
+        'footer' => 'Formacion Interactiva - Herramientas pedagogicas colaborativas',
+    ],
+
+    // Aplicaciones
+    'apps' => [
+        'agile' => [
+            'title' => 'Metodos Agiles',
+            'description' => 'Planificacion y retrospectivas con metodologias Agile y Scrum.',
+            'color' => 'green',
+        ],
+        'arbreproblemes' => [
+            'title' => 'Arbol de Problemas',
+            'description' => 'Analisis de causas y efectos para identificar problemas raiz.',
+            'color' => 'orange',
+        ],
+        'atelier-ia' => [
+            'title' => 'Taller de IA',
+            'description' => 'Descubrimiento y experimentacion con inteligencia artificial.',
+            'color' => 'purple',
+        ],
+        'cadrelogique' => [
+            'title' => 'Marco Logico',
+            'description' => 'Construccion de marcos logicos para la gestion de proyectos.',
+            'color' => 'blue',
+        ],
+        'cahier-charges' => [
+            'title' => 'Pliego de Condiciones',
+            'description' => 'Redaccion colaborativa de pliegos de condiciones.',
+            'color' => 'gray',
+        ],
+        'calculateur-carbone' => [
+            'title' => 'Calculadora de Carbono',
+            'description' => 'Estimacion de la huella de carbono de las actividades.',
+            'color' => 'green',
+        ],
+        'carte-projet' => [
+            'title' => 'Mapa de Proyecto',
+            'description' => 'Visualizacion y planificacion de proyectos.',
+            'color' => 'indigo',
+        ],
+        'empreinte-carbone' => [
+            'title' => 'Huella de Carbono',
+            'description' => 'Analisis detallado del impacto ambiental.',
+            'color' => 'emerald',
+        ],
+        'guide-prompting' => [
+            'title' => 'Guia de Prompting',
+            'description' => 'Creacion de guias personalizadas para el uso de IA.',
+            'color' => 'violet',
+        ],
+        'mesure-impact' => [
+            'title' => 'Medicion de Impacto',
+            'description' => 'Evaluacion y seguimiento del impacto de los proyectos.',
+            'color' => 'teal',
+        ],
+        'mindmap' => [
+            'title' => 'Mapa Mental',
+            'description' => 'Creacion colaborativa de mapas mentales.',
+            'color' => 'pink',
+        ],
+        'objectifs-smart' => [
+            'title' => 'Objetivos SMART',
+            'description' => 'Definicion de objetivos Especificos, Medibles, Alcanzables, Realistas y Temporales.',
+            'color' => 'yellow',
+        ],
+        'parties-prenantes' => [
+            'title' => 'Partes Interesadas',
+            'description' => 'Mapeo y analisis de las partes interesadas de un proyecto.',
+            'color' => 'cyan',
+        ],
+        'pestel' => [
+            'title' => 'Analisis PESTEL',
+            'description' => 'Analisis Politico, Economico, Social, Tecnologico, Ambiental y Legal.',
+            'color' => 'red',
+        ],
+        'stop-start-continue' => [
+            'title' => 'Stop Start Continue',
+            'description' => 'Retrospectiva para identificar que detener, comenzar o continuar.',
+            'color' => 'amber',
+        ],
+        'swot' => [
+            'title' => 'Analisis DAFO',
+            'description' => 'Analisis de Debilidades, Amenazas, Fortalezas y Oportunidades.',
+            'color' => 'blue',
+        ],
+        'whiteboard' => [
+            'title' => 'Pizarra',
+            'description' => 'Pizarra colaborativa con post-its, dibujos y formas.',
+            'color' => 'indigo',
+        ],
+    ],
 ];

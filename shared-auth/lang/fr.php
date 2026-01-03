@@ -1338,4 +1338,105 @@ return [
         'error_code_required' => 'Le code de session est requis.',
         'error_session_not_found' => 'Session non trouvee ou inactive.',
     ],
+
+    // Page d'accueil
+    'home' => [
+        'title' => 'Formation Interactive',
+        'subtitle' => 'Outils pedagogiques collaboratifs',
+        'description' => 'Selectionnez une application pour commencer votre session de formation.',
+        'apps_available' => 'applications disponibles',
+        'open_app' => 'Ouvrir',
+        'trainer_section' => 'Espace Formateur',
+        'trainer_description' => 'Acces aux interfaces de gestion des sessions pour les formateurs.',
+        'footer' => 'Formation Interactive - Outils pedagogiques collaboratifs',
+    ],
+
+    // Applications
+    'apps' => [
+        'agile' => [
+            'title' => 'Methodes Agiles',
+            'description' => 'Planification et retrospectives avec les methodologies Agile et Scrum.',
+            'color' => 'green',
+        ],
+        'arbreproblemes' => [
+            'title' => 'Arbre a Problemes',
+            'description' => 'Analyse des causes et effets pour identifier les problemes racines.',
+            'color' => 'orange',
+        ],
+        'atelier-ia' => [
+            'title' => 'Atelier IA',
+            'description' => 'Decouverte et experimentation de l\'intelligence artificielle.',
+            'color' => 'purple',
+        ],
+        'cadrelogique' => [
+            'title' => 'Cadre Logique',
+            'description' => 'Construction de cadres logiques pour la gestion de projets.',
+            'color' => 'blue',
+        ],
+        'cahier-charges' => [
+            'title' => 'Cahier des Charges',
+            'description' => 'Redaction collaborative de cahiers des charges.',
+            'color' => 'gray',
+        ],
+        'calculateur-carbone' => [
+            'title' => 'Calculateur Carbone',
+            'description' => 'Estimation de l\'empreinte carbone des activites.',
+            'color' => 'green',
+        ],
+        'carte-projet' => [
+            'title' => 'Carte Projet',
+            'description' => 'Visualisation et planification de projets.',
+            'color' => 'indigo',
+        ],
+        'empreinte-carbone' => [
+            'title' => 'Empreinte Carbone',
+            'description' => 'Analyse detaillee de l\'impact environnemental.',
+            'color' => 'emerald',
+        ],
+        'guide-prompting' => [
+            'title' => 'Guide de Prompting',
+            'description' => 'Creation de guides personnalises pour l\'utilisation de l\'IA.',
+            'color' => 'violet',
+        ],
+        'mesure-impact' => [
+            'title' => 'Mesure d\'Impact',
+            'description' => 'Evaluation et suivi de l\'impact des projets.',
+            'color' => 'teal',
+        ],
+        'mindmap' => [
+            'title' => 'Carte Mentale',
+            'description' => 'Creation collaborative de cartes mentales.',
+            'color' => 'pink',
+        ],
+        'objectifs-smart' => [
+            'title' => 'Objectifs SMART',
+            'description' => 'Definition d\'objectifs Specifiques, Mesurables, Atteignables, Realistes et Temporels.',
+            'color' => 'yellow',
+        ],
+        'parties-prenantes' => [
+            'title' => 'Parties Prenantes',
+            'description' => 'Cartographie et analyse des parties prenantes d\'un projet.',
+            'color' => 'cyan',
+        ],
+        'pestel' => [
+            'title' => 'Analyse PESTEL',
+            'description' => 'Analyse Politique, Economique, Social, Technologique, Environnemental et Legal.',
+            'color' => 'red',
+        ],
+        'stop-start-continue' => [
+            'title' => 'Stop Start Continue',
+            'description' => 'Retrospective pour identifier ce qu\'il faut arreter, commencer ou continuer.',
+            'color' => 'amber',
+        ],
+        'swot' => [
+            'title' => 'Analyse SWOT',
+            'description' => 'Analyse des Forces, Faiblesses, Opportunites et Menaces.',
+            'color' => 'blue',
+        ],
+        'whiteboard' => [
+            'title' => 'Tableau Blanc',
+            'description' => 'Tableau blanc collaboratif avec post-its, dessins et formes.',
+            'color' => 'indigo',
+        ],
+    ],
 ];

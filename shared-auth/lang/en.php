@@ -1338,4 +1338,105 @@ return [
         'error_code_required' => 'Session code is required.',
         'error_session_not_found' => 'Session not found or inactive.',
     ],
+
+    // Homepage
+    'home' => [
+        'title' => 'Interactive Training',
+        'subtitle' => 'Collaborative pedagogical tools',
+        'description' => 'Select an application to start your training session.',
+        'apps_available' => 'applications available',
+        'open_app' => 'Open',
+        'trainer_section' => 'Trainer Area',
+        'trainer_description' => 'Access to session management interfaces for trainers.',
+        'footer' => 'Interactive Training - Collaborative pedagogical tools',
+    ],
+
+    // Applications
+    'apps' => [
+        'agile' => [
+            'title' => 'Agile Methods',
+            'description' => 'Planning and retrospectives with Agile and Scrum methodologies.',
+            'color' => 'green',
+        ],
+        'arbreproblemes' => [
+            'title' => 'Problem Tree',
+            'description' => 'Cause and effect analysis to identify root problems.',
+            'color' => 'orange',
+        ],
+        'atelier-ia' => [
+            'title' => 'AI Workshop',
+            'description' => 'Discovery and experimentation with artificial intelligence.',
+            'color' => 'purple',
+        ],
+        'cadrelogique' => [
+            'title' => 'Logical Framework',
+            'description' => 'Building logical frameworks for project management.',
+            'color' => 'blue',
+        ],
+        'cahier-charges' => [
+            'title' => 'Specifications',
+            'description' => 'Collaborative writing of project specifications.',
+            'color' => 'gray',
+        ],
+        'calculateur-carbone' => [
+            'title' => 'Carbon Calculator',
+            'description' => 'Estimation of carbon footprint from activities.',
+            'color' => 'green',
+        ],
+        'carte-projet' => [
+            'title' => 'Project Map',
+            'description' => 'Project visualization and planning.',
+            'color' => 'indigo',
+        ],
+        'empreinte-carbone' => [
+            'title' => 'Carbon Footprint',
+            'description' => 'Detailed analysis of environmental impact.',
+            'color' => 'emerald',
+        ],
+        'guide-prompting' => [
+            'title' => 'Prompting Guide',
+            'description' => 'Create personalized guides for AI usage.',
+            'color' => 'violet',
+        ],
+        'mesure-impact' => [
+            'title' => 'Impact Measurement',
+            'description' => 'Evaluation and tracking of project impact.',
+            'color' => 'teal',
+        ],
+        'mindmap' => [
+            'title' => 'Mind Map',
+            'description' => 'Collaborative mind map creation.',
+            'color' => 'pink',
+        ],
+        'objectifs-smart' => [
+            'title' => 'SMART Objectives',
+            'description' => 'Define Specific, Measurable, Achievable, Realistic and Time-bound objectives.',
+            'color' => 'yellow',
+        ],
+        'parties-prenantes' => [
+            'title' => 'Stakeholders',
+            'description' => 'Mapping and analysis of project stakeholders.',
+            'color' => 'cyan',
+        ],
+        'pestel' => [
+            'title' => 'PESTEL Analysis',
+            'description' => 'Political, Economic, Social, Technological, Environmental and Legal analysis.',
+            'color' => 'red',
+        ],
+        'stop-start-continue' => [
+            'title' => 'Stop Start Continue',
+            'description' => 'Retrospective to identify what to stop, start or continue.',
+            'color' => 'amber',
+        ],
+        'swot' => [
+            'title' => 'SWOT Analysis',
+            'description' => 'Strengths, Weaknesses, Opportunities and Threats analysis.',
+            'color' => 'blue',
+        ],
+        'whiteboard' => [
+            'title' => 'Whiteboard',
+            'description' => 'Collaborative whiteboard with post-its, drawings and shapes.',
+            'color' => 'indigo',
+        ],
+    ],
 ];
