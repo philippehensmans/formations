@@ -1314,4 +1314,28 @@ return [
         'export_all_prompts' => 'Exportar todos los prompts',
         'export_session_prompts' => 'Exportar prompts de la sesion',
     ],
+
+    // Pizarra Colaborativa
+    'wb' => [
+        'title' => 'Pizarra',
+        'select_session' => 'Seleccione una sesion',
+        'no_session' => 'Aun no se ha unido a ninguna sesion.',
+        'join_session' => 'Unirse a una sesion',
+        'session_code' => 'Codigo de sesion',
+        'join' => 'Unirse',
+        'participants' => 'Participantes',
+        'you' => 'usted',
+        'clear_all' => 'Borrar todo',
+        'confirm_clear' => 'Esta seguro de que desea borrar toda la pizarra?',
+        'new_postit' => 'Nuevo post-it',
+        'tool_select' => 'Seleccionar',
+        'tool_postit' => 'Post-it',
+        'tool_text' => 'Texto',
+        'tool_rect' => 'Rectangulo',
+        'tool_circle' => 'Circulo',
+        'tool_draw' => 'Dibujar',
+        'tool_eraser' => 'Borrador',
+        'error_code_required' => 'El codigo de sesion es obligatorio.',
+        'error_session_not_found' => 'Sesion no encontrada o inactiva.',
+    ],
 ];

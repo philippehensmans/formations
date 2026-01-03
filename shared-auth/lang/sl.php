@@ -1314,4 +1314,28 @@ return [
         'export_all_prompts' => 'Izvozi vse prompte',
         'export_session_prompts' => 'Izvozi prompte seje',
     ],
+
+    // Sodelovalna tabla
+    'wb' => [
+        'title' => 'Tabla',
+        'select_session' => 'Izberite sejo',
+        'no_session' => 'Se niste pristopili k nobeni seji.',
+        'join_session' => 'Pristopi k seji',
+        'session_code' => 'Koda seje',
+        'join' => 'Pristopi',
+        'participants' => 'Udelezenci',
+        'you' => 'vi',
+        'clear_all' => 'Pobrisi vse',
+        'confirm_clear' => 'Ali ste prepricani, da zelite pobrisati celotno tablo?',
+        'new_postit' => 'Nov post-it',
+        'tool_select' => 'Izberi',
+        'tool_postit' => 'Post-it',
+        'tool_text' => 'Besedilo',
+        'tool_rect' => 'Pravokotnik',
+        'tool_circle' => 'Krog',
+        'tool_draw' => 'Risanje',
+        'tool_eraser' => 'Radirka',
+        'error_code_required' => 'Koda seje je obvezna.',
+        'error_session_not_found' => 'Seja ni najdena ali ni aktivna.',
+    ],
 ];

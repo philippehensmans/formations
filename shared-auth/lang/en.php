@@ -1314,4 +1314,28 @@ return [
         'export_all_prompts' => 'Export all prompts',
         'export_session_prompts' => 'Export session prompts',
     ],
+
+    // Collaborative Whiteboard
+    'wb' => [
+        'title' => 'Whiteboard',
+        'select_session' => 'Select a session',
+        'no_session' => 'You have not joined any session yet.',
+        'join_session' => 'Join a session',
+        'session_code' => 'Session code',
+        'join' => 'Join',
+        'participants' => 'Participants',
+        'you' => 'you',
+        'clear_all' => 'Clear all',
+        'confirm_clear' => 'Are you sure you want to clear the entire board?',
+        'new_postit' => 'New post-it',
+        'tool_select' => 'Select',
+        'tool_postit' => 'Post-it',
+        'tool_text' => 'Text',
+        'tool_rect' => 'Rectangle',
+        'tool_circle' => 'Circle',
+        'tool_draw' => 'Draw',
+        'tool_eraser' => 'Eraser',
+        'error_code_required' => 'Session code is required.',
+        'error_session_not_found' => 'Session not found or inactive.',
+    ],
 ];
