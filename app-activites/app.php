@@ -332,12 +332,18 @@ $stats = getStatistiques($sessionId);
 
         // Save activity
         function saveActivite() {
+            const nom = document.getElementById('activity-nom').value.trim();
+            if (!nom) {
+                alert('<?= t('auth.fill_required') ?>');
+                return;
+            }
+
             const id = document.getElementById('activity-id').value;
             const data = {
                 action: id ? 'update' : 'create',
                 id: id,
                 session_id: sessionId,
-                nom: document.getElementById('activity-nom').value,
+                nom: nom,
                 description: document.getElementById('activity-description').value,
                 categorie: document.getElementById('activity-categorie').value,
                 frequence: document.getElementById('activity-frequence').value,
@@ -352,13 +358,20 @@ $stats = getStatistiques($sessionId);
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             })
-            .then(r => r.json())
+            .then(r => {
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                return r.json();
+            })
             .then(result => {
                 if (result.success) {
                     location.reload();
                 } else {
                     alert(result.error || 'Erreur');
                 }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Erreur: ' + err.message);
             });
         }
 
