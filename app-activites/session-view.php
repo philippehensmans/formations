@@ -94,8 +94,11 @@ foreach ($activites as $a) {
                     <button onclick="window.print()" class="bg-teal-500 hover:bg-teal-400 px-3 py-1 rounded text-sm">
                         🖨️ <?= t('common.print') ?? 'Imprimer' ?>
                     </button>
+                    <a href="api.php?action=export-excel&session_id=<?= $sessionId ?>" class="bg-teal-500 hover:bg-teal-400 px-3 py-1 rounded text-sm">
+                        📊 Excel
+                    </a>
                     <a href="api.php?action=export&session_id=<?= $sessionId ?>" class="bg-teal-500 hover:bg-teal-400 px-3 py-1 rounded text-sm">
-                        📥 <?= t('act.export') ?>
+                        📄 HTML
                     </a>
                     <a href="formateur.php?session=<?= $sessionId ?>" class="bg-teal-500 hover:bg-teal-400 px-3 py-1 rounded text-sm">
                         ← <?= t('common.back') ?>

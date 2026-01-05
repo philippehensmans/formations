@@ -104,11 +104,11 @@ $stats = getStatistiques($sessionId);
                 </label>
             </div>
             <div class="flex gap-2">
+                <button onclick="exportExcel()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm flex items-center gap-2">
+                    📊 Excel
+                </button>
                 <button onclick="exportActivites()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
-                    <?= t('act.export') ?>
+                    📄 HTML
                 </button>
                 <button onclick="openModal()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -414,6 +414,10 @@ $stats = getStatistiques($sessionId);
         // Export
         function exportActivites() {
             window.open('api.php?action=export&session_id=' + sessionId, '_blank');
+        }
+
+        function exportExcel() {
+            window.open('api.php?action=export-excel&session_id=' + sessionId, '_blank');
         }
 
         // Close modal on backdrop click
