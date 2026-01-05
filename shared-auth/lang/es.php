@@ -32,6 +32,7 @@ return [
         'all' => 'Todos',
         'none' => 'Ninguno',
         'required' => 'Obligatorio',
+        'read_only' => 'Modo solo lectura',
         'optional' => 'Opcional',
         'view' => 'Ver',
         'actions' => 'Acciones',
