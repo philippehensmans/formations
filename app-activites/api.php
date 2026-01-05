@@ -130,45 +130,63 @@ $action = $input['action'] ?? '';
 
 switch ($action) {
     case 'create':
-        $stmt = $db->prepare("
-            INSERT INTO activites (session_id, nom, description, categorie, frequence, temps_estime, priorite, potentiel_ia, notes_ia, created_by, updated_by)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ");
-        $stmt->execute([
-            intval($input['session_id']),
-            $input['nom'],
-            $input['description'] ?? '',
-            $input['categorie'] ?? 'autre',
-            $input['frequence'] ?? 'ponctuelle',
-            $input['temps_estime'] ?? '',
-            intval($input['priorite'] ?? 2),
-            intval($input['potentiel_ia'] ?? 0),
-            $input['notes_ia'] ?? '',
-            $user['id'],
-            $user['id']
-        ]);
-        echo json_encode(['success' => true, 'id' => $db->lastInsertId()]);
+        try {
+            $nom = trim($input['nom'] ?? '');
+            if (empty($nom)) {
+                echo json_encode(['success' => false, 'error' => 'Nom requis']);
+                exit;
+            }
+            $stmt = $db->prepare("
+                INSERT INTO activites (session_id, nom, description, categorie, frequence, temps_estime, priorite, potentiel_ia, notes_ia, created_by, updated_by)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ");
+            $stmt->execute([
+                intval($input['session_id']),
+                $nom,
+                $input['description'] ?? '',
+                $input['categorie'] ?? 'autre',
+                $input['frequence'] ?? 'ponctuelle',
+                $input['temps_estime'] ?? '',
+                intval($input['priorite'] ?? 2),
+                intval($input['potentiel_ia'] ?? 0),
+                $input['notes_ia'] ?? '',
+                $user['id'],
+                $user['id']
+            ]);
+            echo json_encode(['success' => true, 'id' => $db->lastInsertId()]);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        }
         break;
 
     case 'update':
-        $stmt = $db->prepare("
-            UPDATE activites
-            SET nom = ?, description = ?, categorie = ?, frequence = ?, temps_estime = ?, priorite = ?, potentiel_ia = ?, notes_ia = ?, updated_by = ?, updated_at = CURRENT_TIMESTAMP
-            WHERE id = ?
-        ");
-        $stmt->execute([
-            $input['nom'],
-            $input['description'] ?? '',
-            $input['categorie'] ?? 'autre',
-            $input['frequence'] ?? 'ponctuelle',
-            $input['temps_estime'] ?? '',
-            intval($input['priorite'] ?? 2),
-            intval($input['potentiel_ia'] ?? 0),
-            $input['notes_ia'] ?? '',
-            $user['id'],
-            intval($input['id'])
-        ]);
-        echo json_encode(['success' => true]);
+        try {
+            $nom = trim($input['nom'] ?? '');
+            if (empty($nom)) {
+                echo json_encode(['success' => false, 'error' => 'Nom requis']);
+                exit;
+            }
+            $stmt = $db->prepare("
+                UPDATE activites
+                SET nom = ?, description = ?, categorie = ?, frequence = ?, temps_estime = ?, priorite = ?, potentiel_ia = ?, notes_ia = ?, updated_by = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+            ");
+            $stmt->execute([
+                $nom,
+                $input['description'] ?? '',
+                $input['categorie'] ?? 'autre',
+                $input['frequence'] ?? 'ponctuelle',
+                $input['temps_estime'] ?? '',
+                intval($input['priorite'] ?? 2),
+                intval($input['potentiel_ia'] ?? 0),
+                $input['notes_ia'] ?? '',
+                $user['id'],
+                intval($input['id'])
+            ]);
+            echo json_encode(['success' => true]);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        }
         break;
 
     case 'delete':
