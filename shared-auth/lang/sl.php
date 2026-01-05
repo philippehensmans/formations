@@ -32,6 +32,7 @@ return [
         'all' => 'Vse',
         'none' => 'Nic',
         'required' => 'Obvezno',
+        'read_only' => 'Samo za branje',
         'optional' => 'Neobvezno',
         'view' => 'Poglej',
         'actions' => 'Dejanja',
