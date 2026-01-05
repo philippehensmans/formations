@@ -33,6 +33,7 @@ return [
         'none' => 'None',
         'required' => 'Required',
         'read_only' => 'Read-only mode',
+        'print' => 'Print',
         'optional' => 'Optional',
         'view' => 'View',
         'actions' => 'Actions',
@@ -154,6 +155,7 @@ return [
         'session_deleted' => 'Session deleted.',
         'no_create_rights' => 'You do not have rights to create sessions.',
         'access_denied' => 'Access denied to this session.',
+        'view_all' => 'View all',
     ],
 
     // Logical Framework
@@ -1477,5 +1479,9 @@ return [
         'ai_badge' => 'AI Potential',
         'ai_notes' => 'How AI can help',
         'confirm_delete' => 'Delete this activity?',
+        'by_category' => 'By category',
+        'without_ai' => 'Without AI potential',
+        'without_ai_only' => 'Without AI potential only',
+        'ai_summary' => 'AI Potential Summary',
     ],
 ];

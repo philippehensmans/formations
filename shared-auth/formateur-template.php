@@ -315,10 +315,19 @@ if (isset($_GET['session'])) {
             <!-- Participants de la session selectionnee -->
             <div class="md:col-span-2 bg-white rounded-xl shadow-sm overflow-hidden">
                 <?php if ($selectedSession): ?>
-                    <div class="bg-gray-50 p-4 border-b">
-                        <span class="font-semibold text-gray-700"><?= t('trainer.participants') ?></span>
-                        <span class="text-gray-500">- Session <?= h($selectedSession['code']) ?></span>
-                        <span class="ml-2 px-2 py-1 bg-<?= $appColor ?>-100 text-<?= $appColor ?>-700 rounded text-sm"><?= count($participants) ?></span>
+                    <div class="bg-gray-50 p-4 border-b flex justify-between items-center">
+                        <div>
+                            <span class="font-semibold text-gray-700"><?= t('trainer.participants') ?></span>
+                            <span class="text-gray-500">- Session <?= h($selectedSession['code']) ?></span>
+                            <span class="ml-2 px-2 py-1 bg-<?= $appColor ?>-100 text-<?= $appColor ?>-700 rounded text-sm"><?= count($participants) ?></span>
+                        </div>
+                        <?php if (file_exists(__DIR__ . '/../' . $appKey . '/session-view.php')): ?>
+                        <a href="session-view.php?id=<?= $selectedSession['id'] ?>"
+                           class="px-3 py-1 bg-<?= $appColor ?>-600 text-white rounded text-sm hover:bg-<?= $appColor ?>-700"
+                           target="_blank">
+                            📊 <?= t('trainer.view_all') ?? 'Voir tout' ?>
+                        </a>
+                        <?php endif; ?>
                     </div>
                     <div class="p-4">
                         <?php if (empty($participants)): ?>
