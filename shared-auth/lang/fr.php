@@ -33,6 +33,7 @@ return [
         'none' => 'Aucun',
         'required' => 'Obligatoire',
         'read_only' => 'Mode lecture seule',
+        'print' => 'Imprimer',
         'optional' => 'Optionnel',
         'view' => 'Voir',
         'actions' => 'Actions',
@@ -154,6 +155,7 @@ return [
         'session_deleted' => 'Session supprimee.',
         'no_create_rights' => 'Vous n\'avez pas les droits pour creer des sessions.',
         'access_denied' => 'Acces refuse a cette session.',
+        'view_all' => 'Voir tout',
     ],
 
     // Cadre Logique
@@ -1477,5 +1479,9 @@ return [
         'ai_badge' => 'Potentiel IA',
         'ai_notes' => 'Comment l\'IA peut aider',
         'confirm_delete' => 'Supprimer cette activité ?',
+        'by_category' => 'Par catégorie',
+        'without_ai' => 'Sans potentiel IA',
+        'without_ai_only' => 'Sans potentiel IA uniquement',
+        'ai_summary' => 'Résumé potentiel IA',
     ],
 ];

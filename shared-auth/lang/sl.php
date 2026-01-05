@@ -33,6 +33,7 @@ return [
         'none' => 'Nic',
         'required' => 'Obvezno',
         'read_only' => 'Samo za branje',
+        'print' => 'Natisni',
         'optional' => 'Neobvezno',
         'view' => 'Poglej',
         'actions' => 'Dejanja',
@@ -154,6 +155,7 @@ return [
         'session_deleted' => 'Seja izbrisana.',
         'no_create_rights' => 'Nimate pravic za ustvarjanje sej.',
         'access_denied' => 'Dostop do te seje zavrnjen.',
+        'view_all' => 'Poglej vse',
     ],
 
     // Logicni okvir
@@ -1477,5 +1479,9 @@ return [
         'ai_badge' => 'Potencial UI',
         'ai_notes' => 'Kako lahko pomaga UI',
         'confirm_delete' => 'Izbrisati to dejavnost?',
+        'by_category' => 'Po kategoriji',
+        'without_ai' => 'Brez potenciala UI',
+        'without_ai_only' => 'Samo brez potenciala UI',
+        'ai_summary' => 'Povzetek potenciala UI',
     ],
 ];

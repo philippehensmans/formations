@@ -33,6 +33,7 @@ return [
         'none' => 'Ninguno',
         'required' => 'Obligatorio',
         'read_only' => 'Modo solo lectura',
+        'print' => 'Imprimir',
         'optional' => 'Opcional',
         'view' => 'Ver',
         'actions' => 'Acciones',
@@ -154,6 +155,7 @@ return [
         'session_deleted' => 'Sesion eliminada.',
         'no_create_rights' => 'No tiene derechos para crear sesiones.',
         'access_denied' => 'Acceso denegado a esta sesion.',
+        'view_all' => 'Ver todo',
     ],
 
     // Marco Logico
@@ -1477,5 +1479,9 @@ return [
         'ai_badge' => 'Potencial IA',
         'ai_notes' => 'Como la IA puede ayudar',
         'confirm_delete' => 'Eliminar esta actividad?',
+        'by_category' => 'Por categoria',
+        'without_ai' => 'Sin potencial IA',
+        'without_ai_only' => 'Sin potencial IA solamente',
+        'ai_summary' => 'Resumen potencial IA',
     ],
 ];
