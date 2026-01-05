@@ -290,7 +290,7 @@ $stats = getStatistiques($sessionId);
         function openModal(id = null) {
             document.getElementById('modal').classList.add('active');
             document.getElementById('activity-id').value = id || '';
-            document.getElementById('modal-title').textContent = id ? '<?= t('act.edit_activity') ?>' : '<?= t('act.add_activity') ?>';
+            document.getElementById('modal-title').textContent = id ? <?= json_encode(t('act.edit_activity')) ?> : <?= json_encode(t('act.add_activity')) ?>;
 
             if (id) {
                 const activite = activitesData.find(a => a.id == id);
@@ -334,7 +334,7 @@ $stats = getStatistiques($sessionId);
         function saveActivite() {
             const nom = document.getElementById('activity-nom').value.trim();
             if (!nom) {
-                alert('<?= t('auth.fill_required') ?>');
+                alert(<?= json_encode(t('auth.fill_required')) ?>);
                 return;
             }
 
@@ -377,7 +377,7 @@ $stats = getStatistiques($sessionId);
 
         // Delete activity
         function deleteActivite(id) {
-            if (confirm('<?= t('act.confirm_delete') ?>')) {
+            if (confirm(<?= json_encode(t('act.confirm_delete')) ?>)) {
                 fetch('api.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
