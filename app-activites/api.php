@@ -1,6 +1,125 @@
 <?php
 require_once __DIR__ . '/config.php';
 
+// Handle Excel export
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'export-excel') {
+    if (!isLoggedIn()) {
+        http_response_code(401);
+        exit('Non autorisé');
+    }
+
+    $sessionId = intval($_GET['session_id'] ?? 0);
+    $activites = getActivites($sessionId);
+    $categories = getCategories();
+    $frequences = getFrequences();
+    $priorites = getPriorites();
+    $stats = getStatistiques($sessionId);
+
+    $db = getDB();
+    $stmt = $db->prepare("SELECT * FROM sessions WHERE id = ?");
+    $stmt->execute([$sessionId]);
+    $session = $stmt->fetch();
+
+    $filename = 'inventaire-activites-' . ($session['code'] ?? 'export') . '.xls';
+    header('Content-Type: application/vnd.ms-excel; charset=utf-8');
+    header('Content-Disposition: attachment; filename="' . $filename . '"');
+    header('Cache-Control: max-age=0');
+
+    // Excel XML format
+    echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+    echo '<?mso-application progid="Excel.Sheet"?>' . "\n";
+    ?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+ <Styles>
+  <Style ss:ID="Header">
+   <Font ss:Bold="1" ss:Color="#FFFFFF"/>
+   <Interior ss:Color="#0D9488" ss:Pattern="Solid"/>
+   <Alignment ss:Horizontal="Center"/>
+  </Style>
+  <Style ss:ID="Title">
+   <Font ss:Bold="1" ss:Size="14"/>
+  </Style>
+  <Style ss:ID="IA">
+   <Interior ss:Color="#D1FAE5" ss:Pattern="Solid"/>
+  </Style>
+  <Style ss:ID="NoIA">
+   <Interior ss:Color="#FEF3C7" ss:Pattern="Solid"/>
+  </Style>
+ </Styles>
+ <Worksheet ss:Name="Activités">
+  <Table>
+   <Column ss:Width="200"/>
+   <Column ss:Width="250"/>
+   <Column ss:Width="120"/>
+   <Column ss:Width="100"/>
+   <Column ss:Width="100"/>
+   <Column ss:Width="80"/>
+   <Column ss:Width="80"/>
+   <Column ss:Width="300"/>
+   <Row>
+    <Cell ss:StyleID="Title"><Data ss:Type="String">Inventaire des Activités - <?= htmlspecialchars($session['nom'] ?? '') ?></Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">Session: <?= htmlspecialchars($session['code'] ?? '') ?></Data></Cell>
+    <Cell><Data ss:Type="String">Export: <?= date('d/m/Y H:i') ?></Data></Cell>
+   </Row>
+   <Row>
+    <Cell><Data ss:Type="String">Total: <?= $stats['total'] ?> activités</Data></Cell>
+    <Cell><Data ss:Type="String">Potentiel IA: <?= $stats['avec_potentiel_ia'] ?> (<?= $stats['total'] > 0 ? round(($stats['avec_potentiel_ia'] / $stats['total']) * 100) : 0 ?>%)</Data></Cell>
+   </Row>
+   <Row></Row>
+   <Row>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Nom</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Description</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Catégorie</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Fréquence</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Temps estimé</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Priorité</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Potentiel IA</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Notes IA</Data></Cell>
+   </Row>
+<?php foreach ($activites as $act):
+    $cat = $categories[$act['categorie']] ?? $categories['autre'];
+    $prio = $priorites[$act['priorite']] ?? $priorites[2];
+    $style = $act['potentiel_ia'] ? 'IA' : 'NoIA';
+?>
+   <Row>
+    <Cell ss:StyleID="<?= $style ?>"><Data ss:Type="String"><?= htmlspecialchars($act['nom']) ?></Data></Cell>
+    <Cell ss:StyleID="<?= $style ?>"><Data ss:Type="String"><?= htmlspecialchars($act['description'] ?? '') ?></Data></Cell>
+    <Cell ss:StyleID="<?= $style ?>"><Data ss:Type="String"><?= $cat['icon'] ?> <?= htmlspecialchars($cat['label']) ?></Data></Cell>
+    <Cell ss:StyleID="<?= $style ?>"><Data ss:Type="String"><?= htmlspecialchars($frequences[$act['frequence']] ?? $act['frequence']) ?></Data></Cell>
+    <Cell ss:StyleID="<?= $style ?>"><Data ss:Type="String"><?= htmlspecialchars($act['temps_estime'] ?? '') ?></Data></Cell>
+    <Cell ss:StyleID="<?= $style ?>"><Data ss:Type="String"><?= htmlspecialchars($prio['label']) ?></Data></Cell>
+    <Cell ss:StyleID="<?= $style ?>"><Data ss:Type="String"><?= $act['potentiel_ia'] ? 'Oui' : 'Non' ?></Data></Cell>
+    <Cell ss:StyleID="<?= $style ?>"><Data ss:Type="String"><?= htmlspecialchars($act['notes_ia'] ?? '') ?></Data></Cell>
+   </Row>
+<?php endforeach; ?>
+  </Table>
+ </Worksheet>
+ <Worksheet ss:Name="Statistiques">
+  <Table>
+   <Column ss:Width="150"/>
+   <Column ss:Width="100"/>
+   <Row>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Catégorie</Data></Cell>
+    <Cell ss:StyleID="Header"><Data ss:Type="String">Nombre</Data></Cell>
+   </Row>
+<?php foreach ($stats['par_categorie'] as $catKey => $count):
+    $cat = $categories[$catKey] ?? $categories['autre'];
+?>
+   <Row>
+    <Cell><Data ss:Type="String"><?= $cat['icon'] ?> <?= htmlspecialchars($cat['label']) ?></Data></Cell>
+    <Cell><Data ss:Type="Number"><?= $count ?></Data></Cell>
+   </Row>
+<?php endforeach; ?>
+  </Table>
+ </Worksheet>
+</Workbook>
+<?php
+    exit;
+}
+
 // Handle export (GET request)
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'export') {
     if (!isLoggedIn()) {
