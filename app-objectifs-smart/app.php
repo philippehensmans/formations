@@ -79,6 +79,9 @@ $exemples = getExemplesParDomaine();
                 <?= renderLanguageSelector('text-sm bg-emerald-600 text-white px-2 py-1 rounded border border-emerald-500') ?>
                 <span id="saveStatus" class="text-sm text-emerald-200"></span>
                 <button onclick="manualSave()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded text-sm"><?= t('common.save') ?></button>
+                <?php if (isFormateur()): ?>
+                <a href="formateur.php" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded text-sm"><?= t('trainer.title') ?></a>
+                <?php endif; ?>
                 <a href="logout.php" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm"><?= t('auth.logout') ?></a>
             </div>
         </div>

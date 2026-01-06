@@ -82,6 +82,9 @@ $scenario = getActiveScenario($db, $sessionId);
                     <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
                         <?= htmlspecialchars($user['prenom'] ?? $user['username']) ?>
                     </span>
+                    <?php if (isFormateur()): ?>
+                    <a href="formateur.php" class="text-green-600 hover:text-green-800 text-sm font-medium"><?= t('trainer.title') ?></a>
+                    <?php endif; ?>
                     <a href="logout.php" class="text-gray-500 hover:text-red-500 text-sm"><?= t('auth.logout') ?></a>
                 </div>
             </div>

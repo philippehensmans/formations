@@ -68,6 +68,9 @@ if (!$guide) {
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
                     <?= t('common.save') ?>
                 </button>
+                <?php if (isFormateur()): ?>
+                <a href="formateur.php" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg"><?= t('trainer.title') ?></a>
+                <?php endif; ?>
                 <a href="logout.php" class="bg-red-500/80 hover:bg-red-600 px-4 py-2 rounded-lg"><?= t('auth.logout') ?></a>
             </div>
         </div>

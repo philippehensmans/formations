@@ -55,6 +55,11 @@ $currentLang = getCurrentLanguage();
                 <div class="flex items-center gap-4">
                     <?= renderLanguageSelector('text-sm border border-emerald-400 rounded px-2 py-1 bg-emerald-700') ?>
                     <span class="text-emerald-200"><?= h($userName) ?></span>
+                    <?php if (isFormateur()): ?>
+                    <a href="formateur.php" class="bg-emerald-700 hover:bg-emerald-800 px-3 py-1 rounded text-sm">
+                        <?= t('trainer.title') ?>
+                    </a>
+                    <?php endif; ?>
                     <a href="logout.php" class="bg-emerald-700 hover:bg-emerald-800 px-3 py-1 rounded text-sm">
                         <?= t('carbon.logout') ?>
                     </a>

@@ -413,8 +413,8 @@ $user = getCurrentUser();
         <div class="user-bar no-print">
             <div class="user-info">
                 <?= t('app.connected') ?> : <strong><?= sanitize($user['username']) ?></strong>
-                <?php if ($user['is_admin']): ?>
-                    <a href="admin.php" style="margin-left: 10px;"><?= t('trainer.title') ?></a>
+                <?php if (isFormateur()): ?>
+                    <a href="formateur.php" style="margin-left: 10px;"><?= t('trainer.title') ?></a>
                 <?php endif; ?>
             </div>
             <?= renderLanguageSelector('text-sm bg-white/20 text-white px-2 py-1 rounded border border-white/30') ?>

@@ -64,6 +64,11 @@ $isSubmitted = $carte['is_submitted'] == 1;
                 <button onclick="manualSave()" class="bg-purple-700 hover:bg-purple-600 px-4 py-2 rounded text-sm">
                     <?= t('app.save') ?>
                 </button>
+                <?php if (isFormateur()): ?>
+                <a href="formateur.php" class="bg-purple-700 hover:bg-purple-600 px-4 py-2 rounded text-sm">
+                    <?= t('trainer.title') ?>
+                </a>
+                <?php endif; ?>
                 <a href="logout.php" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm">
                     <?= t('app.logout') ?>
                 </a>

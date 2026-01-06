@@ -573,6 +573,9 @@ $currentLang = getCurrentLanguage();
         <div class="user-actions">
             <?= renderLanguageSelector('text-sm border rounded px-2 py-1') ?>
             <span class="status-badge status-draft" id="statusBadge"><?= t('swot.draft') ?></span>
+            <?php if (isFormateur()): ?>
+            <a href="formateur.php" class="btn-logout" style="background: #10b981; color: white; text-decoration: none;"><?= t('trainer.title') ?></a>
+            <?php endif; ?>
             <button class="btn-logout" onclick="logout()"><?= t('swot.logout') ?></button>
         </div>
     </div>
