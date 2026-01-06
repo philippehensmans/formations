@@ -40,8 +40,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         } elseif ($action === 'toggle_session') {
             $sessionId = intval($_POST['session_id'] ?? 0);
-            $stmt = $db->prepare("UPDATE sessions SET is_active = NOT is_active WHERE id = ? AND formateur_id = ?");
-            $stmt->execute([$sessionId, $user['id']]);
+            if ($user['is_admin'] || $user['is_super_admin']) {
+                $stmt = $db->prepare("UPDATE sessions SET is_active = NOT is_active WHERE id = ?");
+                $stmt->execute([$sessionId]);
+            } else {
+                $stmt = $db->prepare("UPDATE sessions SET is_active = NOT is_active WHERE id = ? AND formateur_id = ?");
+                $stmt->execute([$sessionId, $user['id']]);
+            }
         } elseif ($action === 'delete_session') {
             $sessionId = intval($_POST['session_id'] ?? 0);
             // Supprimer les calculs lies
@@ -51,8 +56,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $db->prepare("DELETE FROM participants WHERE session_id = ?");
             $stmt->execute([$sessionId]);
             // Supprimer la session
-            $stmt = $db->prepare("DELETE FROM sessions WHERE id = ? AND formateur_id = ?");
-            $stmt->execute([$sessionId, $user['id']]);
+            if ($user['is_admin'] || $user['is_super_admin']) {
+                $stmt = $db->prepare("DELETE FROM sessions WHERE id = ?");
+                $stmt->execute([$sessionId]);
+            } else {
+                $stmt = $db->prepare("DELETE FROM sessions WHERE id = ? AND formateur_id = ?");
+                $stmt->execute([$sessionId, $user['id']]);
+            }
             $success = t('carbon.session_deleted');
         } elseif ($action === 'update_ecologits') {
             // Inclure et executer le script de mise a jour
@@ -124,8 +134,8 @@ if (!$user || (!$user['is_formateur'] && !$user['is_admin'])) {
     exit;
 }
 
-// Charger les sessions (toutes pour super_admin, sinon seulement les siennes)
-if ($user['is_super_admin']) {
+// Charger les sessions (toutes pour admin, sinon seulement les siennes)
+if ($user['is_admin'] || $user['is_super_admin']) {
     $stmt = $db->query("SELECT * FROM sessions ORDER BY created_at DESC");
     $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } else {
@@ -144,7 +154,7 @@ $metadata = $estimations['_metadata'] ?? [];
 $selectedSessionId = intval($_GET['session'] ?? ($sessions[0]['id'] ?? 0));
 $sessionStats = null;
 if ($selectedSessionId) {
-    if ($user['is_super_admin']) {
+    if ($user['is_admin'] || $user['is_super_admin']) {
         $stmt = $db->prepare("SELECT * FROM sessions WHERE id = ?");
         $stmt->execute([$selectedSessionId]);
     } else {
