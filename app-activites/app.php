@@ -52,6 +52,11 @@ $stats = getStatistiques($sessionId);
                 <div class="flex items-center gap-4">
                     <span class="text-teal-200"><?= htmlspecialchars($user['prenom'] . ' ' . $user['nom']) ?></span>
                     <?= renderLanguageSelector('bg-teal-500 text-white border-0 rounded px-2 py-1 cursor-pointer text-sm') ?>
+                    <?php if (isFormateur()): ?>
+                    <a href="formateur.php" class="bg-teal-500 hover:bg-teal-400 px-3 py-1 rounded text-sm">
+                        <?= t('trainer.title') ?>
+                    </a>
+                    <?php endif; ?>
                     <a href="logout.php" class="bg-teal-500 hover:bg-teal-400 px-3 py-1 rounded text-sm">
                         <?= t('auth.logout') ?>
                     </a>

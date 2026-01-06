@@ -80,6 +80,9 @@ $isSubmitted = $atelier['is_shared'] == 1;
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     <?= t('common.submit') ?>
                 </button>
+                <?php if (isFormateur()): ?>
+                <a href="formateur.php" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg"><?= t('trainer.title') ?></a>
+                <?php endif; ?>
                 <a href="logout.php" class="bg-red-500/80 hover:bg-red-600 px-4 py-2 rounded-lg"><?= t('auth.logout') ?></a>
             </div>
         </div>

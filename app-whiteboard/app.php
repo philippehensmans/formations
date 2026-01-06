@@ -116,6 +116,11 @@ foreach ($participantIds as $pid) {
             <div class="flex items-center gap-4">
                 <span class="text-indigo-200"><?= htmlspecialchars($user['prenom'] . ' ' . $user['nom']) ?></span>
                 <?= renderLanguageSelector('bg-indigo-500 text-white border-0 rounded px-2 py-1 cursor-pointer text-sm') ?>
+                <?php if (isFormateur()): ?>
+                <a href="formateur.php" class="bg-indigo-500 hover:bg-indigo-400 px-3 py-1 rounded text-sm">
+                    <?= t('trainer.title') ?>
+                </a>
+                <?php endif; ?>
                 <a href="logout.php" class="bg-indigo-500 hover:bg-indigo-400 px-3 py-1 rounded text-sm">
                     <?= t('auth.logout') ?>
                 </a>

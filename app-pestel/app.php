@@ -83,6 +83,9 @@ function getEmptyPestel() {
                     <?= $isSubmitted ? t('app.submitted') : t('app.draft') ?>
                 </span>
                 <span id="completion" class="text-sm text-gray-600"><?= t('app.completion') ?>: <strong>0%</strong></span>
+                <?php if (isFormateur()): ?>
+                <a href="formateur.php" class="text-sm bg-purple-600 hover:bg-purple-500 text-white px-3 py-1 rounded transition"><?= t('trainer.title') ?></a>
+                <?php endif; ?>
                 <a href="logout.php" class="text-sm bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded transition"><?= t('auth.logout') ?></a>
             </div>
         </div>

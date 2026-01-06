@@ -99,6 +99,9 @@ $jsTranslations = [
                     <?= $isSubmitted ? t('cadrelogique.submitted') : t('cadrelogique.draft') ?>
                 </span>
                 <span id="completion" class="text-sm"><?= t('cadrelogique.completion') ?>: <strong><?= $cadre['completion_percent'] ?>%</strong></span>
+                <?php if (isFormateur()): ?>
+                <a href="formateur.php" class="text-sm bg-white/20 hover:bg-white/30 px-3 py-1 rounded"><?= t('trainer.title') ?></a>
+                <?php endif; ?>
                 <a href="logout.php" class="text-sm bg-white/20 hover:bg-white/30 px-3 py-1 rounded"><?= t('auth.logout') ?></a>
             </div>
         </div>

@@ -76,6 +76,11 @@ $isSubmitted = ($retro['is_shared'] ?? 0) == 1;
                     <button onclick="manualSave()" class="bg-blue-700 hover:bg-blue-600 px-4 py-2 rounded text-sm">
                         <?= t('ssc.save') ?>
                     </button>
+                    <?php if (isFormateur()): ?>
+                    <a href="formateur.php" class="bg-teal-600 hover:bg-teal-700 px-4 py-2 rounded text-sm">
+                        <?= t('trainer.title') ?>
+                    </a>
+                    <?php endif; ?>
                     <a href="logout.php" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm">
                         <?= t('ssc.logout') ?>
                     </a>
