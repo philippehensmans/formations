@@ -49,9 +49,12 @@ $user = isLoggedIn() ? getLoggedUser() : null;
     <header class="bg-gradient-to-r from-indigo-600 to-purple-700 text-white shadow-lg">
         <div class="max-w-7xl mx-auto px-4 py-6">
             <div class="flex justify-between items-center">
-                <div>
-                    <h1 class="text-3xl font-bold"><?= t('home.title') ?></h1>
-                    <p class="text-indigo-200 mt-1"><?= t('home.subtitle') ?></p>
+                <div class="flex items-center gap-4">
+                    <img src="logo.png" alt="Logo" class="h-12">
+                    <div>
+                        <h1 class="text-3xl font-bold"><?= t('home.title') ?></h1>
+                        <p class="text-indigo-200 mt-1"><?= t('home.subtitle') ?></p>
+                    </div>
                 </div>
                 <div class="flex items-center gap-4">
                     <?= renderLanguageSelector('bg-white/20 text-white border-0 rounded px-2 py-1 cursor-pointer') ?>
@@ -86,7 +89,7 @@ $user = isLoggedIn() ? getLoggedUser() : null;
                     $description = '';
                 }
             ?>
-            <a href="<?= $appKey ?>/login.php" class="app-card bg-white rounded-xl shadow-md overflow-hidden">
+            <a href="<?= $appKey ?>/login.php" target="_blank" class="app-card bg-white rounded-xl shadow-md overflow-hidden">
                 <div class="h-2 bg-<?= $color ?>-500"></div>
                 <div class="p-6">
                     <h2 class="text-xl font-bold text-gray-800 mb-2"><?= htmlspecialchars($title) ?></h2>
@@ -119,7 +122,7 @@ $user = isLoggedIn() ? getLoggedUser() : null;
                     }
                     if (file_exists(__DIR__ . '/' . $appKey . '/formateur.php')):
                 ?>
-                <a href="<?= $appKey ?>/formateur.php"
+                <a href="<?= $appKey ?>/formateur.php" target="_blank"
                    class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 text-sm transition">
                     <?= htmlspecialchars($title) ?>
                 </a>
