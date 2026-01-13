@@ -158,21 +158,28 @@ if ($allowedSessionIds === null) {
 // Recuperer les participants si une session est selectionnee
 $selectedSession = null;
 $participants = [];
+$debugInfo = ''; // Pour le debogage
 
 if (isset($_GET['session'])) {
     $sessionId = (int)$_GET['session'];
+    $debugInfo .= "Session ID demandee: $sessionId. ";
 
     // Verifier l'acces a cette session
     if (!canAccessSession($appKey, $sessionId)) {
         $error = t('trainer.access_denied');
+        $debugInfo .= "Acces refuse par canAccessSession. ";
     } else {
         $selectedSession = getSessionById($db, $sessionId);
+        $debugInfo .= "Acces autorise. ";
 
         if ($selectedSession) {
+            $debugInfo .= "Session trouvee: " . $selectedSession['code'] . ". ";
+
             // Recuperer les participants de la base locale
             $stmt = $db->prepare("SELECT * FROM participants WHERE session_id = ?");
             $stmt->execute([$selectedSession['id']]);
             $localParticipants = $stmt->fetchAll();
+            $debugInfo .= "Participants locaux: " . count($localParticipants) . ". ";
 
             // Enrichir avec les donnees utilisateur de la base partagee
             $sharedDb = getSharedDB();
@@ -214,8 +221,14 @@ if (isset($_GET['session'])) {
                         'is_shared' => $guideData ? (int)($guideData['is_shared'] ?? 0) : 0,
                         'guide_organisation' => $guideData ? ($guideData['organisation_nom'] ?? '') : ''
                     ];
+                    $debugInfo .= "Participant ajoute: " . $userData['username'] . ". ";
+                } else {
+                    $debugInfo .= "User ID " . $p['user_id'] . " non trouve dans shared DB. ";
                 }
             }
+            $debugInfo .= "Total participants enrichis: " . count($participants) . ". ";
+        } else {
+            $debugInfo .= "Session non trouvee dans la DB. ";
         }
     }
 }
@@ -260,6 +273,12 @@ if (isset($_GET['session'])) {
         <?php if ($error): ?>
             <div class="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
                 <?= h($error) ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($debugInfo): ?>
+            <div class="mb-4 p-4 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-sm">
+                <strong>Debug:</strong> <?= h($debugInfo) ?>
             </div>
         <?php endif; ?>
 
