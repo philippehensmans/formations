@@ -3,25 +3,43 @@ require_once __DIR__ . '/config.php';
 if (!isFormateur()) { header('Location: login.php'); exit; }
 
 $appKey = 'app-guide-prompting';
-$participantId = (int)($_GET['id'] ?? 0);
-if (!$participantId) { header('Location: formateur.php'); exit; }
-
 $db = getDB();
 $sharedDb = getSharedDB();
 
-$stmt = $db->prepare("SELECT p.*, s.nom as session_nom, s.id as session_id FROM participants p JOIN sessions s ON p.session_id = s.id WHERE p.id = ?");
-$stmt->execute([$participantId]);
-$participant = $stmt->fetch();
-if (!$participant) die("Participant non trouve");
+// Support both old format (id) and new format (user_id + session_id)
+if (isset($_GET['user_id']) && isset($_GET['session_id'])) {
+    $userId = (int)$_GET['user_id'];
+    $sessionId = (int)$_GET['session_id'];
+} elseif (isset($_GET['id'])) {
+    $participantId = (int)$_GET['id'];
+    $stmt = $db->prepare("SELECT user_id, session_id FROM participants WHERE id = ?");
+    $stmt->execute([$participantId]);
+    $p = $stmt->fetch();
+    if (!$p) die("Participant non trouve");
+    $userId = $p['user_id'];
+    $sessionId = $p['session_id'];
+} else {
+    header('Location: formateur.php');
+    exit;
+}
 
-if (!canAccessSession($appKey, $participant['session_id'])) die("Acces refuse.");
+// Get session info
+$stmt = $db->prepare("SELECT * FROM sessions WHERE id = ?");
+$stmt->execute([$sessionId]);
+$session = $stmt->fetch();
+if (!$session) die("Session non trouvee");
+
+if (!canAccessSession($appKey, $sessionId)) die("Acces refuse.");
+
+$participant = ['user_id' => $userId, 'session_id' => $sessionId, 'session_nom' => $session['nom']];
 
 $userStmt = $sharedDb->prepare("SELECT prenom, nom, organisation FROM users WHERE id = ?");
-$userStmt->execute([$participant['user_id']]);
+$userStmt->execute([$userId]);
 $userInfo = $userStmt->fetch();
+if (!$userInfo) die("Utilisateur non trouve");
 
 $stmt = $db->prepare("SELECT * FROM guides WHERE user_id = ? AND session_id = ?");
-$stmt->execute([$participant['user_id'], $participant['session_id']]);
+$stmt->execute([$userId, $sessionId]);
 $guide = $stmt->fetch();
 
 $tasks = $guide ? json_decode($guide['tasks'] ?? '[]', true) : [];
