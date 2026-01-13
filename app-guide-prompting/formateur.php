@@ -175,11 +175,20 @@ if (isset($_GET['session'])) {
         if ($selectedSession) {
             $debugInfo .= "Session trouvee: " . $selectedSession['code'] . ". ";
 
-            // Recuperer les participants de la base locale
-            $stmt = $db->prepare("SELECT * FROM participants WHERE session_id = ?");
-            $stmt->execute([$selectedSession['id']]);
+            // Recuperer les participants - combiner participants table ET guides table
+            // Car certains utilisateurs peuvent avoir un guide sans etre dans la table participants
+            $stmt = $db->prepare("
+                SELECT DISTINCT user_id, MIN(created_at) as created_at
+                FROM (
+                    SELECT user_id, created_at FROM participants WHERE session_id = ?
+                    UNION
+                    SELECT user_id, created_at FROM guides WHERE session_id = ?
+                ) AS combined
+                GROUP BY user_id
+            ");
+            $stmt->execute([$selectedSession['id'], $selectedSession['id']]);
             $localParticipants = $stmt->fetchAll();
-            $debugInfo .= "Participants locaux: " . count($localParticipants) . ". ";
+            $debugInfo .= "Participants (participants+guides): " . count($localParticipants) . ". ";
 
             // Enrichir avec les donnees utilisateur de la base partagee
             $sharedDb = getSharedDB();
@@ -206,10 +215,9 @@ if (isset($_GET['session'])) {
 
                     // Ajouter le participant avec toutes ses donnees
                     $participants[] = [
-                        'id' => $p['id'],
                         'user_id' => $p['user_id'],
-                        'session_id' => $p['session_id'],
-                        'created_at' => $p['created_at'],
+                        'session_id' => $selectedSession['id'],
+                        'created_at' => $p['created_at'] ?? date('Y-m-d H:i:s'),
                         'username' => $userData['username'],
                         'prenom' => $userData['prenom'],
                         'nom' => $userData['nom'],
@@ -438,7 +446,7 @@ if (isset($_GET['session'])) {
                                                 </td>
                                                 <td class="py-2 px-2 text-center">
                                                     <?php if ($p['guide_exists']): ?>
-                                                        <a href="view.php?id=<?= $p['id'] ?>"
+                                                        <a href="view.php?user_id=<?= $p['user_id'] ?>&session_id=<?= $p['session_id'] ?>"
                                                            class="inline-block px-3 py-1 bg-<?= $appColor ?>-600 text-white rounded hover:bg-<?= $appColor ?>-700 text-xs"
                                                            target="_blank">
                                                             <?= t('common.view') ?>
