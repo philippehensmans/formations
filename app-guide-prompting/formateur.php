@@ -1,30 +1,22 @@
 <?php
 /**
- * Formateur page for Guide Prompting with session export
+ * Page formateur - Guide de Prompting
+ * Avec affichage des activites des participants (taches, prompts, completion)
  */
+
 $appName = 'Guide Prompting';
 $appColor = 'indigo';
+$appKey = 'app-guide-prompting';
+
+// Charger la config locale
 require_once __DIR__ . '/config.php';
 $db = getDB();
 
-// Custom content to add export button
-$customSessionActions = function($session, $appColor) {
-    return '
-    <a href="api/export-session.php?session_id=' . $session['id'] . '"
-       class="inline-flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
-       title="' . t('gp.export_session_prompts') . '">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-        </svg>
-        ' . t('gp.export_all_prompts') . '
-    </a>';
-};
-
+// Charger les dependances
 require_once __DIR__ . '/../shared-auth/config.php';
 require_once __DIR__ . '/../shared-auth/sessions.php';
 require_once __DIR__ . '/../shared-auth/lang.php';
 
-$appKey = $appKey ?? basename(dirname($_SERVER['SCRIPT_FILENAME']));
 $error = '';
 $success = '';
 $lang = getCurrentLanguage();
@@ -118,107 +110,111 @@ $canCreateSessions = ($allowedSessionIds === null);
 
 // Gestion des actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['action'])) {
-        switch ($_POST['action']) {
-            case 'create_session':
-                if (!$canCreateSessions) {
-                    $error = t('trainer.no_create_rights');
-                    break;
-                }
-                $nom = trim($_POST['nom'] ?? '');
-                if (!empty($nom)) {
-                    $code = generateSessionCode();
-                    $stmt = $db->prepare("INSERT INTO sessions (code, nom, formateur_id, is_active, created_at) VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)");
-                    $stmt->execute([$code, $nom, $user['id']]);
-                    $success = t('trainer.session_created', ['code' => $code]);
-                }
-                break;
+    $action = $_POST['action'] ?? '';
 
-            case 'toggle_session':
-                $sessionId = (int)($_POST['session_id'] ?? 0);
-                if (!canAccessSession($appKey, $sessionId)) {
-                    $error = t('trainer.access_denied');
-                    break;
-                }
-                toggleSession($db, $sessionId);
-                $success = t('trainer.session_status_changed');
-                break;
-
-            case 'delete_session':
-                $sessionId = (int)($_POST['session_id'] ?? 0);
-                if (!canAccessSession($appKey, $sessionId)) {
-                    $error = t('trainer.access_denied');
-                    break;
-                }
-                deleteSession($db, $sessionId);
-                $success = t('trainer.session_deleted');
-                break;
-
-            case 'logout':
-                logout();
-                header('Location: ' . $_SERVER['PHP_SELF']);
-                exit;
+    if ($action === 'create_session' && $canCreateSessions) {
+        $nom = trim($_POST['nom'] ?? '');
+        if (!empty($nom)) {
+            $code = generateSessionCode();
+            $stmt = $db->prepare("INSERT INTO sessions (code, nom, formateur_id, is_active, created_at) VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)");
+            $stmt->execute([$code, $nom, $user['id']]);
+            $success = t('trainer.session_created', ['code' => $code]);
         }
+    } elseif ($action === 'toggle_session') {
+        $sessionId = (int)($_POST['session_id'] ?? 0);
+        if (canAccessSession($appKey, $sessionId)) {
+            toggleSession($db, $sessionId);
+            $success = t('trainer.session_status_changed');
+        } else {
+            $error = t('trainer.access_denied');
+        }
+    } elseif ($action === 'delete_session') {
+        $sessionId = (int)($_POST['session_id'] ?? 0);
+        if (canAccessSession($appKey, $sessionId)) {
+            deleteSession($db, $sessionId);
+            $success = t('trainer.session_deleted');
+        } else {
+            $error = t('trainer.access_denied');
+        }
+    } elseif ($action === 'logout') {
+        logout();
+        header('Location: ' . $_SERVER['PHP_SELF']);
+        exit;
     }
 }
 
 // Recuperer les sessions
 if ($allowedSessionIds === null) {
     $sessions = $db->query("SELECT * FROM sessions ORDER BY created_at DESC")->fetchAll();
+} elseif (empty($allowedSessionIds)) {
+    $sessions = [];
 } else {
-    if (empty($allowedSessionIds)) {
-        $sessions = [];
-    } else {
-        $placeholders = implode(',', array_fill(0, count($allowedSessionIds), '?'));
-        $stmt = $db->prepare("SELECT * FROM sessions WHERE id IN ($placeholders) ORDER BY created_at DESC");
-        $stmt->execute($allowedSessionIds);
-        $sessions = $stmt->fetchAll();
-    }
+    $placeholders = implode(',', array_fill(0, count($allowedSessionIds), '?'));
+    $stmt = $db->prepare("SELECT * FROM sessions WHERE id IN ($placeholders) ORDER BY created_at DESC");
+    $stmt->execute($allowedSessionIds);
+    $sessions = $stmt->fetchAll();
 }
 
 // Recuperer les participants si une session est selectionnee
 $selectedSession = null;
 $participants = [];
+
 if (isset($_GET['session'])) {
     $sessionId = (int)$_GET['session'];
+
+    // Verifier l'acces a cette session
     if (!canAccessSession($appKey, $sessionId)) {
         $error = t('trainer.access_denied');
     } else {
         $selectedSession = getSessionById($db, $sessionId);
-    }
-    if ($selectedSession) {
-        $stmt = $db->prepare("SELECT * FROM participants WHERE session_id = ?");
-        $stmt->execute([$selectedSession['id']]);
-        $localParticipants = $stmt->fetchAll();
 
-        $sharedDb = getSharedDB();
-        foreach ($localParticipants as $p) {
-            $userStmt = $sharedDb->prepare("SELECT username, prenom, nom, organisation FROM users WHERE id = ?");
-            $userStmt->execute([$p['user_id']]);
-            $userData = $userStmt->fetch();
-            if ($userData) {
-                // Fetch guide data for this participant
-                $guideStmt = $db->prepare("SELECT tasks, templates, completion_percent, is_shared, organisation_nom FROM guides WHERE user_id = ? AND session_id = ?");
-                $guideStmt->execute([$p['user_id'], $selectedSession['id']]);
-                $guideData = $guideStmt->fetch();
+        if ($selectedSession) {
+            // Recuperer les participants de la base locale
+            $stmt = $db->prepare("SELECT * FROM participants WHERE session_id = ?");
+            $stmt->execute([$selectedSession['id']]);
+            $localParticipants = $stmt->fetchAll();
 
-                $taskCount = 0;
-                $templateCount = 0;
-                if ($guideData) {
-                    $tasks = json_decode($guideData['tasks'] ?? '[]', true);
-                    $templates = json_decode($guideData['templates'] ?? '[]', true);
-                    $taskCount = is_array($tasks) ? count($tasks) : 0;
-                    $templateCount = is_array($templates) ? count($templates) : 0;
+            // Enrichir avec les donnees utilisateur de la base partagee
+            $sharedDb = getSharedDB();
+            foreach ($localParticipants as $p) {
+                $userStmt = $sharedDb->prepare("SELECT username, prenom, nom, organisation FROM users WHERE id = ?");
+                $userStmt->execute([$p['user_id']]);
+                $userData = $userStmt->fetch();
+
+                if ($userData) {
+                    // Recuperer les donnees du guide pour ce participant
+                    $guideStmt = $db->prepare("SELECT tasks, templates, completion_percent, is_shared, organisation_nom FROM guides WHERE user_id = ? AND session_id = ?");
+                    $guideStmt->execute([$p['user_id'], $selectedSession['id']]);
+                    $guideData = $guideStmt->fetch();
+
+                    // Compter les taches et templates
+                    $taskCount = 0;
+                    $templateCount = 0;
+                    if ($guideData) {
+                        $tasks = json_decode($guideData['tasks'] ?? '[]', true);
+                        $templates = json_decode($guideData['templates'] ?? '[]', true);
+                        $taskCount = is_array($tasks) ? count($tasks) : 0;
+                        $templateCount = is_array($templates) ? count($templates) : 0;
+                    }
+
+                    // Ajouter le participant avec toutes ses donnees
+                    $participants[] = [
+                        'id' => $p['id'],
+                        'user_id' => $p['user_id'],
+                        'session_id' => $p['session_id'],
+                        'created_at' => $p['created_at'],
+                        'username' => $userData['username'],
+                        'prenom' => $userData['prenom'],
+                        'nom' => $userData['nom'],
+                        'organisation' => $userData['organisation'] ?? '',
+                        'guide_exists' => $guideData ? true : false,
+                        'task_count' => $taskCount,
+                        'template_count' => $templateCount,
+                        'completion_percent' => $guideData ? (int)($guideData['completion_percent'] ?? 0) : 0,
+                        'is_shared' => $guideData ? (int)($guideData['is_shared'] ?? 0) : 0,
+                        'guide_organisation' => $guideData ? ($guideData['organisation_nom'] ?? '') : ''
+                    ];
                 }
-
-                $participants[] = array_merge($p, $userData, [
-                    'guide_exists' => $guideData ? true : false,
-                    'task_count' => $taskCount,
-                    'template_count' => $templateCount,
-                    'completion_percent' => $guideData ? ($guideData['completion_percent'] ?? 0) : 0,
-                    'is_shared' => $guideData ? ($guideData['is_shared'] ?? 0) : 0,
-                    'guide_organisation' => $guideData ? ($guideData['organisation_nom'] ?? '') : ''
-                ]);
             }
         }
     }
@@ -296,7 +292,8 @@ if (isset($_GET['session'])) {
                 </div>
                 <div class="divide-y max-h-96 overflow-y-auto">
                     <?php foreach ($sessions as $session): ?>
-                        <div class="p-4 hover:bg-gray-50 <?= ($selectedSession && $selectedSession['id'] == $session['id']) ? 'bg-indigo-50 border-l-4 border-indigo-600' : '' ?>">
+                        <?php $isSelected = ($selectedSession && $selectedSession['id'] == $session['id']); ?>
+                        <div class="p-4 hover:bg-gray-50 <?= $isSelected ? 'bg-indigo-50 border-l-4 border-indigo-600' : '' ?>">
                             <div class="flex justify-between items-start">
                                 <a href="?session=<?= $session['id'] ?>" class="flex-1">
                                     <div class="font-mono font-bold text-<?= $appColor ?>-600"><?= h($session['code']) ?></div>
@@ -342,10 +339,8 @@ if (isset($_GET['session'])) {
                             <span class="text-gray-500">- Session <?= h($selectedSession['code']) ?></span>
                             <span class="ml-2 px-2 py-1 bg-<?= $appColor ?>-100 text-<?= $appColor ?>-700 rounded text-sm"><?= count($participants) ?></span>
                         </div>
-                        <!-- Export button -->
                         <a href="api/export-session.php?session_id=<?= $selectedSession['id'] ?>"
-                           class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium"
-                           title="<?= t('gp.export_all_prompts') ?>">
+                           class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                             </svg>
@@ -357,83 +352,86 @@ if (isset($_GET['session'])) {
                             <p class="text-gray-500 text-center py-8"><?= t('trainer.no_participant_in_session') ?></p>
                         <?php else: ?>
                             <div class="overflow-x-auto">
-                            <table class="w-full text-sm">
-                                <thead>
-                                    <tr class="border-b bg-gray-50">
-                                        <th class="text-left py-2 px-2"><?= t('trainer.participant') ?></th>
-                                        <th class="text-left py-2 px-2"><?= t('auth.organisation') ?></th>
-                                        <th class="text-center py-2 px-2"><?= t('gp.tasks') ?></th>
-                                        <th class="text-center py-2 px-2"><?= t('gp.prompts') ?></th>
-                                        <th class="text-center py-2 px-2"><?= t('app.completion') ?></th>
-                                        <th class="text-center py-2 px-2"><?= t('common.status') ?></th>
-                                        <th class="text-center py-2 px-2"><?= t('common.actions') ?></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($participants as $p): ?>
-                                        <tr class="border-b hover:bg-gray-50 <?= $p['is_shared'] ? 'bg-green-50' : '' ?>">
-                                            <td class="py-2 px-2">
-                                                <div class="font-medium"><?= h($p['prenom'] . ' ' . $p['nom']) ?></div>
-                                                <div class="text-xs text-gray-500"><?= h($p['username']) ?></div>
-                                            </td>
-                                            <td class="py-2 px-2 text-gray-600">
-                                                <?= h($p['guide_organisation'] ?: ($p['organisation'] ?? '-')) ?>
-                                            </td>
-                                            <td class="py-2 px-2 text-center">
-                                                <?php if ($p['guide_exists']): ?>
-                                                    <span class="inline-block px-2 py-1 bg-indigo-100 text-indigo-700 rounded font-medium">
-                                                        <?= $p['task_count'] ?>
-                                                    </span>
-                                                <?php else: ?>
-                                                    <span class="text-gray-400">-</span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td class="py-2 px-2 text-center">
-                                                <?php if ($p['guide_exists']): ?>
-                                                    <span class="inline-block px-2 py-1 bg-purple-100 text-purple-700 rounded font-medium">
-                                                        <?= $p['template_count'] ?>
-                                                    </span>
-                                                <?php else: ?>
-                                                    <span class="text-gray-400">-</span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td class="py-2 px-2 text-center">
-                                                <?php if ($p['guide_exists']): ?>
-                                                    <div class="flex items-center justify-center gap-1">
-                                                        <div class="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
-                                                            <div class="h-full bg-<?= $p['completion_percent'] >= 80 ? 'green' : ($p['completion_percent'] >= 40 ? 'yellow' : 'red') ?>-500"
-                                                                 style="width: <?= $p['completion_percent'] ?>%"></div>
-                                                        </div>
-                                                        <span class="text-xs font-medium"><?= $p['completion_percent'] ?>%</span>
-                                                    </div>
-                                                <?php else: ?>
-                                                    <span class="text-gray-400 text-xs"><?= t('trainer.not_started') ?></span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td class="py-2 px-2 text-center">
-                                                <?php if (!$p['guide_exists']): ?>
-                                                    <span class="inline-block px-2 py-0.5 bg-gray-200 text-gray-600 rounded text-xs">-</span>
-                                                <?php elseif ($p['is_shared']): ?>
-                                                    <span class="inline-block px-2 py-0.5 bg-green-200 text-green-700 rounded text-xs"><?= t('app.submitted') ?></span>
-                                                <?php else: ?>
-                                                    <span class="inline-block px-2 py-0.5 bg-yellow-200 text-yellow-700 rounded text-xs"><?= t('app.draft') ?></span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td class="py-2 px-2 text-center">
-                                                <?php if ($p['guide_exists']): ?>
-                                                <a href="view.php?id=<?= $p['id'] ?>"
-                                                   class="inline-block px-3 py-1 bg-<?= $appColor ?>-600 text-white rounded hover:bg-<?= $appColor ?>-700 text-xs"
-                                                   target="_blank">
-                                                    <?= t('common.view') ?>
-                                                </a>
-                                                <?php else: ?>
-                                                <span class="text-gray-400 text-xs">-</span>
-                                                <?php endif; ?>
-                                            </td>
+                                <table class="w-full text-sm">
+                                    <thead>
+                                        <tr class="border-b bg-gray-50">
+                                            <th class="text-left py-2 px-2"><?= t('trainer.participant') ?></th>
+                                            <th class="text-left py-2 px-2"><?= t('auth.organisation') ?></th>
+                                            <th class="text-center py-2 px-2"><?= t('gp.tasks') ?></th>
+                                            <th class="text-center py-2 px-2"><?= t('gp.prompts') ?></th>
+                                            <th class="text-center py-2 px-2"><?= t('app.completion') ?></th>
+                                            <th class="text-center py-2 px-2"><?= t('common.status') ?></th>
+                                            <th class="text-center py-2 px-2"><?= t('common.actions') ?></th>
                                         </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($participants as $p): ?>
+                                            <tr class="border-b hover:bg-gray-50 <?= $p['is_shared'] ? 'bg-green-50' : '' ?>">
+                                                <td class="py-2 px-2">
+                                                    <div class="font-medium"><?= h($p['prenom'] . ' ' . $p['nom']) ?></div>
+                                                    <div class="text-xs text-gray-500"><?= h($p['username']) ?></div>
+                                                </td>
+                                                <td class="py-2 px-2 text-gray-600">
+                                                    <?= h($p['guide_organisation'] ?: ($p['organisation'] ?: '-')) ?>
+                                                </td>
+                                                <td class="py-2 px-2 text-center">
+                                                    <?php if ($p['guide_exists']): ?>
+                                                        <span class="inline-block px-2 py-1 bg-indigo-100 text-indigo-700 rounded font-medium">
+                                                            <?= $p['task_count'] ?>
+                                                        </span>
+                                                    <?php else: ?>
+                                                        <span class="text-gray-400">-</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td class="py-2 px-2 text-center">
+                                                    <?php if ($p['guide_exists']): ?>
+                                                        <span class="inline-block px-2 py-1 bg-purple-100 text-purple-700 rounded font-medium">
+                                                            <?= $p['template_count'] ?>
+                                                        </span>
+                                                    <?php else: ?>
+                                                        <span class="text-gray-400">-</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td class="py-2 px-2 text-center">
+                                                    <?php if ($p['guide_exists']): ?>
+                                                        <div class="flex items-center justify-center gap-1">
+                                                            <div class="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                                                <?php
+                                                                $pct = $p['completion_percent'];
+                                                                $color = $pct >= 80 ? 'green' : ($pct >= 40 ? 'yellow' : 'red');
+                                                                ?>
+                                                                <div class="h-full bg-<?= $color ?>-500" style="width: <?= $pct ?>%"></div>
+                                                            </div>
+                                                            <span class="text-xs font-medium"><?= $pct ?>%</span>
+                                                        </div>
+                                                    <?php else: ?>
+                                                        <span class="text-gray-400 text-xs"><?= t('trainer.not_started') ?></span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td class="py-2 px-2 text-center">
+                                                    <?php if (!$p['guide_exists']): ?>
+                                                        <span class="inline-block px-2 py-0.5 bg-gray-200 text-gray-600 rounded text-xs">-</span>
+                                                    <?php elseif ($p['is_shared']): ?>
+                                                        <span class="inline-block px-2 py-0.5 bg-green-200 text-green-700 rounded text-xs"><?= t('app.submitted') ?></span>
+                                                    <?php else: ?>
+                                                        <span class="inline-block px-2 py-0.5 bg-yellow-200 text-yellow-700 rounded text-xs"><?= t('app.draft') ?></span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td class="py-2 px-2 text-center">
+                                                    <?php if ($p['guide_exists']): ?>
+                                                        <a href="view.php?id=<?= $p['id'] ?>"
+                                                           class="inline-block px-3 py-1 bg-<?= $appColor ?>-600 text-white rounded hover:bg-<?= $appColor ?>-700 text-xs"
+                                                           target="_blank">
+                                                            <?= t('common.view') ?>
+                                                        </a>
+                                                    <?php else: ?>
+                                                        <span class="text-gray-400 text-xs">-</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
                             </div>
                         <?php endif; ?>
                     </div>
