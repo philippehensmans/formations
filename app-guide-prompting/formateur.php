@@ -215,9 +215,9 @@ if (isset($_GET['session'])) {
                     'guide_exists' => $guideData ? true : false,
                     'task_count' => $taskCount,
                     'template_count' => $templateCount,
-                    'completion_percent' => $guideData['completion_percent'] ?? 0,
-                    'is_shared' => $guideData['is_shared'] ?? 0,
-                    'guide_organisation' => $guideData['organisation_nom'] ?? ''
+                    'completion_percent' => $guideData ? ($guideData['completion_percent'] ?? 0) : 0,
+                    'is_shared' => $guideData ? ($guideData['is_shared'] ?? 0) : 0,
+                    'guide_organisation' => $guideData ? ($guideData['organisation_nom'] ?? '') : ''
                 ]);
             }
         }
