@@ -38,6 +38,7 @@ return [
         'view' => 'View',
         'actions' => 'Actions',
         'not_specified' => 'Not specified',
+        'status' => 'Status',
         'interactive_training' => 'Interactive training',
         'confirm_delete' => 'Delete this element?',
         'save_success' => 'Saved successfully!',
@@ -156,6 +157,7 @@ return [
         'no_create_rights' => 'You do not have rights to create sessions.',
         'access_denied' => 'Access denied to this session.',
         'view_all' => 'View all',
+        'not_started' => 'Not started',
     ],
 
     // Logical Framework
@@ -1316,6 +1318,8 @@ return [
         'marked_complete' => 'Marked as complete!',
         'export_all_prompts' => 'Export all prompts',
         'export_session_prompts' => 'Export session prompts',
+        'tasks' => 'Tasks',
+        'prompts' => 'Prompts',
     ],
 
     // Collaborative Whiteboard

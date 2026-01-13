@@ -38,6 +38,7 @@ return [
         'view' => 'Ver',
         'actions' => 'Acciones',
         'not_specified' => 'No especificado',
+        'status' => 'Estado',
         'interactive_training' => 'Formacion interactiva',
         'confirm_delete' => 'Eliminar este elemento?',
         'save_success' => 'Guardado con exito!',
@@ -156,6 +157,7 @@ return [
         'no_create_rights' => 'No tiene derechos para crear sesiones.',
         'access_denied' => 'Acceso denegado a esta sesion.',
         'view_all' => 'Ver todo',
+        'not_started' => 'No iniciado',
     ],
 
     // Marco Logico
@@ -1316,6 +1318,8 @@ return [
         'marked_complete' => 'Marcado como terminado!',
         'export_all_prompts' => 'Exportar todos los prompts',
         'export_session_prompts' => 'Exportar prompts de la sesion',
+        'tasks' => 'Tareas',
+        'prompts' => 'Prompts',
     ],
 
     // Pizarra Colaborativa

@@ -38,6 +38,7 @@ return [
         'view' => 'Poglej',
         'actions' => 'Dejanja',
         'not_specified' => 'Ni navedeno',
+        'status' => 'Status',
         'interactive_training' => 'Interaktivno usposabljanje',
         'confirm_delete' => 'Izbrisati ta element?',
         'save_success' => 'Uspesno shranjeno!',
@@ -156,6 +157,7 @@ return [
         'no_create_rights' => 'Nimate pravic za ustvarjanje sej.',
         'access_denied' => 'Dostop do te seje zavrnjen.',
         'view_all' => 'Poglej vse',
+        'not_started' => 'Ni zaceto',
     ],
 
     // Logicni okvir
@@ -1316,6 +1318,8 @@ return [
         'marked_complete' => 'Oznaceno kot dokoncano!',
         'export_all_prompts' => 'Izvozi vse prompte',
         'export_session_prompts' => 'Izvozi prompte seje',
+        'tasks' => 'Naloge',
+        'prompts' => 'Prompti',
     ],
 
     // Sodelovalna tabla
