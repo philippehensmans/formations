@@ -197,7 +197,28 @@ if (isset($_GET['session'])) {
             $userStmt->execute([$p['user_id']]);
             $userData = $userStmt->fetch();
             if ($userData) {
-                $participants[] = array_merge($p, $userData);
+                // Fetch guide data for this participant
+                $guideStmt = $db->prepare("SELECT tasks, templates, completion_percent, is_shared, organisation_nom FROM guides WHERE user_id = ? AND session_id = ?");
+                $guideStmt->execute([$p['user_id'], $selectedSession['id']]);
+                $guideData = $guideStmt->fetch();
+
+                $taskCount = 0;
+                $templateCount = 0;
+                if ($guideData) {
+                    $tasks = json_decode($guideData['tasks'] ?? '[]', true);
+                    $templates = json_decode($guideData['templates'] ?? '[]', true);
+                    $taskCount = is_array($tasks) ? count($tasks) : 0;
+                    $templateCount = is_array($templates) ? count($templates) : 0;
+                }
+
+                $participants[] = array_merge($p, $userData, [
+                    'guide_exists' => $guideData ? true : false,
+                    'task_count' => $taskCount,
+                    'template_count' => $templateCount,
+                    'completion_percent' => $guideData['completion_percent'] ?? 0,
+                    'is_shared' => $guideData['is_shared'] ?? 0,
+                    'guide_organisation' => $guideData['organisation_nom'] ?? ''
+                ]);
             }
         }
     }
@@ -335,35 +356,85 @@ if (isset($_GET['session'])) {
                         <?php if (empty($participants)): ?>
                             <p class="text-gray-500 text-center py-8"><?= t('trainer.no_participant_in_session') ?></p>
                         <?php else: ?>
+                            <div class="overflow-x-auto">
                             <table class="w-full text-sm">
                                 <thead>
-                                    <tr class="border-b">
-                                        <th class="text-left py-2"><?= t('trainer.participant') ?></th>
-                                        <th class="text-left py-2"><?= t('auth.organisation') ?></th>
-                                        <th class="text-left py-2"><?= t('trainer.registration_date') ?></th>
-                                        <th class="text-center py-2"><?= t('common.actions') ?></th>
+                                    <tr class="border-b bg-gray-50">
+                                        <th class="text-left py-2 px-2"><?= t('trainer.participant') ?></th>
+                                        <th class="text-left py-2 px-2"><?= t('auth.organisation') ?></th>
+                                        <th class="text-center py-2 px-2"><?= t('gp.tasks') ?></th>
+                                        <th class="text-center py-2 px-2"><?= t('gp.prompts') ?></th>
+                                        <th class="text-center py-2 px-2"><?= t('app.completion') ?></th>
+                                        <th class="text-center py-2 px-2"><?= t('common.status') ?></th>
+                                        <th class="text-center py-2 px-2"><?= t('common.actions') ?></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php foreach ($participants as $p): ?>
-                                        <tr class="border-b hover:bg-gray-50">
-                                            <td class="py-2">
+                                        <tr class="border-b hover:bg-gray-50 <?= $p['is_shared'] ? 'bg-green-50' : '' ?>">
+                                            <td class="py-2 px-2">
                                                 <div class="font-medium"><?= h($p['prenom'] . ' ' . $p['nom']) ?></div>
                                                 <div class="text-xs text-gray-500"><?= h($p['username']) ?></div>
                                             </td>
-                                            <td class="py-2 text-gray-600"><?= h($p['organisation'] ?? '-') ?></td>
-                                            <td class="py-2 text-gray-500"><?= date('d/m H:i', strtotime($p['created_at'])) ?></td>
-                                            <td class="py-2 text-center">
+                                            <td class="py-2 px-2 text-gray-600">
+                                                <?= h($p['guide_organisation'] ?: ($p['organisation'] ?? '-')) ?>
+                                            </td>
+                                            <td class="py-2 px-2 text-center">
+                                                <?php if ($p['guide_exists']): ?>
+                                                    <span class="inline-block px-2 py-1 bg-indigo-100 text-indigo-700 rounded font-medium">
+                                                        <?= $p['task_count'] ?>
+                                                    </span>
+                                                <?php else: ?>
+                                                    <span class="text-gray-400">-</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td class="py-2 px-2 text-center">
+                                                <?php if ($p['guide_exists']): ?>
+                                                    <span class="inline-block px-2 py-1 bg-purple-100 text-purple-700 rounded font-medium">
+                                                        <?= $p['template_count'] ?>
+                                                    </span>
+                                                <?php else: ?>
+                                                    <span class="text-gray-400">-</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td class="py-2 px-2 text-center">
+                                                <?php if ($p['guide_exists']): ?>
+                                                    <div class="flex items-center justify-center gap-1">
+                                                        <div class="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                                            <div class="h-full bg-<?= $p['completion_percent'] >= 80 ? 'green' : ($p['completion_percent'] >= 40 ? 'yellow' : 'red') ?>-500"
+                                                                 style="width: <?= $p['completion_percent'] ?>%"></div>
+                                                        </div>
+                                                        <span class="text-xs font-medium"><?= $p['completion_percent'] ?>%</span>
+                                                    </div>
+                                                <?php else: ?>
+                                                    <span class="text-gray-400 text-xs"><?= t('trainer.not_started') ?></span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td class="py-2 px-2 text-center">
+                                                <?php if (!$p['guide_exists']): ?>
+                                                    <span class="inline-block px-2 py-0.5 bg-gray-200 text-gray-600 rounded text-xs">-</span>
+                                                <?php elseif ($p['is_shared']): ?>
+                                                    <span class="inline-block px-2 py-0.5 bg-green-200 text-green-700 rounded text-xs"><?= t('app.submitted') ?></span>
+                                                <?php else: ?>
+                                                    <span class="inline-block px-2 py-0.5 bg-yellow-200 text-yellow-700 rounded text-xs"><?= t('app.draft') ?></span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td class="py-2 px-2 text-center">
+                                                <?php if ($p['guide_exists']): ?>
                                                 <a href="view.php?id=<?= $p['id'] ?>"
                                                    class="inline-block px-3 py-1 bg-<?= $appColor ?>-600 text-white rounded hover:bg-<?= $appColor ?>-700 text-xs"
                                                    target="_blank">
                                                     <?= t('common.view') ?>
                                                 </a>
+                                                <?php else: ?>
+                                                <span class="text-gray-400 text-xs">-</span>
+                                                <?php endif; ?>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
+                            </div>
                         <?php endif; ?>
                     </div>
                 <?php else: ?>

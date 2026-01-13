@@ -38,6 +38,7 @@ return [
         'view' => 'Voir',
         'actions' => 'Actions',
         'not_specified' => 'Non renseigne',
+        'status' => 'Statut',
         'interactive_training' => 'Formation interactive',
         'confirm_delete' => 'Supprimer cet element ?',
         'save_success' => 'Sauvegarde reussie !',
@@ -156,6 +157,7 @@ return [
         'no_create_rights' => 'Vous n\'avez pas les droits pour creer des sessions.',
         'access_denied' => 'Acces refuse a cette session.',
         'view_all' => 'Voir tout',
+        'not_started' => 'Non commence',
     ],
 
     // Cadre Logique
@@ -1316,6 +1318,8 @@ return [
         'marked_complete' => 'Marque comme termine !',
         'export_all_prompts' => 'Exporter tous les prompts',
         'export_session_prompts' => 'Exporter les prompts de la session',
+        'tasks' => 'Taches',
+        'prompts' => 'Prompts',
     ],
 
     // Tableau Blanc Collaboratif
