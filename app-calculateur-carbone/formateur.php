@@ -197,9 +197,10 @@ if ($selectedSessionId) {
 
     if ($selectedSession) {
         // Participants - requete locale puis enrichissement depuis shared DB
+        // Inclure tous les utilisateurs qui sont soit dans participants, soit dans calculs
         // Calcul des occurrences = multiplicateur de frequence × quantite
         $stmt = $db->prepare("
-            SELECT p.user_id,
+            SELECT all_users.user_id,
                    COALESCE(SUM(c.co2_total), 0) as total_co2,
                    COUNT(c.id) as nb_calculs,
                    COALESCE(SUM(
@@ -211,13 +212,16 @@ if ($selectedSessionId) {
                            ELSE 1
                        END * c.quantite
                    ), 0) as nb_occurrences
-            FROM participants p
-            LEFT JOIN calculs c ON c.user_id = p.user_id AND c.session_id = p.session_id
-            WHERE p.session_id = ?
-            GROUP BY p.user_id
+            FROM (
+                SELECT DISTINCT user_id FROM participants WHERE session_id = ?
+                UNION
+                SELECT DISTINCT user_id FROM calculs WHERE session_id = ?
+            ) AS all_users
+            LEFT JOIN calculs c ON c.user_id = all_users.user_id AND c.session_id = ?
+            GROUP BY all_users.user_id
             ORDER BY total_co2 DESC
         ");
-        $stmt->execute([$selectedSessionId]);
+        $stmt->execute([$selectedSessionId, $selectedSessionId, $selectedSessionId]);
         $participantsData = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         // Enrichir avec les infos utilisateur depuis la base partagee
