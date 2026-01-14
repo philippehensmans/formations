@@ -10,7 +10,8 @@ if (!isset($_SESSION['participant_id'])) {
     exit;
 }
 
-// Système de traduction
+// Configuration et système de traduction
+require_once __DIR__ . '/../shared-auth/config.php';
 require_once __DIR__ . '/../shared-auth/lang.php';
 
 $participantId = $_SESSION['participant_id'];
