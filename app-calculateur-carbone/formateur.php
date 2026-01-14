@@ -350,9 +350,21 @@ if ($selectedSessionId) {
 
     <main class="max-w-7xl mx-auto px-4 py-6">
         <!-- DEBUG GLOBAL -->
+        <?php
+        // Debug: compter toutes les sessions dans la base
+        $debugAllSessions = $db->query("SELECT COUNT(*) FROM sessions")->fetchColumn();
+        $debugDbPath = DB_PATH;
+        $debugDbExists = file_exists(DB_PATH) ? 'OUI' : 'NON';
+        ?>
         <div class="mb-4 p-4 bg-yellow-100 border border-yellow-400 text-yellow-800 rounded-lg text-sm">
             <strong>DEBUG:</strong>
-            Sessions trouvées: <?= count($sessions) ?> |
+            DB path: <?= h($debugDbPath) ?> |
+            DB existe: <?= $debugDbExists ?> |
+            Total sessions en base: <?= $debugAllSessions ?> |
+            canSeeAllSessions: <?= $canSeeAllSessions ? 'OUI' : 'NON' ?> |
+            user_id: <?= $user['id'] ?? 'N/A' ?>
+            <br>
+            Sessions trouvées (filtrées): <?= count($sessions) ?> |
             Session sélectionnée: <?= $selectedSessionId ?> |
             Tab actif: <?= h($activeTab) ?> |
             sessionStats: <?= $sessionStats ? 'OUI' : 'NON' ?> |
