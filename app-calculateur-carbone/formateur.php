@@ -185,6 +185,11 @@ $metadata = $estimations['_metadata'] ?? [];
 // Stats session selectionnee
 $selectedSessionId = intval($_GET['session'] ?? ($sessions[0]['id'] ?? 0));
 $sessionStats = null;
+$debugInfo = null; // Initialiser debug
+
+// DEBUG au tout début
+error_log("DEBUG formateur.php: session_id=$selectedSessionId, nb_sessions=" . count($sessions));
+
 if ($selectedSessionId) {
     if ($canSeeAllSessions) {
         $stmt = $db->prepare("SELECT * FROM sessions WHERE id = ?");
@@ -344,6 +349,22 @@ if ($selectedSessionId) {
     </div>
 
     <main class="max-w-7xl mx-auto px-4 py-6">
+        <!-- DEBUG GLOBAL -->
+        <div class="mb-4 p-4 bg-yellow-100 border border-yellow-400 text-yellow-800 rounded-lg text-sm">
+            <strong>DEBUG:</strong>
+            Sessions trouvées: <?= count($sessions) ?> |
+            Session sélectionnée: <?= $selectedSessionId ?> |
+            Tab actif: <?= h($activeTab) ?> |
+            sessionStats: <?= $sessionStats ? 'OUI' : 'NON' ?> |
+            debugInfo: <?= $debugInfo ? 'OUI' : 'NON' ?>
+            <?php if ($debugInfo): ?>
+            <br>participants_table: <?= $debugInfo['participants_table'] ?> |
+            calculs_table: <?= $debugInfo['calculs_table'] ?> |
+            union: <?= $debugInfo['union_result'] ?> |
+            found: <?= $debugInfo['found_in_users'] ?>
+            <?php endif; ?>
+        </div>
+
         <?php if ($error): ?>
             <div class="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg"><?= h($error) ?></div>
         <?php endif; ?>
