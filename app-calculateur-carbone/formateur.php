@@ -185,10 +185,6 @@ $metadata = $estimations['_metadata'] ?? [];
 // Stats session selectionnee
 $selectedSessionId = intval($_GET['session'] ?? ($sessions[0]['id'] ?? 0));
 $sessionStats = null;
-$debugInfo = null; // Initialiser debug
-
-// DEBUG au tout début
-error_log("DEBUG formateur.php: session_id=$selectedSessionId, nb_sessions=" . count($sessions));
 
 if ($selectedSessionId) {
     if ($canSeeAllSessions) {
@@ -201,15 +197,6 @@ if ($selectedSessionId) {
     $selectedSession = $stmt->fetch();
 
     if ($selectedSession) {
-        // DEBUG: Compter les sources de participants
-        $stmtDebugParticipants = $db->prepare("SELECT COUNT(DISTINCT user_id) FROM participants WHERE session_id = ?");
-        $stmtDebugParticipants->execute([$selectedSessionId]);
-        $debugCountParticipants = $stmtDebugParticipants->fetchColumn();
-
-        $stmtDebugCalculs = $db->prepare("SELECT COUNT(DISTINCT user_id) FROM calculs WHERE session_id = ?");
-        $stmtDebugCalculs->execute([$selectedSessionId]);
-        $debugCountCalculs = $stmtDebugCalculs->fetchColumn();
-
         // Participants - requete locale puis enrichissement depuis shared DB
         // Inclure tous les utilisateurs qui sont soit dans participants, soit dans calculs
         // Calcul des occurrences = multiplicateur de frequence × quantite
@@ -237,12 +224,10 @@ if ($selectedSessionId) {
         ");
         $stmt->execute([$selectedSessionId, $selectedSessionId, $selectedSessionId]);
         $participantsData = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $debugCountUnion = count($participantsData);
 
         // Enrichir avec les infos utilisateur depuis la base partagee
         $sharedDb = getSharedDB();
         $participants = [];
-        $debugMissingUsers = [];
         foreach ($participantsData as $p) {
             $stmtUser = $sharedDb->prepare("SELECT id, prenom, username FROM users WHERE id = ?");
             $stmtUser->execute([$p['user_id']]);
@@ -253,19 +238,8 @@ if ($selectedSessionId) {
                     'nb_calculs' => $p['nb_calculs'],
                     'nb_occurrences' => $p['nb_occurrences']
                 ]);
-            } else {
-                $debugMissingUsers[] = $p['user_id'];
             }
         }
-
-        // DEBUG info
-        $debugInfo = [
-            'participants_table' => $debugCountParticipants,
-            'calculs_table' => $debugCountCalculs,
-            'union_result' => $debugCountUnion,
-            'found_in_users' => count($participants),
-            'missing_user_ids' => $debugMissingUsers
-        ];
 
         // Total session
         $stmt = $db->prepare("SELECT SUM(co2_total) as total FROM calculs WHERE session_id = ?");
@@ -349,34 +323,6 @@ if ($selectedSessionId) {
     </div>
 
     <main class="max-w-7xl mx-auto px-4 py-6">
-        <!-- DEBUG GLOBAL -->
-        <?php
-        // Debug: compter toutes les sessions dans la base
-        $debugAllSessions = $db->query("SELECT COUNT(*) FROM sessions")->fetchColumn();
-        $debugDbPath = DB_PATH;
-        $debugDbExists = file_exists(DB_PATH) ? 'OUI' : 'NON';
-        ?>
-        <div class="mb-4 p-4 bg-yellow-100 border border-yellow-400 text-yellow-800 rounded-lg text-sm">
-            <strong>DEBUG:</strong>
-            DB path: <?= h($debugDbPath) ?> |
-            DB existe: <?= $debugDbExists ?> |
-            Total sessions en base: <?= $debugAllSessions ?> |
-            canSeeAllSessions: <?= $canSeeAllSessions ? 'OUI' : 'NON' ?> |
-            user_id: <?= $user['id'] ?? 'N/A' ?>
-            <br>
-            Sessions trouvées (filtrées): <?= count($sessions) ?> |
-            Session sélectionnée: <?= $selectedSessionId ?> |
-            Tab actif: <?= h($activeTab) ?> |
-            sessionStats: <?= $sessionStats ? 'OUI' : 'NON' ?> |
-            debugInfo: <?= $debugInfo ? 'OUI' : 'NON' ?>
-            <?php if ($debugInfo): ?>
-            <br>participants_table: <?= $debugInfo['participants_table'] ?> |
-            calculs_table: <?= $debugInfo['calculs_table'] ?> |
-            union: <?= $debugInfo['union_result'] ?> |
-            found: <?= $debugInfo['found_in_users'] ?>
-            <?php endif; ?>
-        </div>
-
         <?php if ($error): ?>
             <div class="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg"><?= h($error) ?></div>
         <?php endif; ?>
@@ -449,22 +395,6 @@ if ($selectedSessionId) {
         <?php elseif ($activeTab === 'stats' && $sessionStats): ?>
         <!-- ONGLET STATS -->
         <div class="space-y-6">
-            <!-- DEBUG INFO -->
-            <?php if (isset($debugInfo)): ?>
-            <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-sm">
-                <h4 class="font-bold text-yellow-800 mb-2">DEBUG - Sources de participants:</h4>
-                <ul class="text-yellow-700 space-y-1">
-                    <li>Table participants: <strong><?= $debugInfo['participants_table'] ?></strong> utilisateurs</li>
-                    <li>Table calculs: <strong><?= $debugInfo['calculs_table'] ?></strong> utilisateurs distincts</li>
-                    <li>Résultat UNION: <strong><?= $debugInfo['union_result'] ?></strong> utilisateurs</li>
-                    <li>Trouvés dans base users: <strong><?= $debugInfo['found_in_users'] ?></strong> utilisateurs</li>
-                    <?php if (!empty($debugInfo['missing_user_ids'])): ?>
-                    <li class="text-red-600">IDs manquants dans base users: <?= implode(', ', $debugInfo['missing_user_ids']) ?></li>
-                    <?php endif; ?>
-                </ul>
-            </div>
-            <?php endif; ?>
-
             <!-- Header session -->
             <div class="bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-xl p-6 text-white">
                 <h2 class="text-2xl font-bold"><?= h($sessionStats['session']['nom']) ?></h2>
