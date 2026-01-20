@@ -3,7 +3,8 @@
  * Point d'entree - Cadre Logique
  * Redirige vers login ou l'application selon l'etat de connexion
  */
-require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/../shared-auth/config.php';
 
 // Si connecte avec une session active, aller vers l'app
 if (isLoggedIn() && isset($_SESSION['current_session_id'])) {

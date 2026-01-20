@@ -3,7 +3,8 @@
  * Vue en lecture seule du cadre logique d'un participant
  * Accessible par le formateur
  */
-require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/../shared-auth/config.php';
 require_once __DIR__ . '/../shared-auth/lang.php';
 
 $lang = getCurrentLanguage();

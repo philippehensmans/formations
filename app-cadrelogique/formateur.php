@@ -9,7 +9,8 @@ $appColor = 'indigo';
 $appKey = 'app-cadrelogique';
 
 // Charger la config locale pour avoir acces a la base des sessions
-require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/../shared-auth/config.php';
 $db = getDB();
 
 // Inclure le template formateur partage
