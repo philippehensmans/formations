@@ -200,6 +200,7 @@ if ($isSuperAdmin) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Shared Auth</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body class="min-h-screen bg-gray-100">
     <header class="bg-gray-800 text-white p-4">
@@ -258,8 +259,11 @@ if ($isSuperAdmin) {
 
         <!-- Liste utilisateurs -->
         <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
-            <div class="bg-gray-50 p-4 border-b font-semibold text-gray-700">
-                Utilisateurs (<?= count($users) ?>)
+            <div class="bg-gray-50 p-4 border-b font-semibold text-gray-700 flex justify-between items-center">
+                <span>Utilisateurs (<?= count($users) ?>)</span>
+                <button onclick="exportUsersToExcel()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm flex items-center gap-2">
+                    <span>📊</span> Exporter Excel
+                </button>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
@@ -398,5 +402,77 @@ if ($isSuperAdmin) {
             <p>Base de donnees: <?= realpath(__DIR__ . '/data/users.sqlite') ?: __DIR__ . '/data/users.sqlite' ?></p>
         </div>
     </main>
+
+    <script>
+        // Donnees utilisateurs pour export
+        const usersData = <?= json_encode(array_map(function($u) {
+            return [
+                'id' => $u['id'],
+                'username' => $u['username'],
+                'email' => $u['email'] ?? '',
+                'prenom' => $u['prenom'] ?? '',
+                'nom' => $u['nom'] ?? '',
+                'organisation' => $u['organisation'] ?? '',
+                'is_formateur' => $u['is_formateur'] ? 'Oui' : 'Non',
+                'is_admin' => $u['is_admin'] ? 'Oui' : 'Non',
+                'is_super_admin' => $u['is_super_admin'] ? 'Oui' : 'Non',
+                'email_consent' => !empty($u['email_consent']) ? 'Oui' : 'Non',
+                'created_at' => $u['created_at'] ?? '',
+                'last_login' => $u['last_login'] ?? ''
+            ];
+        }, $users)) ?>;
+
+        function exportUsersToExcel() {
+            const wb = XLSX.utils.book_new();
+
+            // Feuille des utilisateurs
+            const headers = [
+                ['EXPORT UTILISATEURS - SHARED AUTH'],
+                ['Date export: ' + new Date().toLocaleDateString('fr-FR')],
+                [],
+                ['ID', 'Username', 'Email', 'Prenom', 'Nom', 'Organisation', 'Formateur', 'Admin', 'Super-Admin', 'Consent Email', 'Cree le', 'Derniere connexion']
+            ];
+
+            const data = usersData.map(u => [
+                u.id,
+                u.username,
+                u.email,
+                u.prenom,
+                u.nom,
+                u.organisation,
+                u.is_formateur,
+                u.is_admin,
+                u.is_super_admin,
+                u.email_consent,
+                u.created_at,
+                u.last_login
+            ]);
+
+            const wsData = [...headers, ...data];
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+            // Ajuster la largeur des colonnes
+            ws['!cols'] = [
+                { wch: 5 },   // ID
+                { wch: 20 },  // Username
+                { wch: 30 },  // Email
+                { wch: 15 },  // Prenom
+                { wch: 15 },  // Nom
+                { wch: 25 },  // Organisation
+                { wch: 10 },  // Formateur
+                { wch: 8 },   // Admin
+                { wch: 12 },  // Super-Admin
+                { wch: 12 },  // Consent
+                { wch: 18 },  // Cree le
+                { wch: 18 }   // Derniere connexion
+            ];
+
+            XLSX.utils.book_append_sheet(wb, ws, 'Utilisateurs');
+
+            // Telecharger
+            const filename = `utilisateurs_${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(wb, filename);
+        }
+    </script>
 </body>
 </html>
