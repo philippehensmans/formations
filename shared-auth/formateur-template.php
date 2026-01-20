@@ -191,12 +191,23 @@ if (isset($_GET['session'])) {
         // Enrichir avec les donnees utilisateur de la base partagee
         $sharedDb = getSharedDB();
         foreach ($localParticipants as $p) {
-            $userStmt = $sharedDb->prepare("SELECT username, prenom, nom, organisation FROM users WHERE id = ?");
-            $userStmt->execute([$p['user_id']]);
-            $userData = $userStmt->fetch();
-            if ($userData) {
-                $participants[] = array_merge($p, $userData);
+            // Si le participant a un user_id, essayer de recuperer les donnees de la base partagee
+            if (!empty($p['user_id'])) {
+                $userStmt = $sharedDb->prepare("SELECT username, prenom, nom, organisation FROM users WHERE id = ?");
+                $userStmt->execute([$p['user_id']]);
+                $userData = $userStmt->fetch();
+                if ($userData) {
+                    $participants[] = array_merge($p, $userData);
+                    continue;
+                }
             }
+            // Fallback: utiliser les donnees locales du participant (ancien schema)
+            $participants[] = array_merge($p, [
+                'username' => $p['prenom'] ?? 'Participant',
+                'prenom' => $p['prenom'] ?? '',
+                'nom' => $p['nom'] ?? '',
+                'organisation' => $p['organisation'] ?? ''
+            ]);
         }
     }
 }
