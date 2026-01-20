@@ -56,19 +56,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['current_session_nom'] = $session['nom'];
 
                 // Enregistrer le participant dans la session si necessaire
-                $stmt = $db->prepare("SELECT id FROM participants WHERE session_id = ? AND user_id = ?");
-                $stmt->execute([$session['id'], $user['id']]);
-                $participant = $stmt->fetch();
+                $participant = null;
+                try {
+                    // Nouveau schema avec user_id
+                    $stmt = $db->prepare("SELECT id FROM participants WHERE session_id = ? AND user_id = ?");
+                    $stmt->execute([$session['id'], $user['id']]);
+                    $participant = $stmt->fetch();
+                } catch (PDOException $e) {
+                    // Ancien schema: chercher par prenom/nom
+                    $stmt = $db->prepare("SELECT id FROM participants WHERE session_id = ? AND prenom = ? AND nom = ?");
+                    $stmt->execute([$session['id'], $user['prenom'] ?? '', $user['nom'] ?? '']);
+                    $participant = $stmt->fetch();
+                }
 
                 if (!$participant) {
-                    // Essayer d'inserer avec prenom/nom, sinon sans
+                    // Essayer d'inserer avec user_id (nouveau schema)
                     try {
                         $stmt = $db->prepare("INSERT INTO participants (session_id, user_id, prenom, nom, created_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)");
                         $stmt->execute([$session['id'], $user['id'], $user['prenom'] ?? '', $user['nom'] ?? '']);
                     } catch (PDOException $e) {
-                        // Fallback: inserer sans prenom/nom (ancien schema)
-                        $stmt = $db->prepare("INSERT INTO participants (session_id, user_id, created_at) VALUES (?, ?, CURRENT_TIMESTAMP)");
-                        $stmt->execute([$session['id'], $user['id']]);
+                        // Fallback: ancien schema sans user_id mais avec prenom/nom NOT NULL
+                        $stmt = $db->prepare("INSERT INTO participants (session_id, prenom, nom, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)");
+                        $stmt->execute([$session['id'], $user['prenom'] ?? $user['username'], $user['nom'] ?? '']);
                     }
                     $_SESSION['participant_id'] = $db->lastInsertId();
                 } else {
