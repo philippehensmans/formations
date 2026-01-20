@@ -56,8 +56,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $participant = $stmt->fetch();
 
                 if (!$participant) {
-                    $stmt = $db->prepare("INSERT INTO participants (session_id, user_id, created_at) VALUES (?, ?, CURRENT_TIMESTAMP)");
-                    $stmt->execute([$session['id'], $user['id']]);
+                    // Inclure prenom et nom depuis les donnees utilisateur
+                    $stmt = $db->prepare("INSERT INTO participants (session_id, user_id, prenom, nom, created_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)");
+                    $stmt->execute([$session['id'], $user['id'], $user['prenom'] ?? '', $user['nom'] ?? '']);
                     $_SESSION['participant_id'] = $db->lastInsertId();
                 } else {
                     $_SESSION['participant_id'] = $participant['id'];
