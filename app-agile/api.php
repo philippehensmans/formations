@@ -79,6 +79,13 @@ function saveProject($db, $userId) {
         return;
     }
 
+    $sessionId = $_SESSION['current_session_id'] ?? null;
+    if (!$sessionId) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Session non definie']);
+        return;
+    }
+
     $projectName = $input['project_name'] ?? '';
     $teamName = $input['team_name'] ?? '';
     $cards = json_encode($input['cards'] ?? []);
@@ -86,8 +93,8 @@ function saveProject($db, $userId) {
     $retrospective = json_encode($input['retrospective'] ?? ['good' => [], 'improve' => [], 'actions' => []]);
     $sprint = json_encode($input['sprint'] ?? ['number' => 1, 'start' => '', 'end' => '', 'goal' => '']);
 
-    $stmt = $db->prepare("SELECT id FROM projects WHERE user_id = ?");
-    $stmt->execute([$userId]);
+    $stmt = $db->prepare("SELECT id FROM projects WHERE user_id = ? AND session_id = ?");
+    $stmt->execute([$userId, $sessionId]);
     $existing = $stmt->fetch();
 
     if ($existing) {
@@ -100,16 +107,16 @@ function saveProject($db, $userId) {
                 retrospective = ?,
                 sprint = ?,
                 updated_at = CURRENT_TIMESTAMP
-            WHERE user_id = ?
+            WHERE user_id = ? AND session_id = ?
         ");
-        $stmt->execute([$projectName, $teamName, $cards, $userStories, $retrospective, $sprint, $userId]);
+        $stmt->execute([$projectName, $teamName, $cards, $userStories, $retrospective, $sprint, $userId, $sessionId]);
         $projectId = $existing['id'];
     } else {
         $stmt = $db->prepare("
-            INSERT INTO projects (user_id, project_name, team_name, cards, user_stories, retrospective, sprint)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO projects (user_id, session_id, project_name, team_name, cards, user_stories, retrospective, sprint)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ");
-        $stmt->execute([$userId, $projectName, $teamName, $cards, $userStories, $retrospective, $sprint]);
+        $stmt->execute([$userId, $sessionId, $projectName, $teamName, $cards, $userStories, $retrospective, $sprint]);
         $projectId = $db->lastInsertId();
     }
 
@@ -117,8 +124,9 @@ function saveProject($db, $userId) {
 }
 
 function loadProject($db, $userId) {
-    $stmt = $db->prepare("SELECT * FROM projects WHERE user_id = ?");
-    $stmt->execute([$userId]);
+    $sessionId = $_SESSION['current_session_id'] ?? null;
+    $stmt = $db->prepare("SELECT * FROM projects WHERE user_id = ? AND session_id = ?");
+    $stmt->execute([$userId, $sessionId]);
     $project = $stmt->fetch();
 
     if ($project) {
@@ -142,9 +150,10 @@ function loadProject($db, $userId) {
 function toggleShare($db, $userId) {
     $input = json_decode(file_get_contents('php://input'), true);
     $shared = $input['shared'] ?? false;
+    $sessionId = $_SESSION['current_session_id'] ?? null;
 
-    $stmt = $db->prepare("UPDATE projects SET is_shared = ? WHERE user_id = ?");
-    $stmt->execute([$shared ? 1 : 0, $userId]);
+    $stmt = $db->prepare("UPDATE projects SET is_shared = ? WHERE user_id = ? AND session_id = ?");
+    $stmt->execute([$shared ? 1 : 0, $userId, $sessionId]);
 
     echo json_encode(['success' => true, 'shared' => $shared]);
 }
