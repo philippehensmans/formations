@@ -3,6 +3,7 @@
  * Interface de travail - Cadre Logique (Multilingue)
  */
 require_once 'config/database.php';
+require_once __DIR__ . '/../shared-auth/config.php';
 require_once __DIR__ . '/../shared-auth/lang.php';
 requireParticipant();
 
