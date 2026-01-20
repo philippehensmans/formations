@@ -837,35 +837,35 @@ $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goa
     </div>
 
     <script>
-        // Translations for JavaScript
+        // Translations for JavaScript (using JSON encoding to escape quotes properly)
         const translations = {
-            saving: '<?= t('app.saving') ?>',
-            saved: '<?= t('app.saved') ?>',
-            error: '<?= t('app.error') ?>',
-            networkError: '<?= t('app.network_error') ?>',
-            serverError: '<?= t('app.server_error') ?>',
-            noTasks: '<?= t('agile.no_tasks') ?>',
-            noStories: '<?= t('agile.no_stories') ?>',
-            noItems: '<?= t('agile.no_items') ?>',
-            noSprintTasks: '<?= t('agile.no_sprint_tasks') ?>',
-            high: '<?= t('agile.high') ?>',
-            medium: '<?= t('agile.medium') ?>',
-            low: '<?= t('agile.low') ?>',
-            done: '<?= t('agile.done') ?>',
-            inProgress: '<?= t('agile.in_progress') ?>',
-            todo: '<?= t('agile.todo') ?>',
-            titleRequired: '<?= t('agile.title_required') ?>',
-            fillRequired: '<?= t('agile.fill_required') ?>',
-            deleteTask: '<?= t('agile.delete_task') ?>',
-            deleteStory: '<?= t('agile.delete_story') ?>',
-            resetConfirm: '<?= t('agile.reset_confirm') ?>',
-            userStory: '<?= t('agile.user_story') ?>',
-            asA: '<?= t('agile.as_a_label') ?>',
-            iWant: '<?= t('agile.i_want_label') ?>',
-            soThat: '<?= t('agile.so_that_label') ?>',
-            criteria: '<?= t('agile.acceptance_criteria') ?>',
-            points: '<?= t('agile.points') ?>',
-            delete: '<?= t('app.delete') ?>'
+            saving: <?= json_encode(t('app.saving')) ?>,
+            saved: <?= json_encode(t('app.saved')) ?>,
+            error: <?= json_encode(t('app.error')) ?>,
+            networkError: <?= json_encode(t('app.network_error')) ?>,
+            serverError: <?= json_encode(t('app.server_error')) ?>,
+            noTasks: <?= json_encode(t('agile.no_tasks')) ?>,
+            noStories: <?= json_encode(t('agile.no_stories')) ?>,
+            noItems: <?= json_encode(t('agile.no_items')) ?>,
+            noSprintTasks: <?= json_encode(t('agile.no_sprint_tasks')) ?>,
+            high: <?= json_encode(t('agile.high')) ?>,
+            medium: <?= json_encode(t('agile.medium')) ?>,
+            low: <?= json_encode(t('agile.low')) ?>,
+            done: <?= json_encode(t('agile.done')) ?>,
+            inProgress: <?= json_encode(t('agile.in_progress')) ?>,
+            todo: <?= json_encode(t('agile.todo')) ?>,
+            titleRequired: <?= json_encode(t('agile.title_required')) ?>,
+            fillRequired: <?= json_encode(t('agile.fill_required')) ?>,
+            deleteTask: <?= json_encode(t('agile.delete_task')) ?>,
+            deleteStory: <?= json_encode(t('agile.delete_story')) ?>,
+            resetConfirm: <?= json_encode(t('agile.reset_confirm')) ?>,
+            userStory: <?= json_encode(t('agile.user_story')) ?>,
+            asA: <?= json_encode(t('agile.as_a_label')) ?>,
+            iWant: <?= json_encode(t('agile.i_want_label')) ?>,
+            soThat: <?= json_encode(t('agile.so_that_label')) ?>,
+            criteria: <?= json_encode(t('agile.acceptance_criteria')) ?>,
+            points: <?= json_encode(t('agile.points')) ?>,
+            delete: <?= json_encode(t('app.delete')) ?>
         };
 
         let data = {
