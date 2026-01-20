@@ -20,10 +20,15 @@ $appColor = $appColor ?? 'blue';
 $redirectAfterLogin = $redirectAfterLogin ?? 'index.php';
 $lang = getCurrentLanguage();
 
-// Si deja connecte, rediriger
-if (isLoggedIn() && isset($_SESSION['current_session_id'])) {
+// Si deja connecte avec participant_id, rediriger
+if (isLoggedIn() && isset($_SESSION['current_session_id']) && isset($_SESSION['participant_id'])) {
     header('Location: ' . $redirectAfterLogin);
     exit;
+}
+
+// Si connecte mais sans participant_id, deconnecter pour recommencer
+if (isLoggedIn() && !isset($_SESSION['participant_id'])) {
+    logout();
 }
 
 // Traitement du formulaire
