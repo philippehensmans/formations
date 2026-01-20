@@ -57,29 +57,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 // Enregistrer le participant dans la session si necessaire
                 $participant = null;
+                $prenom = $user['prenom'] ?? $user['username'] ?? '';
+                $nom = $user['nom'] ?? '';
+
+                // Chercher participant existant (essayer plusieurs methodes)
                 try {
-                    // Nouveau schema avec user_id
                     $stmt = $db->prepare("SELECT id FROM participants WHERE session_id = ? AND user_id = ?");
                     $stmt->execute([$session['id'], $user['id']]);
                     $participant = $stmt->fetch();
                 } catch (PDOException $e) {
-                    // Ancien schema: chercher par prenom/nom
+                    // user_id column n'existe pas
+                }
+
+                if (!$participant) {
+                    // Chercher par prenom/nom
                     $stmt = $db->prepare("SELECT id FROM participants WHERE session_id = ? AND prenom = ? AND nom = ?");
-                    $stmt->execute([$session['id'], $user['prenom'] ?? '', $user['nom'] ?? '']);
+                    $stmt->execute([$session['id'], $prenom, $nom]);
                     $participant = $stmt->fetch();
                 }
 
                 if (!$participant) {
-                    // Essayer d'inserer avec user_id (nouveau schema)
+                    // Creer nouveau participant
                     try {
                         $stmt = $db->prepare("INSERT INTO participants (session_id, user_id, prenom, nom, created_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)");
-                        $stmt->execute([$session['id'], $user['id'], $user['prenom'] ?? '', $user['nom'] ?? '']);
+                        $stmt->execute([$session['id'], $user['id'], $prenom, $nom]);
+                        $_SESSION['participant_id'] = $db->lastInsertId();
                     } catch (PDOException $e) {
-                        // Fallback: ancien schema sans user_id mais avec prenom/nom NOT NULL
-                        $stmt = $db->prepare("INSERT INTO participants (session_id, prenom, nom, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)");
-                        $stmt->execute([$session['id'], $user['prenom'] ?? $user['username'], $user['nom'] ?? '']);
+                        // INSERT echoue - soit user_id n'existe pas, soit UNIQUE constraint
+                        try {
+                            $stmt = $db->prepare("INSERT INTO participants (session_id, prenom, nom, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)");
+                            $stmt->execute([$session['id'], $prenom, $nom]);
+                            $_SESSION['participant_id'] = $db->lastInsertId();
+                        } catch (PDOException $e2) {
+                            // UNIQUE constraint - le participant existe, le recuperer
+                            $stmt = $db->prepare("SELECT id FROM participants WHERE session_id = ? AND prenom = ? AND nom = ?");
+                            $stmt->execute([$session['id'], $prenom, $nom]);
+                            $participant = $stmt->fetch();
+                            $_SESSION['participant_id'] = $participant['id'];
+                        }
                     }
-                    $_SESSION['participant_id'] = $db->lastInsertId();
                 } else {
                     $_SESSION['participant_id'] = $participant['id'];
                 }
