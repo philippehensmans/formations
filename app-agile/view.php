@@ -33,13 +33,39 @@ if (!canAccessSession($appKey, $participant['session_id'])) {
     die("Acces refuse a cette session.");
 }
 
-$userStmt = $sharedDb->prepare("SELECT prenom, nom, organisation FROM users WHERE id = ?");
-$userStmt->execute([$participant['user_id']]);
-$userInfo = $userStmt->fetch();
+// Recuperer les infos utilisateur (si user_id existe)
+$userInfo = null;
+if (!empty($participant['user_id'])) {
+    $userStmt = $sharedDb->prepare("SELECT prenom, nom, organisation FROM users WHERE id = ?");
+    $userStmt->execute([$participant['user_id']]);
+    $userInfo = $userStmt->fetch();
+}
 
-$stmt = $db->prepare("SELECT * FROM projects WHERE user_id = ? AND session_id = ?");
-$stmt->execute([$participant['user_id'], $participant['session_id']]);
-$project = $stmt->fetch();
+// Fallback sur les donnees locales du participant
+if (!$userInfo) {
+    $userInfo = [
+        'prenom' => $participant['prenom'] ?? '',
+        'nom' => $participant['nom'] ?? '',
+        'organisation' => $participant['organisation'] ?? ''
+    ];
+}
+
+// Chercher le projet - essayer plusieurs methodes
+$project = null;
+
+// 1. Chercher par user_id ET session_id
+if (!empty($participant['user_id'])) {
+    $stmt = $db->prepare("SELECT * FROM projects WHERE user_id = ? AND session_id = ?");
+    $stmt->execute([$participant['user_id'], $participant['session_id']]);
+    $project = $stmt->fetch();
+
+    // 2. Fallback: chercher par user_id seulement (anciens projets sans session_id)
+    if (!$project) {
+        $stmt = $db->prepare("SELECT * FROM projects WHERE user_id = ? AND (session_id IS NULL OR session_id = 0)");
+        $stmt->execute([$participant['user_id']]);
+        $project = $stmt->fetch();
+    }
+}
 
 $cards = $project ? json_decode($project['cards'] ?? '[]', true) : [];
 $userStories = $project ? json_decode($project['user_stories'] ?? '[]', true) : [];
