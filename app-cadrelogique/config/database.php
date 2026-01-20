@@ -72,6 +72,13 @@ function initDatabase($db) {
         // Colonne existe deja
     }
 
+    // Migration: ajouter formateur_id a la table sessions
+    try {
+        $db->exec("ALTER TABLE sessions ADD COLUMN formateur_id INTEGER");
+    } catch (PDOException $e) {
+        // Colonne existe deja
+    }
+
     // Table des cadres logiques
     $db->exec("CREATE TABLE IF NOT EXISTS cadre_logique (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
