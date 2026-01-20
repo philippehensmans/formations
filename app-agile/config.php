@@ -82,6 +82,18 @@ function initDatabase($db) {
     } catch (Exception $e) {
         // Colonne existe deja
     }
+
+    // Migration: ajouter prenom/nom aux participants (requis par login-template)
+    try {
+        $db->exec("ALTER TABLE participants ADD COLUMN prenom VARCHAR(100)");
+    } catch (Exception $e) {
+        // Colonne existe deja
+    }
+    try {
+        $db->exec("ALTER TABLE participants ADD COLUMN nom VARCHAR(100)");
+    } catch (Exception $e) {
+        // Colonne existe deja
+    }
 }
 
 /**
