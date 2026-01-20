@@ -4,17 +4,18 @@ requireLoginWithSession();
 
 $db = getDB();
 $userId = $_SESSION['user_id'];
+$sessionId = $_SESSION['current_session_id'];
 $user = getCurrentUser();
 $username = $user['username'];
 
-// Charger ou creer le projet de l'utilisateur
-$stmt = $db->prepare("SELECT * FROM projects WHERE user_id = ?");
-$stmt->execute([$userId]);
+// Charger ou creer le projet de l'utilisateur pour cette session
+$stmt = $db->prepare("SELECT * FROM projects WHERE user_id = ? AND session_id = ?");
+$stmt->execute([$userId, $sessionId]);
 $project = $stmt->fetch();
 
 if (!$project) {
-    $stmt = $db->prepare("INSERT INTO projects (user_id, cards, user_stories, retrospective, sprint) VALUES (?, '[]', '[]', '{\"good\":[],\"improve\":[],\"actions\":[]}', '{\"number\":1,\"start\":\"\",\"end\":\"\",\"goal\":\"\"}')");
-    $stmt->execute([$userId]);
+    $stmt = $db->prepare("INSERT INTO projects (user_id, session_id, cards, user_stories, retrospective, sprint) VALUES (?, ?, '[]', '[]', '{\"good\":[],\"improve\":[],\"actions\":[]}', '{\"number\":1,\"start\":\"\",\"end\":\"\",\"goal\":\"\"}')");
+    $stmt->execute([$userId, $sessionId]);
     $projectId = $db->lastInsertId();
     $stmt = $db->prepare("SELECT * FROM projects WHERE id = ?");
     $stmt->execute([$projectId]);
