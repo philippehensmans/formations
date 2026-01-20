@@ -20,13 +20,15 @@ function createSession($db, $code, $nom, $formateurId = null) {
 /**
  * Generer un code de session unique
  */
-function generateSessionCode() {
-    $chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    $code = '';
-    for ($i = 0; $i < 6; $i++) {
-        $code .= $chars[random_int(0, strlen($chars) - 1)];
+if (!function_exists('generateSessionCode')) {
+    function generateSessionCode() {
+        $chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        $code = '';
+        for ($i = 0; $i < 6; $i++) {
+            $code .= $chars[random_int(0, strlen($chars) - 1)];
+        }
+        return $code;
     }
-    return $code;
 }
 
 /**
