@@ -9,10 +9,18 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-define('SHARED_AUTH_PATH', __DIR__);
-define('SHARED_DB_PATH', __DIR__ . '/data/users.sqlite');
-define('ADMIN_PASSWORD', 'Formation2024!');
-define('NOTIFY_EMAIL', 'philippe@hensmans.org');
+if (!defined('SHARED_AUTH_PATH')) {
+    define('SHARED_AUTH_PATH', __DIR__);
+}
+if (!defined('SHARED_DB_PATH')) {
+    define('SHARED_DB_PATH', __DIR__ . '/data/users.sqlite');
+}
+if (!defined('ADMIN_PASSWORD')) {
+    define('ADMIN_PASSWORD', 'Formation2024!');
+}
+if (!defined('NOTIFY_EMAIL')) {
+    define('NOTIFY_EMAIL', 'philippe@hensmans.org');
+}
 
 /**
  * Connexion a la base utilisateurs partagee
