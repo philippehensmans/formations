@@ -55,15 +55,22 @@ function initDatabase($db) {
     $db->exec("CREATE TABLE IF NOT EXISTS participants (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         session_id INTEGER NOT NULL,
-        prenom VARCHAR(100) NOT NULL,
-        nom VARCHAR(100) NOT NULL,
+        user_id INTEGER,
+        prenom VARCHAR(100),
+        nom VARCHAR(100),
         organisation VARCHAR(255),
         is_submitted INTEGER DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (session_id) REFERENCES sessions(id),
-        UNIQUE(session_id, prenom, nom)
+        FOREIGN KEY (session_id) REFERENCES sessions(id)
     )");
+
+    // Migration: ajouter user_id si la colonne n'existe pas
+    try {
+        $db->exec("ALTER TABLE participants ADD COLUMN user_id INTEGER");
+    } catch (PDOException $e) {
+        // Colonne existe deja
+    }
 
     // Table des cadres logiques
     $db->exec("CREATE TABLE IF NOT EXISTS cadre_logique (
