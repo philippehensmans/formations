@@ -4,6 +4,43 @@
  * Atelier de 45 minutes pour maitriser le prompt engineering
  */
 require_once __DIR__ . '/config.php';
+
+// Traductions locales pour l'etape 5 (Feedback IA)
+global $GLOBALS;
+if (!isset($GLOBALS['_local_translations'])) {
+    $GLOBALS['_local_translations'] = [];
+}
+$GLOBALS['_local_translations']['pj'] = array_merge(
+    $GLOBALS['_local_translations']['pj'] ?? [],
+    [
+        'step5_title_ai' => 'Feedback de l\'IA',
+        'step5_desc_ai' => 'Demandez a l\'IA d\'analyser votre prompt final et de vous donner un retour.',
+        'your_final_prompt' => 'Votre prompt final',
+        'no_prompt_yet' => 'Vous n\'avez pas encore redige de prompt ameliore. Retournez a l\'etape 3 pour completer votre travail.',
+        'ask_ai_analysis' => 'Demander une analyse a l\'IA',
+        'ask_ai_analysis_desc' => 'Cliquez sur le bouton ci-dessous pour generer une demande d\'analyse que vous pourrez copier et coller dans votre IA.',
+        'copy_analysis_prompt' => 'Copier la demande d\'analyse',
+        'prompt_copied' => 'Demande copiee !',
+        'analysis_prompt_template' => "Voici un prompt que j'ai redige. Peux-tu l'analyser selon ces criteres :\n\n1. **Contexte** : Est-ce que j'ai bien explique qui je suis et pour quelle organisation ?\n2. **Objectif** : Est-ce que ma demande est claire et precise ?\n3. **Contraintes** : Est-ce que j'ai indique le ton, la longueur, le public cible ?\n4. **Format** : Est-ce que j'ai precise le format de reponse attendu ?\n\nDonne-moi une note sur 10 et des suggestions concretes d'amelioration.\n\nVoici mon prompt :\n\"{PROMPT}\"",
+        'ai_feedback_label' => 'Retour de l\'IA',
+        'ai_feedback_hint' => 'Collez ici la reponse de l\'IA a votre demande d\'analyse.',
+        'ai_feedback_placeholder' => 'Collez ici l\'analyse de votre prompt par l\'IA...',
+        'ready_to_submit' => 'Pret a soumettre',
+        'ready_to_submit_desc' => 'Une fois que vous avez recu et note le feedback de l\'IA, vous pouvez soumettre votre travail.',
+        'step6_tab' => 'Synthese',
+    ]
+);
+
+// Fonction locale pour recuperer les traductions (priorite aux locales)
+function tl($key) {
+    global $GLOBALS;
+    $keys = explode('.', $key);
+    if (count($keys) === 2 && isset($GLOBALS['_local_translations'][$keys[0]][$keys[1]])) {
+        return $GLOBALS['_local_translations'][$keys[0]][$keys[1]];
+    }
+    return t($key);
+}
+
 requireLoginWithSession();
 
 $user = getLoggedUser();
@@ -423,18 +460,18 @@ $isSubmitted = $travail['is_shared'] == 1;
             <div class="bg-white rounded-2xl shadow-xl p-6">
                 <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-3">
                     <span class="bg-pink-500 text-white w-10 h-10 rounded-full flex items-center justify-center">5</span>
-                    <?= t('pj.step5_title_ai') ?>
+                    <?= tl('pj.step5_title_ai') ?>
                 </h2>
-                <p class="text-gray-600 mb-6"><?= t('pj.step5_desc_ai') ?></p>
+                <p class="text-gray-600 mb-6"><?= tl('pj.step5_desc_ai') ?></p>
 
                 <!-- Display final prompt -->
                 <div class="bg-purple-50 rounded-xl p-5 mb-6">
                     <h3 class="font-bold text-purple-800 mb-3 flex items-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                        <?= t('pj.your_final_prompt') ?>
+                        <?= tl('pj.your_final_prompt') ?>
                     </h3>
                     <div id="displayPromptAmeliore" class="bg-white p-4 rounded-lg border border-purple-200 text-gray-700 whitespace-pre-wrap min-h-[100px]">
-                        <span class="text-gray-400 italic"><?= t('pj.no_prompt_yet') ?></span>
+                        <span class="text-gray-400 italic"><?= tl('pj.no_prompt_yet') ?></span>
                     </div>
                 </div>
 
@@ -442,12 +479,12 @@ $isSubmitted = $travail['is_shared'] == 1;
                 <div class="bg-indigo-50 rounded-xl p-5 mb-6">
                     <h3 class="font-bold text-indigo-800 mb-3 flex items-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-                        <?= t('pj.ask_ai_analysis') ?>
+                        <?= tl('pj.ask_ai_analysis') ?>
                     </h3>
-                    <p class="text-gray-600 text-sm mb-4"><?= t('pj.ask_ai_analysis_desc') ?></p>
+                    <p class="text-gray-600 text-sm mb-4"><?= tl('pj.ask_ai_analysis_desc') ?></p>
                     <button onclick="generateAnalysisPrompt()" class="bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                        <?= t('pj.copy_analysis_prompt') ?>
+                        <?= tl('pj.copy_analysis_prompt') ?>
                     </button>
                     <div id="analysisPromptBox" class="hidden mt-4">
                         <div class="bg-white p-4 rounded-lg border border-indigo-200">
@@ -455,25 +492,25 @@ $isSubmitted = $travail['is_shared'] == 1;
                         </div>
                         <p class="text-green-600 text-sm mt-2 flex items-center gap-1">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            <?= t('pj.prompt_copied') ?>
+                            <?= tl('pj.prompt_copied') ?>
                         </p>
                     </div>
                 </div>
 
                 <!-- AI Feedback textarea -->
                 <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2"><?= t('pj.ai_feedback_label') ?></label>
-                    <p class="text-gray-500 text-sm mb-2"><?= t('pj.ai_feedback_hint') ?></p>
-                    <textarea id="feedbackIa" rows="8" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent" placeholder="<?= t('pj.ai_feedback_placeholder') ?>"></textarea>
+                    <label class="block text-sm font-medium text-gray-700 mb-2"><?= tl('pj.ai_feedback_label') ?></label>
+                    <p class="text-gray-500 text-sm mb-2"><?= tl('pj.ai_feedback_hint') ?></p>
+                    <textarea id="feedbackIa" rows="8" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent" placeholder="<?= tl('pj.ai_feedback_placeholder') ?>"></textarea>
                 </div>
 
                 <!-- Submit section -->
                 <div class="bg-green-50 rounded-xl p-6">
                     <h3 class="font-bold text-green-800 mb-4 flex items-center gap-2">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        <?= t('pj.ready_to_submit') ?>
+                        <?= tl('pj.ready_to_submit') ?>
                     </h3>
-                    <p class="text-gray-700 mb-4"><?= t('pj.ready_to_submit_desc') ?></p>
+                    <p class="text-gray-700 mb-4"><?= tl('pj.ready_to_submit_desc') ?></p>
                     <button onclick="submitWork()" class="bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-lg font-medium text-lg flex items-center gap-2">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         <?= t('pj.submit_work') ?>
@@ -585,8 +622,8 @@ $isSubmitted = $travail['is_shared'] == 1;
             saveError: <?= json_encode(t('common.save_error')) ?>,
             submitSuccess: <?= json_encode(t('common.submit_success')) ?>,
             submitError: <?= json_encode(t('common.submit_error')) ?>,
-            noPromptYet: <?= json_encode(t('pj.no_prompt_yet')) ?>,
-            analysisPromptTemplate: <?= json_encode(t('pj.analysis_prompt_template')) ?>
+            noPromptYet: <?= json_encode(tl('pj.no_prompt_yet')) ?>,
+            analysisPromptTemplate: <?= json_encode(tl('pj.analysis_prompt_template')) ?>
         };
 
         // Data
