@@ -194,10 +194,27 @@ $syntheseCles = $travail ? json_decode($travail['synthese_cles'] ?? '[]', true) 
             <?php endif; ?>
         </div>
 
-        <!-- Step 5: Synthesis -->
+        <!-- Step 5: AI Feedback -->
         <div class="bg-white rounded-xl shadow-lg p-6">
             <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <span class="bg-pink-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">5</span>
+                Feedback de l'IA
+            </h2>
+
+            <?php if (!empty($travail['feedback_ia'])): ?>
+                <div class="bg-blue-50 rounded-lg p-4">
+                    <h4 class="font-medium text-blue-800 mb-2">Retour de l'IA sur le prompt</h4>
+                    <p class="text-gray-700 whitespace-pre-wrap"><?= h($travail['feedback_ia']) ?></p>
+                </div>
+            <?php else: ?>
+                <p class="text-gray-400 text-center py-4">Aucun feedback IA enregistre</p>
+            <?php endif; ?>
+        </div>
+
+        <!-- Step 6: Synthesis -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <span class="bg-pink-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">6</span>
                 Synthese des apprentissages
             </h2>
 

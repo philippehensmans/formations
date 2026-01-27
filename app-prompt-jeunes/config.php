@@ -80,6 +80,7 @@ function initDatabase($db) {
         feedback_binome TEXT DEFAULT '',
         points_forts TEXT DEFAULT '',
         points_ameliorer TEXT DEFAULT '',
+        feedback_ia TEXT DEFAULT '',
         synthese_cles TEXT DEFAULT '[]',
         notes TEXT DEFAULT '',
         is_shared INTEGER DEFAULT 0,
@@ -94,7 +95,8 @@ function initDatabase($db) {
         "ALTER TABLE travaux ADD COLUMN is_shared INTEGER DEFAULT 0",
         "ALTER TABLE travaux ADD COLUMN completion_percent INTEGER DEFAULT 0",
         "ALTER TABLE participants ADD COLUMN prenom VARCHAR(100)",
-        "ALTER TABLE participants ADD COLUMN nom VARCHAR(100)"
+        "ALTER TABLE participants ADD COLUMN nom VARCHAR(100)",
+        "ALTER TABLE travaux ADD COLUMN feedback_ia TEXT DEFAULT ''"
     ];
     foreach ($migrations as $sql) {
         try { $db->exec($sql); } catch (Exception $e) { /* Colonne existe deja */ }

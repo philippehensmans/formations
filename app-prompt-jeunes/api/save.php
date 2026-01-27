@@ -38,17 +38,19 @@ $data = [
     'feedback_binome' => $input['feedback_binome'] ?? '',
     'points_forts' => $input['points_forts'] ?? '',
     'points_ameliorer' => $input['points_ameliorer'] ?? '',
+    'feedback_ia' => $input['feedback_ia'] ?? '',
     'synthese_cles' => json_encode($input['synthese_cles'] ?? []),
     'notes' => $input['notes'] ?? ''
 ];
 
 // Calculer le pourcentage de completion
 $completionItems = 0;
-$totalItems = 5;
+$totalItems = 6;
 if (!empty($input['prompt_initial'])) $completionItems++;
 if (!empty($input['resultat_initial'])) $completionItems++;
 if (!empty($input['prompt_ameliore'])) $completionItems++;
 if (!empty($input['feedback_binome']) || !empty($input['points_forts'])) $completionItems++;
+if (!empty($input['feedback_ia'])) $completionItems++;
 if (!empty($input['synthese_cles'])) $completionItems++;
 $data['completion_percent'] = round(($completionItems / $totalItems) * 100);
 
@@ -67,6 +69,7 @@ if ($existing) {
         feedback_binome = ?,
         points_forts = ?,
         points_ameliorer = ?,
+        feedback_ia = ?,
         synthese_cles = ?,
         notes = ?,
         completion_percent = ?,
@@ -86,6 +89,7 @@ if ($existing) {
         $data['feedback_binome'],
         $data['points_forts'],
         $data['points_ameliorer'],
+        $data['feedback_ia'],
         $data['synthese_cles'],
         $data['notes'],
         $data['completion_percent'],
@@ -93,7 +97,7 @@ if ($existing) {
         $_SESSION['current_session_id']
     ]);
 } else {
-    $stmt = $db->prepare("INSERT INTO travaux (user_id, session_id, organisation_nom, organisation_type, cas_choisi, cas_description, prompt_initial, resultat_initial, analyse_resultat, prompt_ameliore, resultat_ameliore, ameliorations_notes, feedback_binome, points_forts, points_ameliorer, synthese_cles, notes, completion_percent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt = $db->prepare("INSERT INTO travaux (user_id, session_id, organisation_nom, organisation_type, cas_choisi, cas_description, prompt_initial, resultat_initial, analyse_resultat, prompt_ameliore, resultat_ameliore, ameliorations_notes, feedback_binome, points_forts, points_ameliorer, feedback_ia, synthese_cles, notes, completion_percent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     $stmt->execute([
         $user['id'],
         $_SESSION['current_session_id'],
@@ -110,6 +114,7 @@ if ($existing) {
         $data['feedback_binome'],
         $data['points_forts'],
         $data['points_ameliorer'],
+        $data['feedback_ia'],
         $data['synthese_cles'],
         $data['notes'],
         $data['completion_percent']
