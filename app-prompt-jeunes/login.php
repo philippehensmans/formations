@@ -6,7 +6,7 @@
 
 $appName = 'Prompt Engineering Jeunes';
 $appColor = 'pink';
-$redirectAfterLogin = 'index.php';
+$redirectAfterLogin = 'app.php';
 $showRegister = true;
 
 // Charger la config locale pour avoir acces a la base des sessions
