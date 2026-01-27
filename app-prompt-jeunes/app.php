@@ -31,6 +31,7 @@ if (!$travail) {
         'feedback_binome' => '',
         'points_forts' => '',
         'points_ameliorer' => '',
+        'feedback_ia' => '',
         'synthese_cles' => '[]',
         'notes' => '',
         'is_shared' => 0
@@ -50,6 +51,7 @@ if (!$travail) {
     $travail['feedback_binome'] = $travail['feedback_binome'] ?? '';
     $travail['points_forts'] = $travail['points_forts'] ?? '';
     $travail['points_ameliorer'] = $travail['points_ameliorer'] ?? '';
+    $travail['feedback_ia'] = $travail['feedback_ia'] ?? '';
     $travail['synthese_cles'] = $travail['synthese_cles'] ?: '[]';
     $travail['notes'] = $travail['notes'] ?? '';
 }
@@ -88,10 +90,6 @@ $isSubmitted = $travail['is_shared'] == 1;
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
                     <?= t('common.save') ?>
                 </button>
-                <button onclick="submitWork()" class="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    <?= t('common.submit') ?>
-                </button>
                 <?php if (isFormateur()): ?>
                 <a href="formateur.php" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg"><?= t('trainer.title') ?></a>
                 <?php endif; ?>
@@ -104,25 +102,29 @@ $isSubmitted = $travail['is_shared'] == 1;
     <div class="bg-white shadow-md no-print">
         <div class="max-w-5xl mx-auto">
             <nav class="flex">
-                <button onclick="showStep(1)" id="tab1" class="flex-1 py-4 px-6 text-center font-medium border-b-3 tab-active">
-                    <span class="bg-pink-500 text-white w-6 h-6 rounded-full inline-flex items-center justify-center text-sm mr-2">1</span>
+                <button onclick="showStep(1)" id="tab1" class="flex-1 py-4 px-4 text-center font-medium border-b-3 tab-active text-sm">
+                    <span class="bg-pink-500 text-white w-6 h-6 rounded-full inline-flex items-center justify-center text-sm mr-1">1</span>
                     <?= t('pj.step1_tab') ?>
                 </button>
-                <button onclick="showStep(2)" id="tab2" class="flex-1 py-4 px-6 text-center font-medium border-b-3 border-transparent text-gray-500 hover:text-pink-500">
-                    <span class="bg-gray-300 text-white w-6 h-6 rounded-full inline-flex items-center justify-center text-sm mr-2">2</span>
+                <button onclick="showStep(2)" id="tab2" class="flex-1 py-4 px-4 text-center font-medium border-b-3 border-transparent text-gray-500 hover:text-pink-500 text-sm">
+                    <span class="bg-gray-300 text-white w-6 h-6 rounded-full inline-flex items-center justify-center text-sm mr-1">2</span>
                     <?= t('pj.step2_tab') ?>
                 </button>
-                <button onclick="showStep(3)" id="tab3" class="flex-1 py-4 px-6 text-center font-medium border-b-3 border-transparent text-gray-500 hover:text-pink-500">
-                    <span class="bg-gray-300 text-white w-6 h-6 rounded-full inline-flex items-center justify-center text-sm mr-2">3</span>
+                <button onclick="showStep(3)" id="tab3" class="flex-1 py-4 px-4 text-center font-medium border-b-3 border-transparent text-gray-500 hover:text-pink-500 text-sm">
+                    <span class="bg-gray-300 text-white w-6 h-6 rounded-full inline-flex items-center justify-center text-sm mr-1">3</span>
                     <?= t('pj.step3_tab') ?>
                 </button>
-                <button onclick="showStep(4)" id="tab4" class="flex-1 py-4 px-6 text-center font-medium border-b-3 border-transparent text-gray-500 hover:text-pink-500">
-                    <span class="bg-gray-300 text-white w-6 h-6 rounded-full inline-flex items-center justify-center text-sm mr-2">4</span>
+                <button onclick="showStep(4)" id="tab4" class="flex-1 py-4 px-4 text-center font-medium border-b-3 border-transparent text-gray-500 hover:text-pink-500 text-sm">
+                    <span class="bg-gray-300 text-white w-6 h-6 rounded-full inline-flex items-center justify-center text-sm mr-1">4</span>
                     <?= t('pj.step4_tab') ?>
                 </button>
-                <button onclick="showStep(5)" id="tab5" class="flex-1 py-4 px-6 text-center font-medium border-b-3 border-transparent text-gray-500 hover:text-pink-500">
-                    <span class="bg-gray-300 text-white w-6 h-6 rounded-full inline-flex items-center justify-center text-sm mr-2">5</span>
+                <button onclick="showStep(5)" id="tab5" class="flex-1 py-4 px-4 text-center font-medium border-b-3 border-transparent text-gray-500 hover:text-pink-500 text-sm">
+                    <span class="bg-gray-300 text-white w-6 h-6 rounded-full inline-flex items-center justify-center text-sm mr-1">5</span>
                     <?= t('pj.step5_tab') ?>
+                </button>
+                <button onclick="showStep(6)" id="tab6" class="flex-1 py-4 px-4 text-center font-medium border-b-3 border-transparent text-gray-500 hover:text-pink-500 text-sm">
+                    <span class="bg-gray-300 text-white w-6 h-6 rounded-full inline-flex items-center justify-center text-sm mr-1">6</span>
+                    <?= t('pj.step6_tab') ?>
                 </button>
             </nav>
         </div>
@@ -416,14 +418,89 @@ $isSubmitted = $travail['is_shared'] == 1;
             </div>
         </div>
 
-        <!-- Step 5: Collective Synthesis -->
+        <!-- Step 5: AI Feedback -->
         <div id="step5" class="step-content space-y-6 hidden">
             <div class="bg-white rounded-2xl shadow-xl p-6">
                 <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-3">
                     <span class="bg-pink-500 text-white w-10 h-10 rounded-full flex items-center justify-center">5</span>
-                    <?= t('pj.step5_title') ?>
+                    <?= t('pj.step5_title_ai') ?>
                 </h2>
-                <p class="text-gray-600 mb-6"><?= t('pj.step5_desc') ?></p>
+                <p class="text-gray-600 mb-6"><?= t('pj.step5_desc_ai') ?></p>
+
+                <!-- Display final prompt -->
+                <div class="bg-purple-50 rounded-xl p-5 mb-6">
+                    <h3 class="font-bold text-purple-800 mb-3 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        <?= t('pj.your_final_prompt') ?>
+                    </h3>
+                    <div id="displayPromptAmeliore" class="bg-white p-4 rounded-lg border border-purple-200 text-gray-700 whitespace-pre-wrap min-h-[100px]">
+                        <span class="text-gray-400 italic"><?= t('pj.no_prompt_yet') ?></span>
+                    </div>
+                </div>
+
+                <!-- Generate analysis prompt -->
+                <div class="bg-indigo-50 rounded-xl p-5 mb-6">
+                    <h3 class="font-bold text-indigo-800 mb-3 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                        <?= t('pj.ask_ai_analysis') ?>
+                    </h3>
+                    <p class="text-gray-600 text-sm mb-4"><?= t('pj.ask_ai_analysis_desc') ?></p>
+                    <button onclick="generateAnalysisPrompt()" class="bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                        <?= t('pj.copy_analysis_prompt') ?>
+                    </button>
+                    <div id="analysisPromptBox" class="hidden mt-4">
+                        <div class="bg-white p-4 rounded-lg border border-indigo-200">
+                            <p class="text-gray-700 text-sm whitespace-pre-wrap" id="analysisPromptText"></p>
+                        </div>
+                        <p class="text-green-600 text-sm mt-2 flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <?= t('pj.prompt_copied') ?>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- AI Feedback textarea -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2"><?= t('pj.ai_feedback_label') ?></label>
+                    <p class="text-gray-500 text-sm mb-2"><?= t('pj.ai_feedback_hint') ?></p>
+                    <textarea id="feedbackIa" rows="8" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent" placeholder="<?= t('pj.ai_feedback_placeholder') ?>"></textarea>
+                </div>
+
+                <!-- Submit section -->
+                <div class="bg-green-50 rounded-xl p-6">
+                    <h3 class="font-bold text-green-800 mb-4 flex items-center gap-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <?= t('pj.ready_to_submit') ?>
+                    </h3>
+                    <p class="text-gray-700 mb-4"><?= t('pj.ready_to_submit_desc') ?></p>
+                    <button onclick="submitWork()" class="bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-lg font-medium text-lg flex items-center gap-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <?= t('pj.submit_work') ?>
+                    </button>
+                </div>
+
+                <div class="mt-6 flex justify-between">
+                    <button onclick="showStep(4)" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                        <?= t('pj.previous') ?>
+                    </button>
+                    <button onclick="showStep(6)" class="bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2">
+                        <?= t('pj.next_step') ?>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 6: Collective Synthesis -->
+        <div id="step6" class="step-content space-y-6 hidden">
+            <div class="bg-white rounded-2xl shadow-xl p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-3">
+                    <span class="bg-pink-500 text-white w-10 h-10 rounded-full flex items-center justify-center">6</span>
+                    <?= t('pj.step6_title') ?>
+                </h2>
+                <p class="text-gray-600 mb-6"><?= t('pj.step6_desc') ?></p>
 
                 <!-- Key elements summary -->
                 <div class="bg-gradient-to-r from-pink-100 to-rose-100 rounded-xl p-6 mb-6">
@@ -481,23 +558,17 @@ $isSubmitted = $travail['is_shared'] == 1;
                 </div>
 
                 <!-- Final actions -->
-                <div class="bg-green-50 rounded-xl p-6">
-                    <h3 class="font-bold text-green-800 mb-4"><?= t('pj.workshop_complete') ?></h3>
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <h3 class="font-bold text-gray-800 mb-4"><?= t('pj.workshop_complete') ?></h3>
                     <p class="text-gray-700 mb-4"><?= t('pj.workshop_complete_desc') ?></p>
-                    <div class="flex gap-4">
-                        <button onclick="window.print()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium flex items-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                            <?= t('common.print') ?>
-                        </button>
-                        <button onclick="submitWork()" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            <?= t('pj.submit_work') ?>
-                        </button>
-                    </div>
+                    <button onclick="window.print()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                        <?= t('common.print') ?>
+                    </button>
                 </div>
 
                 <div class="mt-6 flex justify-start">
-                    <button onclick="showStep(4)" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium flex items-center gap-2">
+                    <button onclick="showStep(5)" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium flex items-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                         <?= t('pj.previous') ?>
                     </button>
@@ -513,7 +584,9 @@ $isSubmitted = $travail['is_shared'] == 1;
             saveSuccess: <?= json_encode(t('common.save_success')) ?>,
             saveError: <?= json_encode(t('common.save_error')) ?>,
             submitSuccess: <?= json_encode(t('common.submit_success')) ?>,
-            submitError: <?= json_encode(t('common.submit_error')) ?>
+            submitError: <?= json_encode(t('common.submit_error')) ?>,
+            noPromptYet: <?= json_encode(t('pj.no_prompt_yet')) ?>,
+            analysisPromptTemplate: <?= json_encode(t('pj.analysis_prompt_template')) ?>
         };
 
         // Data
@@ -544,6 +617,7 @@ $isSubmitted = $travail['is_shared'] == 1;
             document.getElementById('feedbackBinome').value = <?= json_encode($travail['feedback_binome']) ?>;
             document.getElementById('pointsForts').value = <?= json_encode($travail['points_forts']) ?>;
             document.getElementById('pointsAmeliorer').value = <?= json_encode($travail['points_ameliorer']) ?>;
+            document.getElementById('feedbackIa').value = <?= json_encode($travail['feedback_ia']) ?>;
             document.getElementById('notes').value = <?= json_encode($travail['notes']) ?>;
 
             // Set selected case
@@ -562,12 +636,45 @@ $isSubmitted = $travail['is_shared'] == 1;
                 }));
             }
             renderSynthese();
+
+            // Update display when prompt changes
+            document.getElementById('promptAmeliore').addEventListener('input', updatePromptDisplay);
+            updatePromptDisplay();
         });
+
+        // Update the prompt display in step 5
+        function updatePromptDisplay() {
+            const prompt = document.getElementById('promptAmeliore').value.trim();
+            const display = document.getElementById('displayPromptAmeliore');
+            if (prompt) {
+                display.textContent = prompt;
+                display.classList.remove('text-gray-400', 'italic');
+            } else {
+                display.innerHTML = '<span class="text-gray-400 italic">' + trans.noPromptYet + '</span>';
+            }
+        }
+
+        // Generate and copy analysis prompt
+        function generateAnalysisPrompt() {
+            const prompt = document.getElementById('promptAmeliore').value.trim();
+            if (!prompt) {
+                alert(trans.noPromptYet);
+                return;
+            }
+
+            const analysisPrompt = trans.analysisPromptTemplate.replace('{PROMPT}', prompt);
+
+            // Copy to clipboard
+            navigator.clipboard.writeText(analysisPrompt).then(() => {
+                document.getElementById('analysisPromptText').textContent = analysisPrompt;
+                document.getElementById('analysisPromptBox').classList.remove('hidden');
+            });
+        }
 
         // Step navigation
         function showStep(step) {
             currentStep = step;
-            for (let i = 1; i <= 5; i++) {
+            for (let i = 1; i <= 6; i++) {
                 document.getElementById('step' + i).classList.add('hidden');
                 document.getElementById('tab' + i).classList.remove('tab-active');
                 document.getElementById('tab' + i).classList.add('text-gray-500', 'border-transparent');
@@ -580,6 +687,11 @@ $isSubmitted = $travail['is_shared'] == 1;
             document.getElementById('tab' + step).querySelector('span').classList.add('bg-pink-500');
             document.getElementById('tab' + step).querySelector('span').classList.remove('bg-gray-300');
             window.scrollTo(0, 0);
+
+            // Update prompt display when going to step 5
+            if (step === 5) {
+                updatePromptDisplay();
+            }
         }
 
         // Case selection
@@ -664,6 +776,7 @@ $isSubmitted = $travail['is_shared'] == 1;
                 feedback_binome: document.getElementById('feedbackBinome').value,
                 points_forts: document.getElementById('pointsForts').value,
                 points_ameliorer: document.getElementById('pointsAmeliorer').value,
+                feedback_ia: document.getElementById('feedbackIa').value,
                 synthese_cles: syntheseCles,
                 notes: document.getElementById('notes').value
             };
@@ -687,8 +800,35 @@ $isSubmitted = $travail['is_shared'] == 1;
 
         // Submit work
         async function submitWork() {
-            await saveData();
+            // Save first
+            const data = {
+                organisation_nom: document.getElementById('organisationNom').value,
+                organisation_type: document.getElementById('organisationType').value,
+                cas_choisi: getSelectedCase(),
+                cas_description: document.getElementById('casDescription').value,
+                prompt_initial: document.getElementById('promptInitial').value,
+                resultat_initial: document.getElementById('resultatInitial').value,
+                analyse_resultat: document.getElementById('analyseResultat').value,
+                prompt_ameliore: document.getElementById('promptAmeliore').value,
+                resultat_ameliore: document.getElementById('resultatAmeliore').value,
+                ameliorations_notes: document.getElementById('ameliorationsNotes').value,
+                feedback_binome: document.getElementById('feedbackBinome').value,
+                points_forts: document.getElementById('pointsForts').value,
+                points_ameliorer: document.getElementById('pointsAmeliorer').value,
+                feedback_ia: document.getElementById('feedbackIa').value,
+                synthese_cles: syntheseCles,
+                notes: document.getElementById('notes').value
+            };
+
             try {
+                // Save first
+                await fetch('api/save.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                // Then submit
                 const response = await fetch('api/submit.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' }
