@@ -54,7 +54,9 @@ function initDatabase($db) {
     $db->exec("CREATE TABLE IF NOT EXISTS participants (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         session_id INTEGER NOT NULL,
-        user_id INTEGER NOT NULL,
+        user_id INTEGER,
+        prenom VARCHAR(100),
+        nom VARCHAR(100),
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (session_id) REFERENCES sessions(id),
         UNIQUE(session_id, user_id)
@@ -90,7 +92,9 @@ function initDatabase($db) {
     $migrations = [
         "ALTER TABLE travaux ADD COLUMN session_id INTEGER",
         "ALTER TABLE travaux ADD COLUMN is_shared INTEGER DEFAULT 0",
-        "ALTER TABLE travaux ADD COLUMN completion_percent INTEGER DEFAULT 0"
+        "ALTER TABLE travaux ADD COLUMN completion_percent INTEGER DEFAULT 0",
+        "ALTER TABLE participants ADD COLUMN prenom VARCHAR(100)",
+        "ALTER TABLE participants ADD COLUMN nom VARCHAR(100)"
     ];
     foreach ($migrations as $sql) {
         try { $db->exec($sql); } catch (Exception $e) { /* Colonne existe deja */ }
