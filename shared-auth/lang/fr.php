@@ -1551,15 +1551,15 @@ return [
         'what_improve_placeholder' => 'Points a travailler identifies par vous ou votre binome...',
 
         // Step 5 - AI Feedback
-        'step5_title' => 'Feedback de l\'IA',
-        'step5_desc' => 'Demandez a l\'IA d\'analyser votre prompt final et de vous donner un retour.',
+        'step5_title_ai' => 'Feedback de l\'IA',
+        'step5_desc_ai' => 'Demandez a l\'IA d\'analyser votre prompt final et de vous donner un retour.',
         'your_final_prompt' => 'Votre prompt final',
         'no_prompt_yet' => 'Vous n\'avez pas encore redige de prompt ameliore. Retournez a l\'etape 3 pour completer votre travail.',
         'ask_ai_analysis' => 'Demander une analyse a l\'IA',
         'ask_ai_analysis_desc' => 'Cliquez sur le bouton ci-dessous pour generer une demande d\'analyse que vous pourrez copier et coller dans votre IA.',
         'copy_analysis_prompt' => 'Copier la demande d\'analyse',
         'prompt_copied' => 'Demande copiee !',
-        'analysis_prompt_template' => 'Voici un prompt que j\'ai redige pour [CONTEXTE]. Peux-tu l\'analyser selon ces criteres :\n\n1. **Contexte** : Est-ce que j\'ai bien explique qui je suis et pour quelle organisation ?\n2. **Objectif** : Est-ce que ma demande est claire et precise ?\n3. **Contraintes** : Est-ce que j\'ai indique le ton, la longueur, le public cible ?\n4. **Format** : Est-ce que j\'ai precise le format de reponse attendu ?\n\nDonne-moi une note sur 10 et des suggestions concretes d\'amelioration.\n\nVoici mon prompt :\n\"[PROMPT]\"',
+        'analysis_prompt_template' => 'Voici un prompt que j\'ai redige. Peux-tu l\'analyser selon ces criteres :\n\n1. **Contexte** : Est-ce que j\'ai bien explique qui je suis et pour quelle organisation ?\n2. **Objectif** : Est-ce que ma demande est claire et precise ?\n3. **Contraintes** : Est-ce que j\'ai indique le ton, la longueur, le public cible ?\n4. **Format** : Est-ce que j\'ai precise le format de reponse attendu ?\n\nDonne-moi une note sur 10 et des suggestions concretes d\'amelioration.\n\nVoici mon prompt :\n\"{PROMPT}\"',
         'ai_feedback_label' => 'Retour de l\'IA',
         'ai_feedback_hint' => 'Collez ici la reponse de l\'IA a votre demande d\'analyse.',
         'ai_feedback_placeholder' => 'Collez ici l\'analyse de votre prompt par l\'IA...',
