@@ -6,6 +6,10 @@
 
 $appName = 'Prompt Engineering Jeunes';
 $appColor = 'pink';
+$appKey = 'app-prompt-jeunes';
+
+// Charger la config locale
+require_once __DIR__ . '/config.php';
 
 // Inclure le template d'inscription partage
 require_once __DIR__ . '/../shared-auth/register-template.php';
