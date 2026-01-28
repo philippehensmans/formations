@@ -19,9 +19,12 @@ if (!$input) {
 $db = getDB();
 $user = getLoggedUser();
 
-// Verifier si le travail existe
-$stmt = $db->prepare("SELECT id FROM travaux WHERE user_id = ? AND session_id = ?");
-$stmt->execute([$user['id'], $_SESSION['current_session_id']]);
+// Recuperer le numero d'exercice (defaut: 1)
+$exerciceNum = isset($input['exercice_num']) ? (int)$input['exercice_num'] : 1;
+
+// Verifier si le travail existe pour cet exercice
+$stmt = $db->prepare("SELECT id FROM travaux WHERE user_id = ? AND session_id = ? AND exercice_num = ?");
+$stmt->execute([$user['id'], $_SESSION['current_session_id'], $exerciceNum]);
 $existing = $stmt->fetch();
 
 $data = [
@@ -74,7 +77,7 @@ if ($existing) {
         notes = ?,
         completion_percent = ?,
         updated_at = CURRENT_TIMESTAMP
-        WHERE user_id = ? AND session_id = ?");
+        WHERE user_id = ? AND session_id = ? AND exercice_num = ?");
     $stmt->execute([
         $data['organisation_nom'],
         $data['organisation_type'],
@@ -94,13 +97,15 @@ if ($existing) {
         $data['notes'],
         $data['completion_percent'],
         $user['id'],
-        $_SESSION['current_session_id']
+        $_SESSION['current_session_id'],
+        $exerciceNum
     ]);
 } else {
-    $stmt = $db->prepare("INSERT INTO travaux (user_id, session_id, organisation_nom, organisation_type, cas_choisi, cas_description, prompt_initial, resultat_initial, analyse_resultat, prompt_ameliore, resultat_ameliore, ameliorations_notes, feedback_binome, points_forts, points_ameliorer, feedback_ia, synthese_cles, notes, completion_percent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt = $db->prepare("INSERT INTO travaux (user_id, session_id, exercice_num, organisation_nom, organisation_type, cas_choisi, cas_description, prompt_initial, resultat_initial, analyse_resultat, prompt_ameliore, resultat_ameliore, ameliorations_notes, feedback_binome, points_forts, points_ameliorer, feedback_ia, synthese_cles, notes, completion_percent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     $stmt->execute([
         $user['id'],
         $_SESSION['current_session_id'],
+        $exerciceNum,
         $data['organisation_nom'],
         $data['organisation_type'],
         $data['cas_choisi'],

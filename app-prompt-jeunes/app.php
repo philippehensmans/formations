@@ -46,15 +46,59 @@ requireLoginWithSession();
 $user = getLoggedUser();
 $db = getDB();
 
-// Creer ou recuperer le travail pour cette session
-$stmt = $db->prepare("SELECT * FROM travaux WHERE user_id = ? AND session_id = ?");
+// Recuperer tous les exercices de cet utilisateur pour cette session
+$stmt = $db->prepare("SELECT id, exercice_num, cas_choisi, is_shared, completion_percent, created_at FROM travaux WHERE user_id = ? AND session_id = ? ORDER BY exercice_num ASC");
 $stmt->execute([$user['id'], $_SESSION['current_session_id']]);
+$allExercices = $stmt->fetchAll();
+
+// Gerer la creation d'un nouvel exercice
+if (isset($_GET['new'])) {
+    $maxNum = 0;
+    foreach ($allExercices as $ex) {
+        if ($ex['exercice_num'] > $maxNum) $maxNum = $ex['exercice_num'];
+    }
+    $newNum = $maxNum + 1;
+    $stmt = $db->prepare("INSERT INTO travaux (user_id, session_id, exercice_num) VALUES (?, ?, ?)");
+    $stmt->execute([$user['id'], $_SESSION['current_session_id'], $newNum]);
+    header('Location: app.php?ex=' . $newNum);
+    exit;
+}
+
+// Determiner l'exercice courant
+$currentExerciceNum = isset($_GET['ex']) ? (int)$_GET['ex'] : null;
+
+// Si pas d'exercice specifie, prendre le dernier non soumis ou le dernier
+if ($currentExerciceNum === null) {
+    $currentExerciceNum = 1;
+    foreach ($allExercices as $ex) {
+        if ($ex['is_shared'] == 0) {
+            $currentExerciceNum = $ex['exercice_num'];
+            break;
+        }
+    }
+    if (empty($allExercices)) {
+        $currentExerciceNum = 1;
+    } else {
+        // Si tous soumis, prendre le dernier
+        $lastEx = end($allExercices);
+        if ($lastEx['is_shared'] == 1) {
+            $currentExerciceNum = $lastEx['exercice_num'];
+        }
+    }
+}
+
+// Charger l'exercice courant
+$stmt = $db->prepare("SELECT * FROM travaux WHERE user_id = ? AND session_id = ? AND exercice_num = ?");
+$stmt->execute([$user['id'], $_SESSION['current_session_id'], $currentExerciceNum]);
 $travail = $stmt->fetch();
 
+// Creer l'exercice s'il n'existe pas
 if (!$travail) {
-    $stmt = $db->prepare("INSERT INTO travaux (user_id, session_id) VALUES (?, ?)");
-    $stmt->execute([$user['id'], $_SESSION['current_session_id']]);
+    $stmt = $db->prepare("INSERT INTO travaux (user_id, session_id, exercice_num) VALUES (?, ?, ?)");
+    $stmt->execute([$user['id'], $_SESSION['current_session_id'], $currentExerciceNum]);
     $travail = [
+        'id' => $db->lastInsertId(),
+        'exercice_num' => $currentExerciceNum,
         'organisation_nom' => '',
         'organisation_type' => '',
         'cas_choisi' => '',
@@ -73,6 +117,10 @@ if (!$travail) {
         'notes' => '',
         'is_shared' => 0
     ];
+    // Rafraichir la liste des exercices
+    $stmt = $db->prepare("SELECT id, exercice_num, cas_choisi, is_shared, completion_percent, created_at FROM travaux WHERE user_id = ? AND session_id = ? ORDER BY exercice_num ASC");
+    $stmt->execute([$user['id'], $_SESSION['current_session_id']]);
+    $allExercices = $stmt->fetchAll();
 } else {
     // S'assurer que les valeurs ne sont jamais null
     $travail['organisation_nom'] = $travail['organisation_nom'] ?? '';
@@ -134,6 +182,33 @@ $isSubmitted = $travail['is_shared'] == 1;
             </div>
         </div>
     </div>
+
+    <!-- Exercise Selector -->
+    <?php if (count($allExercices) > 0): ?>
+    <div class="bg-pink-50 border-b border-pink-200 no-print">
+        <div class="max-w-5xl mx-auto px-4 py-2 flex items-center justify-between">
+            <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-sm text-pink-700 font-medium">Mes exercices :</span>
+                <?php foreach ($allExercices as $ex): ?>
+                    <a href="app.php?ex=<?= $ex['exercice_num'] ?>"
+                       class="px-3 py-1 rounded-full text-sm <?= $ex['exercice_num'] == $currentExerciceNum ? 'bg-pink-500 text-white' : 'bg-white text-pink-700 hover:bg-pink-100' ?> border border-pink-300 flex items-center gap-1">
+                        #<?= $ex['exercice_num'] ?>
+                        <?php if ($ex['cas_choisi']): ?>
+                            <span class="text-xs opacity-75">(<?= $ex['cas_choisi'] == 'instagram' ? 'Insta' : 'Benev' ?>)</span>
+                        <?php endif; ?>
+                        <?php if ($ex['is_shared']): ?>
+                            <svg class="w-3 h-3 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                        <?php endif; ?>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+            <a href="app.php?new=1" class="bg-green-500 hover:bg-green-600 text-white px-4 py-1 rounded-full text-sm flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                Nouvel exercice
+            </a>
+        </div>
+    </div>
+    <?php endif; ?>
 
     <!-- Navigation Tabs -->
     <div class="bg-white shadow-md no-print">
@@ -629,6 +704,7 @@ $isSubmitted = $travail['is_shared'] == 1;
         // Data
         let syntheseCles = <?= $travail['synthese_cles'] ?>;
         let currentStep = 1;
+        const currentExerciceNum = <?= $currentExerciceNum ?>;
 
         // Default synthesis items
         const defaultSyntheseItems = [
@@ -800,6 +876,7 @@ $isSubmitted = $travail['is_shared'] == 1;
         // Save data
         async function saveData() {
             const data = {
+                exercice_num: currentExerciceNum,
                 organisation_nom: document.getElementById('organisationNom').value,
                 organisation_type: document.getElementById('organisationType').value,
                 cas_choisi: getSelectedCase(),
@@ -839,6 +916,7 @@ $isSubmitted = $travail['is_shared'] == 1;
         async function submitWork() {
             // Save first
             const data = {
+                exercice_num: currentExerciceNum,
                 organisation_nom: document.getElementById('organisationNom').value,
                 organisation_type: document.getElementById('organisationType').value,
                 cas_choisi: getSelectedCase(),
@@ -868,7 +946,8 @@ $isSubmitted = $travail['is_shared'] == 1;
                 // Then submit
                 const response = await fetch('api/submit.php', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ exercice_num: currentExerciceNum })
                 });
                 const result = await response.json();
                 if (result.success) {
