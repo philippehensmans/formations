@@ -13,8 +13,11 @@ if (!isLoggedIn() || !isset($_SESSION['current_session_id'])) {
 $db = getDB();
 $user = getLoggedUser();
 
-$stmt = $db->prepare("SELECT * FROM travaux WHERE user_id = ? AND session_id = ?");
-$stmt->execute([$user['id'], $_SESSION['current_session_id']]);
+// Recuperer le numero d'exercice depuis GET ou POST
+$exerciceNum = isset($_GET['exercice_num']) ? (int)$_GET['exercice_num'] : 1;
+
+$stmt = $db->prepare("SELECT * FROM travaux WHERE user_id = ? AND session_id = ? AND exercice_num = ?");
+$stmt->execute([$user['id'], $_SESSION['current_session_id'], $exerciceNum]);
 $travail = $stmt->fetch();
 
 if (!$travail) {

@@ -67,6 +67,7 @@ function initDatabase($db) {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
         session_id INTEGER,
+        exercice_num INTEGER DEFAULT 1,
         organisation_nom TEXT DEFAULT '',
         organisation_type TEXT DEFAULT '',
         cas_choisi TEXT DEFAULT '',
@@ -96,7 +97,8 @@ function initDatabase($db) {
         "ALTER TABLE travaux ADD COLUMN completion_percent INTEGER DEFAULT 0",
         "ALTER TABLE participants ADD COLUMN prenom VARCHAR(100)",
         "ALTER TABLE participants ADD COLUMN nom VARCHAR(100)",
-        "ALTER TABLE travaux ADD COLUMN feedback_ia TEXT DEFAULT ''"
+        "ALTER TABLE travaux ADD COLUMN feedback_ia TEXT DEFAULT ''",
+        "ALTER TABLE travaux ADD COLUMN exercice_num INTEGER DEFAULT 1"
     ];
     foreach ($migrations as $sql) {
         try { $db->exec($sql); } catch (Exception $e) { /* Colonne existe deja */ }
