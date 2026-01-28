@@ -100,6 +100,9 @@ $syntheseCles = $travail ? json_decode($travail['synthese_cles'] ?? '[]', true) 
                     'education_medias' => ['label' => 'Education aux medias', 'class' => 'bg-rose-100 text-rose-800'],
                     'plaidoyer' => ['label' => 'Campagne de plaidoyer', 'class' => 'bg-emerald-100 text-emerald-800'],
                     'sensibilisation' => ['label' => 'Sensibilisation reseaux sociaux', 'class' => 'bg-sky-100 text-sky-800'],
+                    'appel_offre' => ['label' => 'Reponse appel d\'offre', 'class' => 'bg-slate-100 text-slate-800'],
+                    'brainstorming' => ['label' => 'Brainstorming', 'class' => 'bg-yellow-100 text-yellow-800'],
+                    'autres' => ['label' => 'Autres', 'class' => 'bg-gray-100 text-gray-800'],
                 ];
                 $cas = $casLabels[$travail['cas_choisi']] ?? ['label' => $travail['cas_choisi'], 'class' => 'bg-gray-100 text-gray-800'];
             ?>
