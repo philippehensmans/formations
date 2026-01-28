@@ -27,6 +27,7 @@ $GLOBALS['_local_translations']['pj'] = array_merge(
         'ai_feedback_placeholder' => 'Collez ici l\'analyse de votre prompt par l\'IA...',
         'ready_to_submit' => 'Pret a soumettre',
         'ready_to_submit_desc' => 'Une fois que vous avez recu et note le feedback de l\'IA, vous pouvez soumettre votre travail.',
+        'step5_tab' => 'Feedback IA',
         'step6_tab' => 'Synthese',
         'step6_title' => 'Synthese collective',
         'step6_desc' => 'Identifions ensemble les elements cles d\'un bon prompt.',
@@ -249,11 +250,11 @@ $isSubmitted = $travail['is_shared'] == 1;
                 </button>
                 <button onclick="showStep(5)" id="tab5" class="flex-1 py-4 px-4 text-center font-medium border-b-3 border-transparent text-gray-500 hover:text-pink-500 text-sm">
                     <span class="bg-gray-300 text-white w-6 h-6 rounded-full inline-flex items-center justify-center text-sm mr-1">5</span>
-                    <?= t('pj.step5_tab') ?>
+                    <?= tl('pj.step5_tab') ?>
                 </button>
                 <button onclick="showStep(6)" id="tab6" class="flex-1 py-4 px-4 text-center font-medium border-b-3 border-transparent text-gray-500 hover:text-pink-500 text-sm">
                     <span class="bg-gray-300 text-white w-6 h-6 rounded-full inline-flex items-center justify-center text-sm mr-1">6</span>
-                    <?= t('pj.step6_tab') ?>
+                    <?= tl('pj.step6_tab') ?>
                 </button>
             </nav>
         </div>
