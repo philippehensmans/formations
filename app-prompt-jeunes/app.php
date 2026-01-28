@@ -28,6 +28,8 @@ $GLOBALS['_local_translations']['pj'] = array_merge(
         'ready_to_submit' => 'Pret a soumettre',
         'ready_to_submit_desc' => 'Une fois que vous avez recu et note le feedback de l\'IA, vous pouvez soumettre votre travail.',
         'step6_tab' => 'Synthese',
+        'step6_title' => 'Synthese collective',
+        'step6_desc' => 'Identifions ensemble les elements cles d\'un bon prompt.',
     ]
 );
 
@@ -757,9 +759,9 @@ $isSubmitted = $travail['is_shared'] == 1;
             <div class="bg-white rounded-2xl shadow-xl p-6">
                 <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-3">
                     <span class="bg-pink-500 text-white w-10 h-10 rounded-full flex items-center justify-center">6</span>
-                    <?= t('pj.step6_title') ?>
+                    <?= tl('pj.step6_title') ?>
                 </h2>
-                <p class="text-gray-600 mb-6"><?= t('pj.step6_desc') ?></p>
+                <p class="text-gray-600 mb-6"><?= tl('pj.step6_desc') ?></p>
 
                 <!-- Key elements summary -->
                 <div class="bg-gradient-to-r from-pink-100 to-rose-100 rounded-xl p-6 mb-6">
