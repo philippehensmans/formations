@@ -62,15 +62,15 @@ $syntheseCles = $travail ? json_decode($travail['synthese_cles'] ?? '[]', true) 
 
 $casLabels = [
     'instagram' => ['label' => 'Publication Instagram', 'class' => 'bg-purple-100 text-purple-800'],
-    'benevoles' => ['label' => 'Appel a benevoles', 'class' => 'bg-green-100 text-green-800'],
+    'benevoles' => ['label' => 'Appel à bénévoles', 'class' => 'bg-green-100 text-green-800'],
     'quiz' => ['label' => 'Quiz interactif', 'class' => 'bg-blue-100 text-blue-800'],
-    'jeu_role' => ['label' => 'Scenario jeu de role', 'class' => 'bg-amber-100 text-amber-800'],
-    'experience' => ['label' => 'Fiche experience scientifique', 'class' => 'bg-cyan-100 text-cyan-800'],
-    'impro' => ['label' => 'Themes improvisation', 'class' => 'bg-fuchsia-100 text-fuchsia-800'],
-    'education_medias' => ['label' => 'Education aux medias', 'class' => 'bg-rose-100 text-rose-800'],
+    'jeu_role' => ['label' => 'Scénario jeu de rôle', 'class' => 'bg-amber-100 text-amber-800'],
+    'experience' => ['label' => 'Fiche expérience scientifique', 'class' => 'bg-cyan-100 text-cyan-800'],
+    'impro' => ['label' => 'Thèmes improvisation', 'class' => 'bg-fuchsia-100 text-fuchsia-800'],
+    'education_medias' => ['label' => 'Éducation aux médias', 'class' => 'bg-rose-100 text-rose-800'],
     'plaidoyer' => ['label' => 'Campagne de plaidoyer', 'class' => 'bg-emerald-100 text-emerald-800'],
-    'sensibilisation' => ['label' => 'Sensibilisation reseaux sociaux', 'class' => 'bg-sky-100 text-sky-800'],
-    'appel_offre' => ['label' => 'Reponse appel d\'offre', 'class' => 'bg-slate-100 text-slate-800'],
+    'sensibilisation' => ['label' => 'Sensibilisation réseaux sociaux', 'class' => 'bg-sky-100 text-sky-800'],
+    'appel_offre' => ['label' => 'Réponse appel d\'offre', 'class' => 'bg-slate-100 text-slate-800'],
     'brainstorming' => ['label' => 'Brainstorming', 'class' => 'bg-yellow-100 text-yellow-800'],
     'autres' => ['label' => 'Autres', 'class' => 'bg-gray-100 text-gray-800'],
 ];

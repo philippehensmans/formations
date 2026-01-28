@@ -5,7 +5,7 @@
  */
 require_once __DIR__ . '/config.php';
 
-// Traductions locales pour l'etape 5 (Feedback IA)
+// Traductions locales pour l'étape 5 (Feedback IA)
 global $GLOBALS;
 if (!isset($GLOBALS['_local_translations'])) {
     $GLOBALS['_local_translations'] = [];
@@ -14,23 +14,23 @@ $GLOBALS['_local_translations']['pj'] = array_merge(
     $GLOBALS['_local_translations']['pj'] ?? [],
     [
         'step5_title_ai' => 'Feedback de l\'IA',
-        'step5_desc_ai' => 'Demandez a l\'IA d\'analyser votre prompt final et de vous donner un retour.',
+        'step5_desc_ai' => 'Demandez à l\'IA d\'analyser votre prompt final et de vous donner un retour.',
         'your_final_prompt' => 'Votre prompt final',
-        'no_prompt_yet' => 'Vous n\'avez pas encore redige de prompt ameliore. Retournez a l\'etape 3 pour completer votre travail.',
-        'ask_ai_analysis' => 'Demander une analyse a l\'IA',
-        'ask_ai_analysis_desc' => 'Cliquez sur le bouton ci-dessous pour generer une demande d\'analyse que vous pourrez copier et coller dans votre IA.',
+        'no_prompt_yet' => 'Vous n\'avez pas encore rédigé de prompt amélioré. Retournez à l\'étape 3 pour compléter votre travail.',
+        'ask_ai_analysis' => 'Demander une analyse à l\'IA',
+        'ask_ai_analysis_desc' => 'Cliquez sur le bouton ci-dessous pour générer une demande d\'analyse que vous pourrez copier et coller dans votre IA.',
         'copy_analysis_prompt' => 'Copier la demande d\'analyse',
-        'prompt_copied' => 'Demande copiee !',
-        'analysis_prompt_template' => "Voici un prompt que j'ai redige. Peux-tu l'analyser selon ces criteres :\n\n1. **Contexte** : Est-ce que j'ai bien explique qui je suis et pour quelle organisation ?\n2. **Objectif** : Est-ce que ma demande est claire et precise ?\n3. **Contraintes** : Est-ce que j'ai indique le ton, la longueur, le public cible ?\n4. **Format** : Est-ce que j'ai precise le format de reponse attendu ?\n\nDonne-moi une note sur 10 et des suggestions concretes d'amelioration.\n\nVoici mon prompt :\n\"{PROMPT}\"",
+        'prompt_copied' => 'Demande copiée !',
+        'analysis_prompt_template' => "Voici un prompt que j'ai rédigé. Peux-tu l'analyser selon ces critères :\n\n1. **Contexte** : Est-ce que j'ai bien expliqué qui je suis et pour quelle organisation ?\n2. **Objectif** : Est-ce que ma demande est claire et précise ?\n3. **Contraintes** : Est-ce que j'ai indiqué le ton, la longueur, le public cible ?\n4. **Format** : Est-ce que j'ai précisé le format de réponse attendu ?\n\nDonne-moi une note sur 10 et des suggestions concrètes d'amélioration.\n\nVoici mon prompt :\n\"{PROMPT}\"",
         'ai_feedback_label' => 'Retour de l\'IA',
-        'ai_feedback_hint' => 'Collez ici la reponse de l\'IA a votre demande d\'analyse.',
+        'ai_feedback_hint' => 'Collez ici la réponse de l\'IA à votre demande d\'analyse.',
         'ai_feedback_placeholder' => 'Collez ici l\'analyse de votre prompt par l\'IA...',
-        'ready_to_submit' => 'Pret a soumettre',
-        'ready_to_submit_desc' => 'Une fois que vous avez recu et note le feedback de l\'IA, vous pouvez soumettre votre travail.',
+        'ready_to_submit' => 'Prêt à soumettre',
+        'ready_to_submit_desc' => 'Une fois que vous avez reçu et noté le feedback de l\'IA, vous pouvez soumettre votre travail.',
         'step5_tab' => 'Feedback IA',
-        'step6_tab' => 'Synthese',
-        'step6_title' => 'Synthese collective',
-        'step6_desc' => 'Identifions ensemble les elements cles d\'un bon prompt.',
+        'step6_tab' => 'Synthèse',
+        'step6_title' => 'Synthèse collective',
+        'step6_desc' => 'Identifions ensemble les éléments clés d\'un bon prompt.',
     ]
 );
 
@@ -385,7 +385,7 @@ $isSubmitted = $travail['is_shared'] == 1;
                                 </div>
                                 <div>
                                     <p class="font-bold text-gray-800 text-sm">Publication Instagram</p>
-                                    <p class="text-gray-600 text-xs">Annoncer une activite</p>
+                                    <p class="text-gray-600 text-xs">Annoncer une activité</p>
                                 </div>
                             </div>
                         </label>
@@ -397,7 +397,7 @@ $isSubmitted = $travail['is_shared'] == 1;
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                                 </div>
                                 <div>
-                                    <p class="font-bold text-gray-800 text-sm">Appel a benevoles</p>
+                                    <p class="font-bold text-gray-800 text-sm">Appel à bénévoles</p>
                                     <p class="text-gray-600 text-xs">Recruter des volontaires</p>
                                 </div>
                             </div>
@@ -423,7 +423,7 @@ $isSubmitted = $travail['is_shared'] == 1;
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                 </div>
                                 <div>
-                                    <p class="font-bold text-gray-800 text-sm">Scenario jeu de role</p>
+                                    <p class="font-bold text-gray-800 text-sm">Scénario jeu de rôle</p>
                                     <p class="text-gray-600 text-xs">Mise en situation</p>
                                 </div>
                             </div>
@@ -436,8 +436,8 @@ $isSubmitted = $travail['is_shared'] == 1;
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
                                 </div>
                                 <div>
-                                    <p class="font-bold text-gray-800 text-sm">Fiche experience</p>
-                                    <p class="text-gray-600 text-xs">Experience scientifique</p>
+                                    <p class="font-bold text-gray-800 text-sm">Fiche expérience</p>
+                                    <p class="text-gray-600 text-xs">Expérience scientifique</p>
                                 </div>
                             </div>
                         </label>
@@ -449,7 +449,7 @@ $isSubmitted = $travail['is_shared'] == 1;
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2m0 2v2m0-2H5m2 0h2m6 8v8m-4-8v8m8-8v8M3 8h18M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/></svg>
                                 </div>
                                 <div>
-                                    <p class="font-bold text-gray-800 text-sm">Themes impro</p>
+                                    <p class="font-bold text-gray-800 text-sm">Thèmes impro</p>
                                     <p class="text-gray-600 text-xs">Banque d'improvisation</p>
                                 </div>
                             </div>
@@ -462,7 +462,7 @@ $isSubmitted = $travail['is_shared'] == 1;
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                                 </div>
                                 <div>
-                                    <p class="font-bold text-gray-800 text-sm">Education medias</p>
+                                    <p class="font-bold text-gray-800 text-sm">Éducation médias</p>
                                     <p class="text-gray-600 text-xs">Esprit critique</p>
                                 </div>
                             </div>
@@ -488,7 +488,7 @@ $isSubmitted = $travail['is_shared'] == 1;
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
                                 </div>
                                 <div>
-                                    <p class="font-bold text-gray-800 text-sm">Sensibilisation reseaux</p>
+                                    <p class="font-bold text-gray-800 text-sm">Sensibilisation réseaux</p>
                                     <p class="text-gray-600 text-xs">Campagne sociale</p>
                                 </div>
                             </div>
@@ -502,7 +502,7 @@ $isSubmitted = $travail['is_shared'] == 1;
                                 </div>
                                 <div>
                                     <p class="font-bold text-gray-800 text-sm">Appel d'offre</p>
-                                    <p class="text-gray-600 text-xs">Repondre a un AO</p>
+                                    <p class="text-gray-600 text-xs">Répondre à un AO</p>
                                 </div>
                             </div>
                         </label>
@@ -515,7 +515,7 @@ $isSubmitted = $travail['is_shared'] == 1;
                                 </div>
                                 <div>
                                     <p class="font-bold text-gray-800 text-sm">Brainstorming</p>
-                                    <p class="text-gray-600 text-xs">Generer des idees</p>
+                                    <p class="text-gray-600 text-xs">Générer des idées</p>
                                 </div>
                             </div>
                         </label>
