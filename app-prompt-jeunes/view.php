@@ -89,10 +89,23 @@ $syntheseCles = $travail ? json_decode($travail['synthese_cles'] ?? '[]', true) 
                 <span class="bg-pink-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">2</span>
                 Cas choisi et Prompt initial
             </h2>
-            <?php if (!empty($travail['cas_choisi'])): ?>
+            <?php if (!empty($travail['cas_choisi'])):
+                $casLabels = [
+                    'instagram' => ['label' => 'Publication Instagram', 'class' => 'bg-purple-100 text-purple-800'],
+                    'benevoles' => ['label' => 'Appel a benevoles', 'class' => 'bg-green-100 text-green-800'],
+                    'quiz' => ['label' => 'Quiz interactif', 'class' => 'bg-blue-100 text-blue-800'],
+                    'jeu_role' => ['label' => 'Scenario jeu de role', 'class' => 'bg-amber-100 text-amber-800'],
+                    'experience' => ['label' => 'Fiche experience scientifique', 'class' => 'bg-cyan-100 text-cyan-800'],
+                    'impro' => ['label' => 'Themes improvisation', 'class' => 'bg-fuchsia-100 text-fuchsia-800'],
+                    'education_medias' => ['label' => 'Education aux medias', 'class' => 'bg-rose-100 text-rose-800'],
+                    'plaidoyer' => ['label' => 'Campagne de plaidoyer', 'class' => 'bg-emerald-100 text-emerald-800'],
+                    'sensibilisation' => ['label' => 'Sensibilisation reseaux sociaux', 'class' => 'bg-sky-100 text-sky-800'],
+                ];
+                $cas = $casLabels[$travail['cas_choisi']] ?? ['label' => $travail['cas_choisi'], 'class' => 'bg-gray-100 text-gray-800'];
+            ?>
                 <div class="mb-4">
-                    <span class="inline-block px-3 py-1 rounded-full text-sm font-medium <?= $travail['cas_choisi'] === 'instagram' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800' ?>">
-                        <?= $travail['cas_choisi'] === 'instagram' ? 'Publication Instagram' : 'Appel a benevoles' ?>
+                    <span class="inline-block px-3 py-1 rounded-full text-sm font-medium <?= $cas['class'] ?>">
+                        <?= $cas['label'] ?>
                     </span>
                 </div>
             <?php endif; ?>

@@ -189,12 +189,24 @@ $isSubmitted = $travail['is_shared'] == 1;
         <div class="max-w-5xl mx-auto px-4 py-2 flex items-center justify-between">
             <div class="flex items-center gap-2 flex-wrap">
                 <span class="text-sm text-pink-700 font-medium">Mes exercices :</span>
-                <?php foreach ($allExercices as $ex): ?>
+                <?php
+                $casShortLabels = [
+                    'instagram' => 'Insta',
+                    'benevoles' => 'Benev',
+                    'quiz' => 'Quiz',
+                    'jeu_role' => 'JdR',
+                    'experience' => 'Exp',
+                    'impro' => 'Impro',
+                    'education_medias' => 'Medias',
+                    'plaidoyer' => 'Plaid',
+                    'sensibilisation' => 'Sensi',
+                ];
+                foreach ($allExercices as $ex): ?>
                     <a href="app.php?ex=<?= $ex['exercice_num'] ?>"
                        class="px-3 py-1 rounded-full text-sm <?= $ex['exercice_num'] == $currentExerciceNum ? 'bg-pink-500 text-white' : 'bg-white text-pink-700 hover:bg-pink-100' ?> border border-pink-300 flex items-center gap-1">
                         #<?= $ex['exercice_num'] ?>
                         <?php if ($ex['cas_choisi']): ?>
-                            <span class="text-xs opacity-75">(<?= $ex['cas_choisi'] == 'instagram' ? 'Insta' : 'Benev' ?>)</span>
+                            <span class="text-xs opacity-75">(<?= $casShortLabels[$ex['cas_choisi']] ?? $ex['cas_choisi'] ?>)</span>
                         <?php endif; ?>
                         <?php if ($ex['is_shared']): ?>
                             <svg class="w-3 h-3 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
@@ -357,28 +369,121 @@ $isSubmitted = $travail['is_shared'] == 1;
                 <!-- Choose case -->
                 <div class="mb-6">
                     <h3 class="font-bold text-gray-800 mb-4"><?= t('pj.choose_case') ?></h3>
-                    <div class="grid md:grid-cols-2 gap-4">
-                        <label class="example-card cursor-pointer block bg-white border-2 rounded-xl p-5 hover:border-pink-500 transition-all" id="caseInstagram">
+                    <div class="grid md:grid-cols-3 gap-3">
+                        <!-- Instagram -->
+                        <label class="example-card cursor-pointer block bg-white border-2 rounded-xl p-4 hover:border-pink-500 transition-all" id="caseInstagram">
                             <input type="radio" name="casChoisi" value="instagram" class="hidden" onchange="selectCase('instagram')">
                             <div class="flex items-start gap-3">
-                                <div class="bg-gradient-to-br from-purple-500 to-pink-500 w-12 h-12 rounded-xl flex items-center justify-center text-white">
-                                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                                <div class="bg-gradient-to-br from-purple-500 to-pink-500 w-10 h-10 rounded-lg flex items-center justify-center text-white flex-shrink-0">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073z"/></svg>
                                 </div>
                                 <div>
-                                    <p class="font-bold text-gray-800"><?= t('pj.case_instagram') ?></p>
-                                    <p class="text-gray-600 text-sm"><?= t('pj.case_instagram_desc') ?></p>
+                                    <p class="font-bold text-gray-800 text-sm">Publication Instagram</p>
+                                    <p class="text-gray-600 text-xs">Annoncer une activite</p>
                                 </div>
                             </div>
                         </label>
-                        <label class="example-card cursor-pointer block bg-white border-2 rounded-xl p-5 hover:border-pink-500 transition-all" id="caseVolunteer">
+                        <!-- Benevoles -->
+                        <label class="example-card cursor-pointer block bg-white border-2 rounded-xl p-4 hover:border-pink-500 transition-all" id="caseVolunteer">
                             <input type="radio" name="casChoisi" value="benevoles" class="hidden" onchange="selectCase('benevoles')">
                             <div class="flex items-start gap-3">
-                                <div class="bg-gradient-to-br from-green-500 to-teal-500 w-12 h-12 rounded-xl flex items-center justify-center text-white">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                                <div class="bg-gradient-to-br from-green-500 to-teal-500 w-10 h-10 rounded-lg flex items-center justify-center text-white flex-shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                                 </div>
                                 <div>
-                                    <p class="font-bold text-gray-800"><?= t('pj.case_volunteers') ?></p>
-                                    <p class="text-gray-600 text-sm"><?= t('pj.case_volunteers_desc') ?></p>
+                                    <p class="font-bold text-gray-800 text-sm">Appel a benevoles</p>
+                                    <p class="text-gray-600 text-xs">Recruter des volontaires</p>
+                                </div>
+                            </div>
+                        </label>
+                        <!-- Quiz -->
+                        <label class="example-card cursor-pointer block bg-white border-2 rounded-xl p-4 hover:border-pink-500 transition-all" id="caseQuiz">
+                            <input type="radio" name="casChoisi" value="quiz" class="hidden" onchange="selectCase('quiz')">
+                            <div class="flex items-start gap-3">
+                                <div class="bg-gradient-to-br from-blue-500 to-indigo-500 w-10 h-10 rounded-lg flex items-center justify-center text-white flex-shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-gray-800 text-sm">Quiz interactif</p>
+                                    <p class="text-gray-600 text-xs">Questions engageantes</p>
+                                </div>
+                            </div>
+                        </label>
+                        <!-- Jeu de role -->
+                        <label class="example-card cursor-pointer block bg-white border-2 rounded-xl p-4 hover:border-pink-500 transition-all" id="caseJeuRole">
+                            <input type="radio" name="casChoisi" value="jeu_role" class="hidden" onchange="selectCase('jeu_role')">
+                            <div class="flex items-start gap-3">
+                                <div class="bg-gradient-to-br from-amber-500 to-orange-500 w-10 h-10 rounded-lg flex items-center justify-center text-white flex-shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-gray-800 text-sm">Scenario jeu de role</p>
+                                    <p class="text-gray-600 text-xs">Mise en situation</p>
+                                </div>
+                            </div>
+                        </label>
+                        <!-- Experience scientifique -->
+                        <label class="example-card cursor-pointer block bg-white border-2 rounded-xl p-4 hover:border-pink-500 transition-all" id="caseExperience">
+                            <input type="radio" name="casChoisi" value="experience" class="hidden" onchange="selectCase('experience')">
+                            <div class="flex items-start gap-3">
+                                <div class="bg-gradient-to-br from-cyan-500 to-blue-500 w-10 h-10 rounded-lg flex items-center justify-center text-white flex-shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-gray-800 text-sm">Fiche experience</p>
+                                    <p class="text-gray-600 text-xs">Experience scientifique</p>
+                                </div>
+                            </div>
+                        </label>
+                        <!-- Improvisation -->
+                        <label class="example-card cursor-pointer block bg-white border-2 rounded-xl p-4 hover:border-pink-500 transition-all" id="caseImpro">
+                            <input type="radio" name="casChoisi" value="impro" class="hidden" onchange="selectCase('impro')">
+                            <div class="flex items-start gap-3">
+                                <div class="bg-gradient-to-br from-fuchsia-500 to-purple-500 w-10 h-10 rounded-lg flex items-center justify-center text-white flex-shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2m0 2v2m0-2H5m2 0h2m6 8v8m-4-8v8m8-8v8M3 8h18M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/></svg>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-gray-800 text-sm">Themes impro</p>
+                                    <p class="text-gray-600 text-xs">Banque d'improvisation</p>
+                                </div>
+                            </div>
+                        </label>
+                        <!-- Education medias -->
+                        <label class="example-card cursor-pointer block bg-white border-2 rounded-xl p-4 hover:border-pink-500 transition-all" id="caseEducMedias">
+                            <input type="radio" name="casChoisi" value="education_medias" class="hidden" onchange="selectCase('education_medias')">
+                            <div class="flex items-start gap-3">
+                                <div class="bg-gradient-to-br from-rose-500 to-red-500 w-10 h-10 rounded-lg flex items-center justify-center text-white flex-shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-gray-800 text-sm">Education medias</p>
+                                    <p class="text-gray-600 text-xs">Esprit critique</p>
+                                </div>
+                            </div>
+                        </label>
+                        <!-- Plaidoyer -->
+                        <label class="example-card cursor-pointer block bg-white border-2 rounded-xl p-4 hover:border-pink-500 transition-all" id="casePlaidoyer">
+                            <input type="radio" name="casChoisi" value="plaidoyer" class="hidden" onchange="selectCase('plaidoyer')">
+                            <div class="flex items-start gap-3">
+                                <div class="bg-gradient-to-br from-emerald-500 to-green-600 w-10 h-10 rounded-lg flex items-center justify-center text-white flex-shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-gray-800 text-sm">Campagne plaidoyer</p>
+                                    <p class="text-gray-600 text-xs">Mobiliser pour une cause</p>
+                                </div>
+                            </div>
+                        </label>
+                        <!-- Sensibilisation -->
+                        <label class="example-card cursor-pointer block bg-white border-2 rounded-xl p-4 hover:border-pink-500 transition-all" id="caseSensibilisation">
+                            <input type="radio" name="casChoisi" value="sensibilisation" class="hidden" onchange="selectCase('sensibilisation')">
+                            <div class="flex items-start gap-3">
+                                <div class="bg-gradient-to-br from-sky-500 to-blue-600 w-10 h-10 rounded-lg flex items-center justify-center text-white flex-shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-gray-800 text-sm">Sensibilisation reseaux</p>
+                                    <p class="text-gray-600 text-xs">Campagne sociale</p>
                                 </div>
                             </div>
                         </label>
@@ -809,13 +914,30 @@ $isSubmitted = $travail['is_shared'] == 1;
 
         // Case selection
         function selectCase(caseType) {
-            document.getElementById('caseInstagram').classList.remove('border-pink-500', 'bg-pink-50');
-            document.getElementById('caseVolunteer').classList.remove('border-pink-500', 'bg-pink-50');
+            const allCases = ['caseInstagram', 'caseVolunteer', 'caseQuiz', 'caseJeuRole', 'caseExperience', 'caseImpro', 'caseEducMedias', 'casePlaidoyer', 'caseSensibilisation'];
+            const caseMap = {
+                'instagram': 'caseInstagram',
+                'benevoles': 'caseVolunteer',
+                'quiz': 'caseQuiz',
+                'jeu_role': 'caseJeuRole',
+                'experience': 'caseExperience',
+                'impro': 'caseImpro',
+                'education_medias': 'caseEducMedias',
+                'plaidoyer': 'casePlaidoyer',
+                'sensibilisation': 'caseSensibilisation'
+            };
 
-            if (caseType === 'instagram') {
-                document.getElementById('caseInstagram').classList.add('border-pink-500', 'bg-pink-50');
-            } else if (caseType === 'benevoles') {
-                document.getElementById('caseVolunteer').classList.add('border-pink-500', 'bg-pink-50');
+            // Remove selection from all
+            allCases.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove('border-pink-500', 'bg-pink-50');
+            });
+
+            // Add selection to chosen case
+            const selectedId = caseMap[caseType];
+            if (selectedId) {
+                const el = document.getElementById(selectedId);
+                if (el) el.classList.add('border-pink-500', 'bg-pink-50');
             }
         }
 
