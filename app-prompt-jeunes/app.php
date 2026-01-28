@@ -200,6 +200,9 @@ $isSubmitted = $travail['is_shared'] == 1;
                     'education_medias' => 'Medias',
                     'plaidoyer' => 'Plaid',
                     'sensibilisation' => 'Sensi',
+                    'appel_offre' => 'AO',
+                    'brainstorming' => 'Brain',
+                    'autres' => 'Autre',
                 ];
                 foreach ($allExercices as $ex): ?>
                     <a href="app.php?ex=<?= $ex['exercice_num'] ?>"
@@ -484,6 +487,45 @@ $isSubmitted = $travail['is_shared'] == 1;
                                 <div>
                                     <p class="font-bold text-gray-800 text-sm">Sensibilisation reseaux</p>
                                     <p class="text-gray-600 text-xs">Campagne sociale</p>
+                                </div>
+                            </div>
+                        </label>
+                        <!-- Appel d'offre -->
+                        <label class="example-card cursor-pointer block bg-white border-2 rounded-xl p-4 hover:border-pink-500 transition-all" id="caseAppelOffre">
+                            <input type="radio" name="casChoisi" value="appel_offre" class="hidden" onchange="selectCase('appel_offre')">
+                            <div class="flex items-start gap-3">
+                                <div class="bg-gradient-to-br from-slate-500 to-gray-700 w-10 h-10 rounded-lg flex items-center justify-center text-white flex-shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-gray-800 text-sm">Appel d'offre</p>
+                                    <p class="text-gray-600 text-xs">Repondre a un AO</p>
+                                </div>
+                            </div>
+                        </label>
+                        <!-- Brainstorming -->
+                        <label class="example-card cursor-pointer block bg-white border-2 rounded-xl p-4 hover:border-pink-500 transition-all" id="caseBrainstorming">
+                            <input type="radio" name="casChoisi" value="brainstorming" class="hidden" onchange="selectCase('brainstorming')">
+                            <div class="flex items-start gap-3">
+                                <div class="bg-gradient-to-br from-yellow-400 to-orange-500 w-10 h-10 rounded-lg flex items-center justify-center text-white flex-shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-gray-800 text-sm">Brainstorming</p>
+                                    <p class="text-gray-600 text-xs">Generer des idees</p>
+                                </div>
+                            </div>
+                        </label>
+                        <!-- Autres -->
+                        <label class="example-card cursor-pointer block bg-white border-2 rounded-xl p-4 hover:border-pink-500 transition-all" id="caseAutres">
+                            <input type="radio" name="casChoisi" value="autres" class="hidden" onchange="selectCase('autres')">
+                            <div class="flex items-start gap-3">
+                                <div class="bg-gradient-to-br from-gray-400 to-gray-600 w-10 h-10 rounded-lg flex items-center justify-center text-white flex-shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"/></svg>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-gray-800 text-sm">Autres</p>
+                                    <p class="text-gray-600 text-xs">Cas personnalise</p>
                                 </div>
                             </div>
                         </label>
@@ -914,7 +956,7 @@ $isSubmitted = $travail['is_shared'] == 1;
 
         // Case selection
         function selectCase(caseType) {
-            const allCases = ['caseInstagram', 'caseVolunteer', 'caseQuiz', 'caseJeuRole', 'caseExperience', 'caseImpro', 'caseEducMedias', 'casePlaidoyer', 'caseSensibilisation'];
+            const allCases = ['caseInstagram', 'caseVolunteer', 'caseQuiz', 'caseJeuRole', 'caseExperience', 'caseImpro', 'caseEducMedias', 'casePlaidoyer', 'caseSensibilisation', 'caseAppelOffre', 'caseBrainstorming', 'caseAutres'];
             const caseMap = {
                 'instagram': 'caseInstagram',
                 'benevoles': 'caseVolunteer',
@@ -924,7 +966,10 @@ $isSubmitted = $travail['is_shared'] == 1;
                 'impro': 'caseImpro',
                 'education_medias': 'caseEducMedias',
                 'plaidoyer': 'casePlaidoyer',
-                'sensibilisation': 'caseSensibilisation'
+                'sensibilisation': 'caseSensibilisation',
+                'appel_offre': 'caseAppelOffre',
+                'brainstorming': 'caseBrainstorming',
+                'autres': 'caseAutres'
             };
 
             // Remove selection from all
