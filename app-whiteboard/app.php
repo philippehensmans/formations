@@ -46,6 +46,7 @@ foreach ($participantIds as $pid) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= t('wb.title') ?> - <?= APP_NAME ?></title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='2' y='4' width='28' height='22' rx='2' fill='%23fff' stroke='%23374151' stroke-width='2'/><path d='M6 10h8M6 14h12M6 18h6' stroke='%233b82f6' stroke-width='2' stroke-linecap='round'/><circle cx='22' cy='16' r='4' fill='%23fbbf24'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .canvas-container {

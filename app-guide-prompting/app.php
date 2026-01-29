@@ -44,6 +44,7 @@ if (!$guide) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= t('gp.title') ?></title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M4 4h10c2 0 2 2 2 2v22s0-2-2-2H4V4z' fill='%236366f1'/><path d='M28 4H18c-2 0-2 2-2 2v22s0-2 2-2h10V4z' fill='%238b5cf6'/><path d='M8 10h4M8 14h4M8 18h3' stroke='%23fff' stroke-width='1.5' stroke-linecap='round'/><path d='M20 10h4M20 14h4M20 18h3' stroke='%23fff' stroke-width='1.5' stroke-linecap='round'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .step-content { display: none; }

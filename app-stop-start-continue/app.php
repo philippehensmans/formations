@@ -39,6 +39,7 @@ $isSubmitted = ($retro['is_shared'] ?? 0) == 1;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= t('ssc.title') ?> - <?= h($user['prenom'] ?? '') ?> <?= h($user['nom'] ?? '') ?></title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='8' cy='16' r='7' fill='%23dc2626'/><circle cx='16' cy='16' r='7' fill='%2322c55e'/><circle cx='24' cy='16' r='7' fill='%233b82f6'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>

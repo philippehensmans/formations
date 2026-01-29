@@ -10,6 +10,7 @@ $user = getCurrentUser();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= t('problemtree.title') ?> - <?= sanitize($user['username']) ?></title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='12' y='2' width='8' height='6' fill='%23dc2626'/><rect x='4' y='12' width='8' height='6' fill='%23f59e0b'/><rect x='20' y='12' width='8' height='6' fill='%23f59e0b'/><rect x='12' y='24' width='8' height='6' fill='%2322c55e'/><line x1='16' y1='8' x2='16' y2='24' stroke='%23374151' stroke-width='2'/><line x1='8' y1='12' x2='16' y2='16' stroke='%23374151' stroke-width='2'/><line x1='24' y1='12' x2='16' y2='16' stroke='%23374151' stroke-width='2'/></svg>">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {

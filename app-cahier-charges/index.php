@@ -9,6 +9,7 @@ $user = getCurrentUser();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= t('cahier.title') ?> - <?= sanitize($user['username']) ?></title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M6 2h14l6 6v22H6V2z' fill='%23fff' stroke='%233b82f6' stroke-width='2'/><path d='M20 2v6h6' fill='none' stroke='%233b82f6' stroke-width='2'/><line x1='10' y1='14' x2='22' y2='14' stroke='%23cbd5e1' stroke-width='2'/><line x1='10' y1='18' x2='22' y2='18' stroke='%23cbd5e1' stroke-width='2'/><line x1='10' y1='22' x2='18' y2='22' stroke='%23cbd5e1' stroke-width='2'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>

@@ -68,6 +68,7 @@ if (!$analyse) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Analyse SWOT - <?= h($participant['prenom']) ?> <?= h($participant['nom']) ?></title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='1' y='1' width='14' height='14' fill='%2322c55e'/><rect x='17' y='1' width='14' height='14' fill='%23ef4444'/><rect x='1' y='17' width='14' height='14' fill='%233b82f6'/><rect x='17' y='17' width='14' height='14' fill='%23eab308'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @media print {

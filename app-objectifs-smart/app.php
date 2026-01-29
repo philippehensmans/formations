@@ -49,6 +49,7 @@ $exemples = getExemplesParDomaine();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= t('smart.title') ?> - <?= h($user['prenom']) ?></title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='none' stroke='%23dc2626' stroke-width='2'/><circle cx='16' cy='16' r='10' fill='none' stroke='%23f59e0b' stroke-width='2'/><circle cx='16' cy='16' r='6' fill='none' stroke='%2322c55e' stroke-width='2'/><circle cx='16' cy='16' r='3' fill='%2322c55e'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>

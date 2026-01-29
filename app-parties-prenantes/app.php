@@ -46,6 +46,7 @@ $isSubmitted = ($carto['is_submitted'] ?? 0) == 1;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= t('stakeholders.title') ?> - <?= h($user['prenom']) ?> <?= h($user['nom']) ?></title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='8' r='5' fill='%231e3a8a'/><circle cx='6' cy='24' r='5' fill='%2322c55e'/><circle cx='26' cy='24' r='5' fill='%23f59e0b'/><line x1='16' y1='13' x2='8' y2='20' stroke='%23666' stroke-width='2'/><line x1='16' y1='13' x2='24' y2='20' stroke='%23666' stroke-width='2'/><line x1='11' y1='24' x2='21' y2='24' stroke='%23666' stroke-width='2'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>

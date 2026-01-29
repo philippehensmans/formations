@@ -152,6 +152,7 @@ $isSubmitted = $travail['is_shared'] == 1;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= t('pj.title') ?></title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M4 6h24c1.1 0 2 .9 2 2v14c0 1.1-.9 2-2 2H10l-6 4v-4c-1.1 0-2-.9-2-2V8c0-1.1.9-2 2-2z' fill='%23ec4899'/><text x='8' y='18' font-family='monospace' font-size='10' fill='white'>&gt;_</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .step-card { transition: all 0.3s ease; }

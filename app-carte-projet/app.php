@@ -37,6 +37,7 @@ $isSubmitted = $carte['is_submitted'] == 1;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= t('carte.title') ?> - <?= sanitize($participant['prenom']) ?> <?= sanitize($participant['nom']) ?></title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='4' y='4' width='24' height='24' rx='3' fill='%23fff' stroke='%230ea5e9' stroke-width='2'/><rect x='8' y='8' width='8' height='6' fill='%230ea5e9'/><line x1='8' y1='18' x2='24' y2='18' stroke='%23cbd5e1' stroke-width='2'/><line x1='8' y1='22' x2='20' y2='22' stroke='%23cbd5e1' stroke-width='2'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>

@@ -51,6 +51,7 @@ foreach ($participantIds as $pid) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= t('mindmap.title') ?> - <?= h($session['nom']) ?></title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='6' fill='%23f59e0b'/><circle cx='6' cy='8' r='4' fill='%2322c55e'/><circle cx='26' cy='8' r='4' fill='%233b82f6'/><circle cx='6' cy='24' r='4' fill='%23ec4899'/><circle cx='26' cy='24' r='4' fill='%238b5cf6'/><line x1='16' y1='16' x2='6' y2='8' stroke='%23999' stroke-width='2'/><line x1='16' y1='16' x2='26' y2='8' stroke='%23999' stroke-width='2'/><line x1='16' y1='16' x2='6' y2='24' stroke='%23999' stroke-width='2'/><line x1='16' y1='16' x2='26' y2='24' stroke='%23999' stroke-width='2'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .mindmap-container {
