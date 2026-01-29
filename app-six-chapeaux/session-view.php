@@ -37,9 +37,17 @@ if (!$session) {
     exit;
 }
 
-// Recuperer tous les avis partages de la session
-$stmt = $db->prepare("SELECT * FROM avis WHERE session_id = ? AND is_shared = 1 ORDER BY chapeau, created_at DESC");
-$stmt->execute([$sessionId]);
+// Option pour voir tous les avis ou seulement les partages
+$showAll = isset($_GET['all']) && $_GET['all'] == '1';
+
+// Recuperer les avis de la session (tous ou seulement partages)
+if ($showAll) {
+    $stmt = $db->prepare("SELECT * FROM avis WHERE session_id = ? ORDER BY chapeau, created_at DESC");
+    $stmt->execute([$sessionId]);
+} else {
+    $stmt = $db->prepare("SELECT * FROM avis WHERE session_id = ? AND is_shared = 1 ORDER BY chapeau, created_at DESC");
+    $stmt->execute([$sessionId]);
+}
 $allAvis = $stmt->fetchAll();
 
 // Enrichir avec les infos utilisateur et grouper par chapeau
@@ -62,13 +70,34 @@ foreach ($allAvis as &$a) {
 }
 
 // Statistiques
-$stats = getStatsSession($sessionId);
 $totalAvis = count($allAvis);
 
+// Stats par chapeau (selon le filtre actuel)
+$statsQuery = $showAll
+    ? "SELECT chapeau, COUNT(*) as count FROM avis WHERE session_id = ? GROUP BY chapeau"
+    : "SELECT chapeau, COUNT(*) as count FROM avis WHERE session_id = ? AND is_shared = 1 GROUP BY chapeau";
+$stmt = $db->prepare($statsQuery);
+$stmt->execute([$sessionId]);
+$statsResults = $stmt->fetchAll();
+$stats = [];
+foreach ($statsResults as $row) {
+    $stats[$row['chapeau']] = $row['count'];
+}
+
 // Recuperer le nombre de participants
-$stmt = $db->prepare("SELECT COUNT(DISTINCT user_id) as count FROM avis WHERE session_id = ? AND is_shared = 1");
+$participantsQuery = $showAll
+    ? "SELECT COUNT(DISTINCT user_id) as count FROM avis WHERE session_id = ?"
+    : "SELECT COUNT(DISTINCT user_id) as count FROM avis WHERE session_id = ? AND is_shared = 1";
+$stmt = $db->prepare($participantsQuery);
 $stmt->execute([$sessionId]);
 $participantsCount = $stmt->fetch()['count'];
+
+// Compter le total des avis (partages vs tous)
+$stmt = $db->prepare("SELECT COUNT(*) as total, SUM(CASE WHEN is_shared = 1 THEN 1 ELSE 0 END) as shared FROM avis WHERE session_id = ?");
+$stmt->execute([$sessionId]);
+$avisCounts = $stmt->fetch();
+$totalAllAvis = $avisCounts['total'];
+$totalSharedAvis = $avisCounts['shared'];
 
 // Preparer les donnees JSON pour le filtrage cote client
 $avisJson = [];
@@ -116,6 +145,15 @@ foreach ($allAvis as $a) {
                     <p class="text-indigo-200 text-sm"><?= h($session['nom']) ?> - <?= $session['code'] ?></p>
                 </div>
                 <div class="flex items-center gap-4">
+                    <?php if ($showAll): ?>
+                    <a href="?id=<?= $sessionId ?>" class="bg-green-500 hover:bg-green-400 px-3 py-1 rounded text-sm">
+                        Partages seulement (<?= $totalSharedAvis ?>)
+                    </a>
+                    <?php else: ?>
+                    <a href="?id=<?= $sessionId ?>&all=1" class="bg-orange-500 hover:bg-orange-400 px-3 py-1 rounded text-sm">
+                        Voir tous les avis (<?= $totalAllAvis ?>)
+                    </a>
+                    <?php endif; ?>
                     <?= renderLanguageSelector('bg-indigo-500 text-white border-0 rounded px-2 py-1 cursor-pointer text-sm') ?>
                     <button onclick="window.print()" class="bg-indigo-500 hover:bg-indigo-400 px-3 py-1 rounded text-sm">
                         Imprimer
@@ -146,11 +184,20 @@ foreach ($allAvis as $a) {
             </div>
         </div>
 
+        <?php if ($showAll): ?>
+        <div class="bg-orange-100 border border-orange-300 rounded-xl p-4 mb-6">
+            <p class="text-orange-800 text-sm">
+                <strong>Mode: Tous les avis</strong> - Vous voyez tous les avis (<?= $totalAllAvis ?>), y compris ceux non partages.
+                Les avis non partages sont marques d'un badge orange.
+            </p>
+        </div>
+        <?php endif; ?>
+
         <!-- Statistiques globales -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             <div class="bg-white rounded-xl shadow p-4 text-center">
                 <div class="text-3xl font-bold text-indigo-600"><?= $totalAvis ?></div>
-                <div class="text-gray-500 text-sm">Avis partages</div>
+                <div class="text-gray-500 text-sm"><?= $showAll ? 'Avis (tous)' : 'Avis partages' ?></div>
             </div>
             <div class="bg-white rounded-xl shadow p-4 text-center">
                 <div class="text-3xl font-bold text-purple-600"><?= $participantsCount ?></div>
@@ -240,7 +287,10 @@ foreach ($allAvis as $a) {
                     <?php else: ?>
                     <div class="space-y-3">
                         <?php foreach ($avisByChapeau[$key] as $a): ?>
-                        <div class="avis-card p-3 <?= $chapeau['bg'] ?> rounded-lg border <?= $chapeau['border'] ?>">
+                        <div class="avis-card p-3 <?= $chapeau['bg'] ?> rounded-lg border <?= $chapeau['border'] ?> <?= (!$a['is_shared'] && $showAll) ? 'opacity-75' : '' ?>">
+                            <?php if (!$a['is_shared'] && $showAll): ?>
+                            <div class="mb-2"><span class="bg-orange-200 text-orange-800 text-xs px-2 py-0.5 rounded">Non partage</span></div>
+                            <?php endif; ?>
                             <p class="<?= $key === 'noir' ? 'text-gray-200' : 'text-gray-700' ?> text-sm"><?= nl2br(h($a['contenu'])) ?></p>
                             <div class="flex justify-between items-center mt-2 text-xs <?= $key === 'noir' ? 'text-gray-400' : 'text-gray-500' ?>">
                                 <span class="font-medium"><?= h($a['user_prenom']) ?> <?= h($a['user_nom']) ?></span>
@@ -263,7 +313,7 @@ foreach ($allAvis as $a) {
             foreach ($allAvis as $a):
                 $ch = $chapeaux[$a['chapeau']] ?? $chapeaux['blanc'];
             ?>
-            <div class="avis-card bg-white rounded-xl shadow p-4 border-l-4 <?= $ch['border'] ?> avis-item" data-chapeau="<?= $a['chapeau'] ?>">
+            <div class="avis-card bg-white rounded-xl shadow p-4 border-l-4 <?= $ch['border'] ?> avis-item <?= (!$a['is_shared'] && $showAll) ? 'opacity-75' : '' ?>" data-chapeau="<?= $a['chapeau'] ?>">
                 <div class="flex items-start gap-4">
                     <span class="text-2xl"><?= $ch['icon'] ?></span>
                     <div class="flex-1">
@@ -273,6 +323,9 @@ foreach ($allAvis as $a) {
                                 <span class="text-gray-500 text-sm ml-2">- <?= h($a['user_prenom']) ?> <?= h($a['user_nom']) ?></span>
                                 <?php if (!empty($a['user_organisation'])): ?>
                                 <span class="text-gray-400 text-xs ml-1">(<?= h($a['user_organisation']) ?>)</span>
+                                <?php endif; ?>
+                                <?php if (!$a['is_shared'] && $showAll): ?>
+                                <span class="bg-orange-200 text-orange-800 text-xs px-2 py-0.5 rounded ml-2">Non partage</span>
                                 <?php endif; ?>
                             </div>
                             <span class="text-gray-400 text-xs"><?= date('d/m/Y H:i', strtotime($a['created_at'])) ?></span>
