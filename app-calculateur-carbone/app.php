@@ -36,6 +36,7 @@ $currentLang = getCurrentLanguage();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= h(APP_NAME) ?></title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='4' y='2' width='24' height='28' rx='3' fill='%2310b981'/><rect x='8' y='6' width='16' height='6' fill='%23fff'/><circle cx='10' cy='16' r='2' fill='%23fff'/><circle cx='16' cy='16' r='2' fill='%23fff'/><circle cx='22' cy='16' r='2' fill='%23fff'/><circle cx='10' cy='22' r='2' fill='%23fff'/><circle cx='16' cy='22' r='2' fill='%23fff'/><circle cx='22' cy='22' r='2' fill='%23fff'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>

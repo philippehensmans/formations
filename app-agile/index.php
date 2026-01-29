@@ -34,6 +34,7 @@ $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goa
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= t('agile.title') ?> - <?= t('agile.subtitle') ?></title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='2' y='4' width='8' height='24' rx='2' fill='%23e5e7eb' stroke='%23374151' stroke-width='1'/><rect x='12' y='4' width='8' height='24' rx='2' fill='%23fef3c7' stroke='%23d97706' stroke-width='1'/><rect x='22' y='4' width='8' height='24' rx='2' fill='%23dcfce7' stroke='%2316a34a' stroke-width='1'/><rect x='4' y='8' width='4' height='4' fill='%233b82f6'/><rect x='14' y='8' width='4' height='4' fill='%23f59e0b'/><rect x='24' y='8' width='4' height='4' fill='%2322c55e'/></svg>">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {

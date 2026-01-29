@@ -21,6 +21,7 @@ $scenario = getActiveScenario($db, $sessionId);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🌱 <?= t('carbone.title') ?></title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M16 4c-6 0-12 8-12 16 0 4 4 8 12 8s12-4 12-8c0-8-6-16-12-16z' fill='%2322c55e'/><path d='M16 8v18M10 14c4 2 6 6 6 10M22 14c-4 2-6 6-6 10' stroke='%23166534' stroke-width='2' fill='none'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .emoji-btn {

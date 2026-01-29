@@ -45,6 +45,7 @@ $isSubmitted = $atelier['is_shared'] == 1;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= t('aia.title') ?></title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='6' y='8' width='20' height='16' rx='3' fill='%238b5cf6'/><circle cx='12' cy='16' r='3' fill='%23fff'/><circle cx='20' cy='16' r='3' fill='%23fff'/><rect x='10' y='4' width='3' height='4' fill='%238b5cf6'/><rect x='19' y='4' width='3' height='4' fill='%238b5cf6'/><rect x='13' y='20' width='6' height='2' fill='%23fff'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>

@@ -66,6 +66,7 @@ $jsTranslations = [
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= t('cadrelogique.title') ?> - <?= sanitize($participant['prenom']) ?> <?= sanitize($participant['nom']) ?></title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='2' y='2' width='28' height='28' fill='none' stroke='%231e3a8a' stroke-width='2'/><line x1='2' y1='10' x2='30' y2='10' stroke='%231e3a8a' stroke-width='2'/><line x1='2' y1='18' x2='30' y2='18' stroke='%231e3a8a' stroke-width='2'/><line x1='10' y1='2' x2='10' y2='30' stroke='%231e3a8a' stroke-width='2'/><rect x='12' y='12' width='4' height='4' fill='%2322c55e'/><rect x='18' y='20' width='4' height='4' fill='%23f59e0b'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>

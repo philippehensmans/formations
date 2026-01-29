@@ -57,6 +57,7 @@ function getEmptyPestel() {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= t('pestel.title') ?> - <?= h($user['prenom']) ?> <?= h($user['nom']) ?></title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='2' y='8' width='4' height='22' fill='%23dc2626'/><rect x='7' y='12' width='4' height='18' fill='%23ea580c'/><rect x='12' y='6' width='4' height='24' fill='%23eab308'/><rect x='17' y='10' width='4' height='20' fill='%2322c55e'/><rect x='22' y='4' width='4' height='26' fill='%233b82f6'/><rect x='27' y='14' width='4' height='16' fill='%238b5cf6'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>

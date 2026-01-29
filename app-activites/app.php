@@ -32,6 +32,7 @@ $stats = getStatistiques($sessionId);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= t('act.title') ?> - <?= APP_NAME ?></title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='4' y='4' width='24' height='24' rx='3' fill='%23f97316'/><path d='M9 12l3 3 5-5' stroke='%23fff' stroke-width='2.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/><line x1='9' y1='20' x2='23' y2='20' stroke='%23fff' stroke-width='2' stroke-linecap='round'/><line x1='9' y1='24' x2='19' y2='24' stroke='%23fff' stroke-width='2' stroke-linecap='round'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .activity-card { transition: all 0.2s; }

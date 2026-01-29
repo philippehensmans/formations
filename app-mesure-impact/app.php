@@ -55,6 +55,7 @@ $etapeCourante = $mesure['etape_courante'] ?: 1;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= t('impact.title') ?> - <?= htmlspecialchars($participant['prenom']) ?></title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='4' y='18' width='6' height='10' fill='%2322c55e'/><rect x='13' y='12' width='6' height='16' fill='%233b82f6'/><rect x='22' y='6' width='6' height='22' fill='%238b5cf6'/><path d='M4 6l8 6 8-4 8 4' fill='none' stroke='%23f59e0b' stroke-width='2' stroke-linecap='round'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
