@@ -117,10 +117,12 @@ function initDatabase($db) {
     $db->exec("CREATE TABLE IF NOT EXISTS participants (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         session_id INTEGER NOT NULL,
-        user_id INTEGER NOT NULL,
+        user_id INTEGER,
+        prenom VARCHAR(100),
+        nom VARCHAR(100),
+        organisation VARCHAR(255),
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (session_id) REFERENCES sessions(id),
-        UNIQUE(session_id, user_id)
+        FOREIGN KEY (session_id) REFERENCES sessions(id)
     )");
 
     // Table des avis (multiple par participant)
@@ -138,11 +140,22 @@ function initDatabase($db) {
 
     // Migrations
     $migrations = [
-        "ALTER TABLE sessions ADD COLUMN sujet TEXT DEFAULT ''"
+        "ALTER TABLE sessions ADD COLUMN sujet TEXT DEFAULT ''",
+        "ALTER TABLE participants ADD COLUMN prenom VARCHAR(100)",
+        "ALTER TABLE participants ADD COLUMN nom VARCHAR(100)",
+        "ALTER TABLE participants ADD COLUMN organisation VARCHAR(255)",
+        "ALTER TABLE participants ADD COLUMN user_id INTEGER"
     ];
     foreach ($migrations as $sql) {
         try { $db->exec($sql); } catch (Exception $e) { /* Colonne existe deja */ }
     }
+
+    // Index pour les recherches
+    try {
+        $db->exec("CREATE INDEX IF NOT EXISTS idx_participants_session_user ON participants(session_id, user_id)");
+        $db->exec("CREATE INDEX IF NOT EXISTS idx_avis_session ON avis(session_id)");
+        $db->exec("CREATE INDEX IF NOT EXISTS idx_avis_user_session ON avis(user_id, session_id)");
+    } catch (Exception $e) { /* Index existe deja */ }
 }
 
 /**
