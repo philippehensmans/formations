@@ -122,6 +122,7 @@ foreach ($allAvis as $a) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Six Chapeaux - Vue Session - <?= h($session['nom']) ?></title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='1' y='1' width='9' height='9' fill='%23e5e7eb'/><rect x='11' y='1' width='9' height='9' fill='%23ef4444'/><rect x='21' y='1' width='9' height='9' fill='%231e293b'/><rect x='1' y='11' width='9' height='9' fill='%23eab308'/><rect x='11' y='11' width='9' height='9' fill='%2322c55e'/><rect x='21' y='11' width='9' height='9' fill='%233b82f6'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .chapeau-filter { transition: all 0.2s ease; }
