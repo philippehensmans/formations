@@ -1459,7 +1459,7 @@ return [
 
     // Prompt Engineering pour Public Jeune
     'pj' => [
-        'title' => 'Prompt Engineering pour Public Jeune',
+        'title' => 'Prompt Engineering',
         'step1_tab' => 'Introduction',
         'step2_tab' => 'Mon cas',
         'step3_tab' => 'Test & Iteration',

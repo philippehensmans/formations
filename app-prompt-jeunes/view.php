@@ -130,7 +130,7 @@ $casLabels = [
         <!-- Header Info -->
         <div class="bg-white rounded-xl shadow-lg p-6">
             <h1 class="text-2xl font-bold text-gray-800 mb-4">
-                Atelier Prompt Engineering pour Public Jeune
+                Atelier Prompt Engineering
                 <?php if (count($allExercices) > 1): ?>
                     <span class="text-pink-500 text-lg font-normal">- Exercice #<?= $currentExerciceNum ?></span>
                 <?php endif; ?>
