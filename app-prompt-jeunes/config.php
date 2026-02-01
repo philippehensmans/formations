@@ -9,7 +9,7 @@ require_once __DIR__ . '/../shared-auth/config.php';
 require_once __DIR__ . '/../shared-auth/sessions.php';
 require_once __DIR__ . '/../shared-auth/lang.php';
 
-define('APP_NAME', 'Prompt Engineering Jeunes');
+define('APP_NAME', 'Prompt Engineering');
 define('APP_COLOR', 'pink');
 define('DB_PATH', __DIR__ . '/data/prompt_jeunes.db');
 
