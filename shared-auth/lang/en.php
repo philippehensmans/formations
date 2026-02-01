@@ -1452,6 +1452,17 @@ return [
         ],
     ],
 
+    // Prompt Engineering for Youth
+    'pj' => [
+        'title' => 'Prompt Engineering',
+        'step1_tab' => 'Introduction',
+        'step2_tab' => 'My case',
+        'step3_tab' => 'Test & Iterate',
+        'step4_tab' => 'Sharing',
+        'step5_tab' => 'AI Feedback',
+        'step6_tab' => 'Summary',
+    ],
+
     // Activity Inventory
     'act' => [
         'title' => 'Activity Inventory',

@@ -1452,6 +1452,17 @@ return [
         ],
     ],
 
+    // Prompt Engineering za Mlade
+    'pj' => [
+        'title' => 'Prompt Engineering',
+        'step1_tab' => 'Uvod',
+        'step2_tab' => 'Moj primer',
+        'step3_tab' => 'Test in iteracija',
+        'step4_tab' => 'Deljenje',
+        'step5_tab' => 'Povratne informacije UI',
+        'step6_tab' => 'Povzetek',
+    ],
+
     // Popis Dejavnosti
     'act' => [
         'title' => 'Popis Dejavnosti',

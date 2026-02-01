@@ -1452,6 +1452,17 @@ return [
         ],
     ],
 
+    // Prompt Engineering para Jovenes
+    'pj' => [
+        'title' => 'Prompt Engineering',
+        'step1_tab' => 'Introduccion',
+        'step2_tab' => 'Mi caso',
+        'step3_tab' => 'Prueba e Iteracion',
+        'step4_tab' => 'Compartir',
+        'step5_tab' => 'Feedback IA',
+        'step6_tab' => 'Sintesis',
+    ],
+
     // Inventario de Actividades
     'act' => [
         'title' => 'Inventario de Actividades',
