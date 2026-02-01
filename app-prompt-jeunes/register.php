@@ -4,7 +4,7 @@
  * Utilise le template partage
  */
 
-$appName = 'Prompt Engineering Jeunes';
+$appName = 'Prompt Engineering';
 $appColor = 'pink';
 $appKey = 'app-prompt-jeunes';
 
