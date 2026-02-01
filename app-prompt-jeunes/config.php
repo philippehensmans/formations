@@ -1,6 +1,6 @@
 <?php
 /**
- * Configuration - Prompt Engineering pour Public Jeune
+ * Configuration - Prompt Engineering
  * Utilise le systeme d'authentification partage
  */
 
