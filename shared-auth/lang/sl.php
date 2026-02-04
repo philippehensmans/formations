@@ -1461,6 +1461,17 @@ return [
         'step4_tab' => 'Deljenje',
         'step5_tab' => 'Povratne informacije UI',
         'step6_tab' => 'Povzetek',
+        'org_type' => 'Vrsta organizacije',
+        'select_type' => '-- Izberite vrsto --',
+        'type_youth' => 'Mladinsko gibanje',
+        'type_youth_center' => 'Mladinski center',
+        'type_sports' => 'Sportni klub',
+        'type_cultural' => 'Kulturno drustvo',
+        'type_student' => 'Studentska organizacija',
+        'type_youth_org' => 'Mladinska organizacija',
+        'type_permanent_edu' => 'Organizacija za vsezivljenjsko ucenje',
+        'type_humanitarian' => 'Humanitarna organizacija',
+        'type_other' => 'Drugo',
     ],
 
     // Popis Dejavnosti
