@@ -55,9 +55,20 @@ function initDatabase($db) {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         session_id INTEGER NOT NULL,
         user_id INTEGER NOT NULL,
+        prenom VARCHAR(100),
+        nom VARCHAR(100),
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         UNIQUE(session_id, user_id)
     )");
+
+    // Migrations pour ajouter les colonnes manquantes
+    $migrations = [
+        "ALTER TABLE participants ADD COLUMN prenom VARCHAR(100)",
+        "ALTER TABLE participants ADD COLUMN nom VARCHAR(100)"
+    ];
+    foreach ($migrations as $sql) {
+        try { $db->exec($sql); } catch (Exception $e) { /* Colonne existe deja */ }
+    }
 
     // Table des calculs effectues par les participants
     $db->exec("CREATE TABLE IF NOT EXISTS calculs (
