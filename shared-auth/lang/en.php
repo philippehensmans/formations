@@ -1461,6 +1461,17 @@ return [
         'step4_tab' => 'Sharing',
         'step5_tab' => 'AI Feedback',
         'step6_tab' => 'Summary',
+        'org_type' => 'Organization type',
+        'select_type' => '-- Select type --',
+        'type_youth' => 'Youth movement',
+        'type_youth_center' => 'Youth center',
+        'type_sports' => 'Sports club',
+        'type_cultural' => 'Cultural nonprofit',
+        'type_student' => 'Student association',
+        'type_youth_org' => 'Youth organization',
+        'type_permanent_edu' => 'Lifelong learning organization',
+        'type_humanitarian' => 'Humanitarian organization',
+        'type_other' => 'Other',
     ],
 
     // Activity Inventory

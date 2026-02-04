@@ -367,6 +367,9 @@ $isSubmitted = $travail['is_shared'] == 1;
                                 <option value="club_sport"><?= t('pj.type_sports') ?></option>
                                 <option value="asbl_culturelle"><?= t('pj.type_cultural') ?></option>
                                 <option value="association_etudiante"><?= t('pj.type_student') ?></option>
+                                <option value="organisation_jeunesse"><?= t('pj.type_youth_org') ?></option>
+                                <option value="education_permanente"><?= t('pj.type_permanent_edu') ?></option>
+                                <option value="organisation_humanitaire"><?= t('pj.type_humanitarian') ?></option>
                                 <option value="autre"><?= t('pj.type_other') ?></option>
                             </select>
                         </div>

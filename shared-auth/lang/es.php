@@ -1461,6 +1461,17 @@ return [
         'step4_tab' => 'Compartir',
         'step5_tab' => 'Feedback IA',
         'step6_tab' => 'Sintesis',
+        'org_type' => 'Tipo de organizacion',
+        'select_type' => '-- Seleccione el tipo --',
+        'type_youth' => 'Movimiento juvenil',
+        'type_youth_center' => 'Centro de jovenes',
+        'type_sports' => 'Club deportivo',
+        'type_cultural' => 'Asociacion cultural',
+        'type_student' => 'Asociacion estudiantil',
+        'type_youth_org' => 'Organizacion juvenil',
+        'type_permanent_edu' => 'Organizacion de educacion permanente',
+        'type_humanitarian' => 'Organizacion humanitaria',
+        'type_other' => 'Otro',
     ],
 
     // Inventario de Actividades
