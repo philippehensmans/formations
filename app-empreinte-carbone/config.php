@@ -55,9 +55,20 @@ function initDatabase($db) {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         session_id INTEGER NOT NULL,
         user_id INTEGER NOT NULL,
+        prenom VARCHAR(100),
+        nom VARCHAR(100),
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         UNIQUE(session_id, user_id)
     )");
+
+    // Migrations pour ajouter les colonnes manquantes aux participants
+    $participantMigrations = [
+        "ALTER TABLE participants ADD COLUMN prenom VARCHAR(100)",
+        "ALTER TABLE participants ADD COLUMN nom VARCHAR(100)"
+    ];
+    foreach ($participantMigrations as $sql) {
+        try { $db->exec($sql); } catch (Exception $e) { /* Colonne existe deja */ }
+    }
 
     // Table des scenarios (un par session, defini par le formateur)
     $db->exec("CREATE TABLE IF NOT EXISTS scenarios (
