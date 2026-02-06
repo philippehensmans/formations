@@ -171,17 +171,26 @@ $users = $db->query("SELECT * FROM users ORDER BY username")->fetchAll();
 
 // Liste des applications
 $apps = [
-    'app-swot' => 'Analyse SWOT',
+    'app-activites' => 'Inventaire des Activités',
+    'app-agile' => 'Gestion Agile',
+    'app-arbreproblemes' => 'Arbre à Problèmes',
+    'app-atelier-ia' => 'Atelier IA',
+    'app-cadrelogique' => 'Cadre Logique',
     'app-cahier-charges' => 'Cahier des Charges',
-    'app-objectifs-smart' => 'Objectifs SMART',
-    'app-pestel' => 'Analyse PESTEL',
-    'app-stop-start-continue' => 'Stop Start Continue',
-    'app-parties-prenantes' => 'Parties Prenantes',
+    'app-calculateur-carbone' => 'Calculateur Carbone IA',
     'app-carte-projet' => 'Carte Projet',
-    'app-cadre-logique' => 'Cadre Logique',
-    'app-budget' => 'Budget',
-    'app-planification' => 'Planification',
-    'app-risques' => 'Risques'
+    'app-empreinte-carbone' => 'Empreinte Carbone',
+    'app-guide-prompting' => 'Guide Prompting',
+    'app-mesure-impact' => 'Mesure d\'Impact',
+    'app-mindmap' => 'Carte Mentale',
+    'app-objectifs-smart' => 'Objectifs SMART',
+    'app-parties-prenantes' => 'Parties Prenantes',
+    'app-pestel' => 'Analyse PESTEL',
+    'app-prompt-jeunes' => 'Prompt Engineering',
+    'app-six-chapeaux' => 'Six Chapeaux',
+    'app-stop-start-continue' => 'Stop Start Continue',
+    'app-swot' => 'Analyse SWOT',
+    'app-whiteboard' => 'Tableau Blanc'
 ];
 
 // Recuperer les affectations de sessions pour l'affichage
