@@ -108,6 +108,9 @@ foreach ($categoriesDef as $catKey => $catDef) {
                     <?= renderLanguageSelector('bg-white/20 text-white border-0 rounded px-2 py-1 cursor-pointer') ?>
                     <?php if ($user): ?>
                         <span class="text-indigo-200"><?= htmlspecialchars($user['prenom'] . ' ' . $user['nom']) ?></span>
+                        <?php if ($user['is_admin'] ?? false): ?>
+                        <a href="admin-categories.php" class="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm transition">Categories</a>
+                        <?php endif; ?>
                     <?php endif; ?>
                 </div>
             </div>
