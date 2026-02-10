@@ -184,6 +184,7 @@ $apps = [
     'app-cadrelogique' => 'Cadre Logique',
     'app-cahier-charges' => 'Cahier des Charges',
     'app-calculateur-carbone' => 'Calculateur Carbone IA',
+    'app-carte-identite' => 'Carte d\'Identité du Projet',
     'app-carte-projet' => 'Carte Projet',
     'app-empreinte-carbone' => 'Empreinte Carbone',
     'app-guide-prompting' => 'Guide Prompting',
