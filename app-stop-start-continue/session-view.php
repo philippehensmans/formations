@@ -103,11 +103,23 @@ foreach ($retrospectives as &$r) {
     $startItems = json_decode($r['start_items'], true) ?: [];
     $continueItems = json_decode($r['continue_items'], true) ?: [];
 
+    // Fonction helper pour extraire le contenu d'un item
+    $getItemContent = function($item) {
+        if (is_array($item)) {
+            return $item['description'] ?? $item['text'] ?? '';
+        }
+        return is_string($item) ? $item : '';
+    };
+
     // Ajouter les items aux listes globales
     foreach ($stopItems as $item) {
-        if (!empty(trim($item))) {
+        $content = $getItemContent($item);
+        if (!empty(trim($content))) {
             $allItems['stop'][] = [
-                'content' => $item,
+                'content' => $content,
+                'raison' => is_array($item) ? ($item['raison'] ?? '') : '',
+                'priorite' => is_array($item) ? ($item['priorite'] ?? '') : '',
+                'responsable' => is_array($item) ? ($item['responsable'] ?? '') : '',
                 'user_id' => $r['user_id'],
                 'user_prenom' => $r['user_prenom'],
                 'user_nom' => $r['user_nom'],
@@ -120,9 +132,13 @@ foreach ($retrospectives as &$r) {
     }
 
     foreach ($startItems as $item) {
-        if (!empty(trim($item))) {
+        $content = $getItemContent($item);
+        if (!empty(trim($content))) {
             $allItems['start'][] = [
-                'content' => $item,
+                'content' => $content,
+                'raison' => is_array($item) ? ($item['raison'] ?? '') : '',
+                'priorite' => is_array($item) ? ($item['priorite'] ?? '') : '',
+                'responsable' => is_array($item) ? ($item['responsable'] ?? '') : '',
                 'user_id' => $r['user_id'],
                 'user_prenom' => $r['user_prenom'],
                 'user_nom' => $r['user_nom'],
@@ -135,9 +151,13 @@ foreach ($retrospectives as &$r) {
     }
 
     foreach ($continueItems as $item) {
-        if (!empty(trim($item))) {
+        $content = $getItemContent($item);
+        if (!empty(trim($content))) {
             $allItems['continue'][] = [
-                'content' => $item,
+                'content' => $content,
+                'raison' => is_array($item) ? ($item['raison'] ?? '') : '',
+                'priorite' => is_array($item) ? ($item['priorite'] ?? '') : '',
+                'responsable' => is_array($item) ? ($item['responsable'] ?? '') : '',
                 'user_id' => $r['user_id'],
                 'user_prenom' => $r['user_prenom'],
                 'user_nom' => $r['user_nom'],
@@ -346,10 +366,19 @@ $lang = getCurrentLanguage();
                             <span class="block text-pink-100 text-sm mt-1">Projet: <?= h($data['projet_nom']) ?></span>
                             <?php endif; ?>
                         </div>
+                        <?php
+                        // Compter les items valides (avec description non vide)
+                        $countItems = function($items) {
+                            return count(array_filter($items, function($item) {
+                                $content = is_array($item) ? ($item['description'] ?? $item['text'] ?? '') : $item;
+                                return !empty(trim($content));
+                            }));
+                        };
+                        ?>
                         <div class="flex gap-2">
-                            <span class="bg-red-400/50 px-2 py-1 rounded text-sm"><?= count(array_filter($data['stop'])) ?> Stop</span>
-                            <span class="bg-green-400/50 px-2 py-1 rounded text-sm"><?= count(array_filter($data['start'])) ?> Start</span>
-                            <span class="bg-blue-400/50 px-2 py-1 rounded text-sm"><?= count(array_filter($data['continue'])) ?> Continue</span>
+                            <span class="bg-red-400/50 px-2 py-1 rounded text-sm"><?= $countItems($data['stop']) ?> Stop</span>
+                            <span class="bg-green-400/50 px-2 py-1 rounded text-sm"><?= $countItems($data['start']) ?> Start</span>
+                            <span class="bg-blue-400/50 px-2 py-1 rounded text-sm"><?= $countItems($data['continue']) ?> Continue</span>
                         </div>
                     </div>
                 </div>
@@ -367,9 +396,12 @@ $lang = getCurrentLanguage();
                                 if (empty($items)): ?>
                                 <p class="text-gray-400 text-sm italic">Aucun</p>
                                 <?php else: ?>
-                                <?php foreach ($items as $item): ?>
+                                <?php foreach ($items as $item):
+                                    $itemContent = is_array($item) ? ($item['description'] ?? $item['text'] ?? '') : $item;
+                                    if (empty(trim($itemContent))) continue;
+                                ?>
                                 <div class="p-2 <?= $cat['bg'] ?> rounded border <?= $cat['border'] ?> text-sm">
-                                    <?= nl2br(h($item)) ?>
+                                    <?= nl2br(h($itemContent)) ?>
                                 </div>
                                 <?php endforeach; ?>
                                 <?php endif; ?>
