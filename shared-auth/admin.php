@@ -197,7 +197,8 @@ $apps = [
     'app-six-chapeaux' => 'Six Chapeaux',
     'app-stop-start-continue' => 'Stop Start Continue',
     'app-swot' => 'Analyse SWOT',
-    'app-whiteboard' => 'Tableau Blanc'
+    'app-whiteboard' => 'Tableau Blanc',
+    'app-journey-mapping' => 'Journey Mapping'
 ];
 
 // Recuperer les affectations de sessions pour l'affichage
@@ -233,10 +234,13 @@ if ($isSuperAdmin) {
                     </p>
                 </div>
             </div>
-            <form method="POST" class="inline">
-                <input type="hidden" name="action" value="logout">
-                <button type="submit" class="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600">Deconnexion</button>
-            </form>
+            <div class="flex items-center gap-3">
+                <a href="../admin-categories.php" class="px-4 py-2 bg-indigo-600 rounded hover:bg-indigo-500 text-sm">Gestion Categories</a>
+                <form method="POST" class="inline">
+                    <input type="hidden" name="action" value="logout">
+                    <button type="submit" class="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600">Deconnexion</button>
+                </form>
+            </div>
         </div>
     </header>
 

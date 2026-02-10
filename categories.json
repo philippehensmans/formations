@@ -1,0 +1,68 @@
+{
+    "categories": {
+        "gestion_projet": {
+            "label": "Gestion de projet",
+            "color": "blue",
+            "icon": "\ud83d\udccb"
+        },
+        "analyse_strategique": {
+            "label": "Analyse strategique",
+            "color": "purple",
+            "icon": "\ud83d\udd0d"
+        },
+        "intelligence_artificielle": {
+            "label": "Intelligence artificielle",
+            "color": "violet",
+            "icon": "\ud83e\udd16"
+        },
+        "environnement": {
+            "label": "Environnement & Climat",
+            "color": "green",
+            "icon": "\ud83c\udf0d"
+        },
+        "communication": {
+            "label": "Communication",
+            "color": "cyan",
+            "icon": "\ud83d\udce2"
+        },
+        "evaluation": {
+            "label": "Evaluation & Retrospective",
+            "color": "amber",
+            "icon": "\ud83d\udcca"
+        },
+        "collaboration": {
+            "label": "Outils collaboratifs",
+            "color": "pink",
+            "icon": "\ud83e\udd1d"
+        },
+        "creativite": {
+            "label": "Creativite & Reflexion",
+            "color": "orange",
+            "icon": "\ud83d\udca1"
+        }
+    },
+    "apps": {
+        "app-activites": ["intelligence_artificielle", "analyse_strategique"],
+        "app-agile": ["gestion_projet", "collaboration"],
+        "app-arbreproblemes": ["analyse_strategique", "gestion_projet"],
+        "app-atelier-ia": ["intelligence_artificielle", "creativite"],
+        "app-cadrelogique": ["gestion_projet", "analyse_strategique"],
+        "app-cahier-charges": ["gestion_projet"],
+        "app-calculateur-carbone": ["environnement"],
+        "app-carte-identite": ["gestion_projet"],
+        "app-carte-projet": ["gestion_projet"],
+        "app-empreinte-carbone": ["environnement"],
+        "app-guide-prompting": ["intelligence_artificielle"],
+        "app-journey-mapping": ["communication", "analyse_strategique"],
+        "app-mesure-impact": ["evaluation", "gestion_projet"],
+        "app-mindmap": ["collaboration", "creativite"],
+        "app-objectifs-smart": ["gestion_projet", "evaluation"],
+        "app-parties-prenantes": ["analyse_strategique", "gestion_projet"],
+        "app-pestel": ["analyse_strategique"],
+        "app-prompt-jeunes": ["intelligence_artificielle", "creativite"],
+        "app-six-chapeaux": ["creativite", "collaboration"],
+        "app-stop-start-continue": ["evaluation", "collaboration"],
+        "app-swot": ["analyse_strategique"],
+        "app-whiteboard": ["collaboration", "creativite"]
+    }
+}
