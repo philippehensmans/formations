@@ -55,6 +55,10 @@ return [
         'saved' => 'Saved OK',
         'confirm_share' => 'Submit your work? You won\'t be able to modify it afterwards.',
         'shared_success' => 'Work shared successfully!',
+        'unlock' => 'Unlock',
+        'confirm_unlock' => 'Allow the participant to edit their form? The sharing status will be reset.',
+        'unlock_success' => 'Form unlocked. The participant can now edit it.',
+        'no_data' => 'No data',
     ],
 
     // Password reset

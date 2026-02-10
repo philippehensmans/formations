@@ -82,6 +82,11 @@ $lang = getCurrentLanguage();
             </div>
             <div class="flex items-center gap-2">
                 <?= renderLanguageSelector('text-sm border rounded px-2 py-1') ?>
+                <?php if ($fiche && !empty($fiche['is_shared'])): ?>
+                <button onclick="resetFiche(<?= $fiche['id'] ?>)" class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-sm" title="Permettre au participant de modifier sa fiche">
+                    🔓 <?= t('common.unlock') ?>
+                </button>
+                <?php endif; ?>
                 <button onclick="window.print()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm">
                     🖨️ <?= t('common.print') ?>
                 </button>
@@ -200,5 +205,28 @@ $lang = getCurrentLanguage();
     </div>
 
     <?= renderLanguageScript() ?>
+
+    <script>
+    async function resetFiche(ficheId) {
+        if (!confirm('<?= t('common.confirm_unlock') ?>')) return;
+
+        try {
+            const response = await fetch('api/reset.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fiche_id: ficheId })
+            });
+            const result = await response.json();
+            if (result.success) {
+                alert('<?= t('common.unlock_success') ?>');
+                location.reload();
+            } else {
+                alert('<?= t('common.error') ?>: ' + (result.error || ''));
+            }
+        } catch (e) {
+            alert('<?= t('common.error') ?>');
+        }
+    }
+    </script>
 </body>
 </html>

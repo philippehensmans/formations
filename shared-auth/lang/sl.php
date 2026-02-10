@@ -55,6 +55,10 @@ return [
         'saved' => 'Shranjeno OK',
         'confirm_share' => 'Oddati svoje delo? Pozneje ga ne boste mogli vec spreminjati.',
         'shared_success' => 'Delo uspesno deljeno!',
+        'unlock' => 'Odkleni',
+        'confirm_unlock' => 'Dovoliti udelezencu urejanje njegove kartice? Status deljenja bo ponastavljen.',
+        'unlock_success' => 'Kartica odklenjena. Udelezenec jo lahko zdaj ureja.',
+        'no_data' => 'Ni podatkov',
     ],
 
     // Ponastavitev gesla
