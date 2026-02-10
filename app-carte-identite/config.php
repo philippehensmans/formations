@@ -21,6 +21,11 @@ define('DB_FILE', __DIR__ . '/data/carte_identite.db');
 function getDB() {
     static $db = null;
     if ($db === null) {
+        // Creer le dossier data s'il n'existe pas
+        $dataDir = dirname(DB_FILE);
+        if (!is_dir($dataDir)) {
+            mkdir($dataDir, 0755, true);
+        }
         $db = new PDO('sqlite:' . DB_FILE);
         $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
