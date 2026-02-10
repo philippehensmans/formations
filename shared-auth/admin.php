@@ -136,11 +136,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         case 'assign_session':
             if ($isSuperAdmin) {
                 $formateurId = (int)($_POST['formateur_id'] ?? 0);
-                $appName = $_POST['app_name'] ?? '';
+                $appNames = $_POST['app_names'] ?? [];
                 $sessionId = (int)($_POST['session_id'] ?? 0);
-                if ($formateurId && $appName && $sessionId) {
-                    if (assignFormateurToSession($formateurId, $appName, $sessionId)) {
-                        $success = "Session affectee.";
+                if ($formateurId && !empty($appNames) && $sessionId) {
+                    $assigned = 0;
+                    foreach ($appNames as $appName) {
+                        if (assignFormateurToSession($formateurId, $appName, $sessionId)) {
+                            $assigned++;
+                        }
+                    }
+                    if ($assigned > 0) {
+                        $success = "$assigned application(s) affectee(s).";
                     } else {
                         $error = "Erreur lors de l'affectation.";
                     }
@@ -171,17 +177,26 @@ $users = $db->query("SELECT * FROM users ORDER BY username")->fetchAll();
 
 // Liste des applications
 $apps = [
-    'app-swot' => 'Analyse SWOT',
+    'app-activites' => 'Inventaire des Activités',
+    'app-agile' => 'Gestion Agile',
+    'app-arbreproblemes' => 'Arbre à Problèmes',
+    'app-atelier-ia' => 'Atelier IA',
+    'app-cadrelogique' => 'Cadre Logique',
     'app-cahier-charges' => 'Cahier des Charges',
-    'app-objectifs-smart' => 'Objectifs SMART',
-    'app-pestel' => 'Analyse PESTEL',
-    'app-stop-start-continue' => 'Stop Start Continue',
-    'app-parties-prenantes' => 'Parties Prenantes',
+    'app-calculateur-carbone' => 'Calculateur Carbone IA',
     'app-carte-projet' => 'Carte Projet',
-    'app-cadre-logique' => 'Cadre Logique',
-    'app-budget' => 'Budget',
-    'app-planification' => 'Planification',
-    'app-risques' => 'Risques'
+    'app-empreinte-carbone' => 'Empreinte Carbone',
+    'app-guide-prompting' => 'Guide Prompting',
+    'app-mesure-impact' => 'Mesure d\'Impact',
+    'app-mindmap' => 'Carte Mentale',
+    'app-objectifs-smart' => 'Objectifs SMART',
+    'app-parties-prenantes' => 'Parties Prenantes',
+    'app-pestel' => 'Analyse PESTEL',
+    'app-prompt-jeunes' => 'Prompt Engineering',
+    'app-six-chapeaux' => 'Six Chapeaux',
+    'app-stop-start-continue' => 'Stop Start Continue',
+    'app-swot' => 'Analyse SWOT',
+    'app-whiteboard' => 'Tableau Blanc'
 ];
 
 // Recuperer les affectations de sessions pour l'affichage
@@ -380,16 +395,21 @@ if ($isSuperAdmin) {
                     <?php endif; ?>
 
                     <!-- Ajouter une affectation -->
-                    <form method="POST" class="flex gap-2 items-center">
+                    <form method="POST" class="space-y-2">
                         <input type="hidden" name="action" value="assign_session">
                         <input type="hidden" name="formateur_id" value="<?= $formateur['id'] ?>">
-                        <select name="app_name" class="px-3 py-1 border rounded text-sm">
-                            <?php foreach ($apps as $appKey => $appLabel): ?>
-                            <option value="<?= h($appKey) ?>"><?= h($appLabel) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                        <input type="number" name="session_id" placeholder="ID Session" required class="w-24 px-2 py-1 border rounded text-sm">
-                        <button type="submit" class="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">Affecter</button>
+                        <div class="flex gap-2 items-center">
+                            <select name="app_names[]" multiple class="px-3 py-1 border rounded text-sm min-w-48 h-32">
+                                <?php foreach ($apps as $appKey => $appLabel): ?>
+                                <option value="<?= h($appKey) ?>"><?= h($appLabel) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <div class="flex flex-col gap-1">
+                                <input type="number" name="session_id" placeholder="ID Session" required class="w-24 px-2 py-1 border rounded text-sm">
+                                <button type="submit" class="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">Affecter</button>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500">Ctrl+clic pour selectionner plusieurs apps</p>
                     </form>
                 </div>
                 <?php endforeach; ?>
