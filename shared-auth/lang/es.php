@@ -55,6 +55,10 @@ return [
         'saved' => 'Guardado OK',
         'confirm_share' => 'Enviar su trabajo? No podra modificarlo despues.',
         'shared_success' => 'Trabajo compartido con exito!',
+        'unlock' => 'Desbloquear',
+        'confirm_unlock' => 'Permitir al participante modificar su ficha? El estado de compartir sera restablecido.',
+        'unlock_success' => 'Ficha desbloqueada. El participante ahora puede modificarla.',
+        'no_data' => 'Sin datos',
     ],
 
     // Restablecimiento de contrasena

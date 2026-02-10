@@ -55,6 +55,10 @@ return [
         'saved' => 'Sauvegarde OK',
         'confirm_share' => 'Soumettre votre travail ? Vous ne pourrez plus le modifier ensuite.',
         'shared_success' => 'Travail partage avec succes !',
+        'unlock' => 'Deverrouiller',
+        'confirm_unlock' => 'Permettre au participant de modifier sa fiche ? Le statut de partage sera reinitialise.',
+        'unlock_success' => 'Fiche deverrouillee. Le participant peut maintenant la modifier.',
+        'no_data' => 'Aucune donnee',
     ],
 
     // Reinitialisation mot de passe
