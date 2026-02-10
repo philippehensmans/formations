@@ -46,6 +46,15 @@ return [
         'submit_success' => 'Uspesno oddano!',
         'submit_error' => 'Napaka pri oddaji',
         'notes' => 'Opombe',
+        'export_excel' => 'Izvozi Excel',
+        'share_trainer' => 'Deli z izvajalcem',
+        'shared' => 'Deljeno',
+        'tip' => 'Nasvet',
+        'editing' => 'Urejanje',
+        'saving' => 'Shranjevanje',
+        'saved' => 'Shranjeno OK',
+        'confirm_share' => 'Oddati svoje delo? Pozneje ga ne boste mogli vec spreminjati.',
+        'shared_success' => 'Delo uspesno deljeno!',
     ],
 
     // Ponastavitev gesla

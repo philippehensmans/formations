@@ -46,6 +46,15 @@ return [
         'submit_success' => 'Soumission reussie !',
         'submit_error' => 'Erreur lors de la soumission',
         'notes' => 'Notes',
+        'export_excel' => 'Exporter Excel',
+        'share_trainer' => 'Partager avec le formateur',
+        'shared' => 'Partage',
+        'tip' => 'Astuce',
+        'editing' => 'Modification',
+        'saving' => 'Sauvegarde',
+        'saved' => 'Sauvegarde OK',
+        'confirm_share' => 'Soumettre votre travail ? Vous ne pourrez plus le modifier ensuite.',
+        'shared_success' => 'Travail partage avec succes !',
     ],
 
     // Reinitialisation mot de passe

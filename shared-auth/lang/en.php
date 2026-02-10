@@ -46,6 +46,15 @@ return [
         'submit_success' => 'Submitted successfully!',
         'submit_error' => 'Error while submitting',
         'notes' => 'Notes',
+        'export_excel' => 'Export Excel',
+        'share_trainer' => 'Share with trainer',
+        'shared' => 'Shared',
+        'tip' => 'Tip',
+        'editing' => 'Editing',
+        'saving' => 'Saving',
+        'saved' => 'Saved OK',
+        'confirm_share' => 'Submit your work? You won\'t be able to modify it afterwards.',
+        'shared_success' => 'Work shared successfully!',
     ],
 
     // Password reset

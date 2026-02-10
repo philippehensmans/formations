@@ -46,6 +46,15 @@ return [
         'submit_success' => 'Enviado con exito!',
         'submit_error' => 'Error al enviar',
         'notes' => 'Notas',
+        'export_excel' => 'Exportar Excel',
+        'share_trainer' => 'Compartir con el formador',
+        'shared' => 'Compartido',
+        'tip' => 'Consejo',
+        'editing' => 'Editando',
+        'saving' => 'Guardando',
+        'saved' => 'Guardado OK',
+        'confirm_share' => 'Enviar su trabajo? No podra modificarlo despues.',
+        'shared_success' => 'Trabajo compartido con exito!',
     ],
 
     // Restablecimiento de contrasena
