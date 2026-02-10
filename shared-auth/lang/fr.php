@@ -1468,6 +1468,11 @@ return [
             'description' => 'Atelier pour maitriser le prompt engineering et creer du contenu adapte au public jeune.',
             'color' => 'pink',
         ],
+        'journey-mapping' => [
+            'title' => 'Journey Mapping',
+            'description' => 'Cartographie des parcours de communication et audit des points de contact avec vos publics.',
+            'color' => 'cyan',
+        ],
     ],
 
     // Carte d'identite du Projet
