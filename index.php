@@ -110,6 +110,7 @@ foreach ($categoriesDef as $catKey => $catDef) {
                         <span class="text-indigo-200"><?= htmlspecialchars($user['prenom'] . ' ' . $user['nom']) ?></span>
                         <?php if ($user['is_admin'] ?? false): ?>
                         <a href="admin-categories.php" class="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm transition">Categories</a>
+                        <a href="shared-auth/admin.php" class="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm transition">Admin</a>
                         <?php endif; ?>
                     <?php endif; ?>
                 </div>
