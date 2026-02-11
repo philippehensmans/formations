@@ -1473,6 +1473,11 @@ return [
             'description' => 'Cartographie des parcours de communication et audit des points de contact avec vos publics.',
             'color' => 'cyan',
         ],
+        'personas' => [
+            'title' => 'Publics & Personas',
+            'description' => 'Cartographie des parties prenantes et creation de personas pour definir et connaitre ses publics.',
+            'color' => 'rose',
+        ],
     ],
 
     // Carte d'identite du Projet

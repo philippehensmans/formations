@@ -198,7 +198,8 @@ $apps = [
     'app-stop-start-continue' => 'Stop Start Continue',
     'app-swot' => 'Analyse SWOT',
     'app-whiteboard' => 'Tableau Blanc',
-    'app-journey-mapping' => 'Journey Mapping'
+    'app-journey-mapping' => 'Journey Mapping',
+    'app-personas' => 'Publics & Personas'
 ];
 
 // Recuperer les affectations de sessions pour l'affichage

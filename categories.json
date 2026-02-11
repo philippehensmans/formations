@@ -63,6 +63,7 @@
         "app-six-chapeaux": ["creativite", "collaboration"],
         "app-stop-start-continue": ["evaluation", "collaboration"],
         "app-swot": ["analyse_strategique"],
-        "app-whiteboard": ["collaboration", "creativite"]
+        "app-whiteboard": ["collaboration", "creativite"],
+        "app-personas": ["communication", "analyse_strategique"]
     }
 }
