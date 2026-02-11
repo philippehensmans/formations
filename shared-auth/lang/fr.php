@@ -1478,6 +1478,11 @@ return [
             'description' => 'Cartographie des parties prenantes et creation de personas pour definir et connaitre ses publics.',
             'color' => 'rose',
         ],
+        'comm-plan' => [
+            'title' => 'Mini-Plan de Communication',
+            'description' => 'Construisez un plan de communication concret autour d\'une action precise : objectif SMART, public, message, canaux, calendrier et ressources.',
+            'color' => 'indigo',
+        ],
     ],
 
     // Carte d'identite du Projet

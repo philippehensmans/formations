@@ -64,6 +64,7 @@
         "app-stop-start-continue": ["evaluation", "collaboration"],
         "app-swot": ["analyse_strategique"],
         "app-whiteboard": ["collaboration", "creativite"],
-        "app-personas": ["communication", "analyse_strategique"]
+        "app-personas": ["communication", "analyse_strategique"],
+        "app-comm-plan": ["communication", "gestion_projet"]
     }
 }
