@@ -10,6 +10,12 @@ $db = getDB();
 $user = getLoggedUser();
 if (!$user) { session_destroy(); header('Location: login.php'); exit; }
 
+// Verifier l'acces a cette app restreinte
+if (!hasAppAccess('app-pilotage-projet', $user['id'])) {
+    header('Location: login.php');
+    exit;
+}
+
 $sessionId = $_SESSION['current_session_id'];
 $sessionNom = $_SESSION['current_session_nom'] ?? '';
 

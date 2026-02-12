@@ -50,6 +50,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Authentifier l'utilisateur
             $user = authenticateUser($username, $password);
             if ($user) {
+                // Verifier l'acces si l'app est restreinte
+                if (!empty($restrictedApp) && !hasAppAccess($restrictedApp, $user['id'])) {
+                    $error = 'Acces restreint. Cette application necessite une autorisation du formateur ou de l\'administrateur.';
+                } else {
                 login($user);
                 $_SESSION['current_session_id'] = $session['id'];
                 $_SESSION['current_session_code'] = $session['code'];
@@ -102,6 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 header('Location: ' . $redirectAfterLogin);
                 exit;
+            } // end access check else
             } else {
                 $error = t('auth.login_error');
             }

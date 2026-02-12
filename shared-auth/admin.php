@@ -165,6 +165,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             break;
 
+        case 'grant_app_access':
+            if ($isSuperAdmin) {
+                $appName = $_POST['app_name'] ?? '';
+                $userIds = $_POST['user_ids'] ?? [];
+                if ($appName && !empty($userIds)) {
+                    $granted = 0;
+                    foreach ($userIds as $uid) {
+                        if (grantAppAccess($appName, (int)$uid, $currentUser['id'])) {
+                            $granted++;
+                        }
+                    }
+                    $success = "$granted acces accorde(s) pour " . (getRestrictedApps()[$appName] ?? $appName) . ".";
+                }
+            }
+            break;
+
+        case 'revoke_app_access':
+            if ($isSuperAdmin) {
+                $appName = $_POST['app_name'] ?? '';
+                $userId = (int)($_POST['user_id'] ?? 0);
+                if ($appName && $userId) {
+                    revokeAppAccess($appName, $userId);
+                    $success = "Acces revoque.";
+                }
+            }
+            break;
+
         case 'logout':
             logout();
             header('Location: ' . $_SERVER['PHP_SELF']);
@@ -422,6 +449,87 @@ if ($isSuperAdmin) {
                 </div>
                 <?php endforeach; ?>
             <?php endif; ?>
+        </div>
+        <?php endif; ?>
+
+        <?php if ($isSuperAdmin): ?>
+        <!-- Controle d'acces aux applications restreintes (IA) -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <h2 class="font-semibold text-gray-800 mb-2">Controle d'acces - Applications IA</h2>
+            <p class="text-sm text-gray-600 mb-4">
+                Les applications utilisant l'API Claude sont restreintes pour eviter l'abus d'usage.
+                Les <strong>formateurs</strong> et <strong>super-admins</strong> y ont toujours acces.
+                Autorisez ici les participants qui peuvent les utiliser.
+            </p>
+
+            <?php
+            $restrictedApps = getRestrictedApps();
+            $regularUsers = array_filter($users, function($u) { return !$u['is_formateur'] && !$u['is_super_admin']; });
+            ?>
+
+            <?php foreach ($restrictedApps as $rAppKey => $rAppLabel): ?>
+            <div class="border rounded-lg p-4 mb-4">
+                <h3 class="font-medium text-gray-800 mb-3 flex items-center gap-2">
+                    <span class="px-2 py-0.5 bg-amber-100 text-amber-800 rounded text-xs font-bold">RESTREINT</span>
+                    <?= h($rAppLabel) ?>
+                </h3>
+
+                <!-- Utilisateurs autorises actuellement -->
+                <?php $accessList = getAppAccessList($rAppKey); ?>
+                <?php if (!empty($accessList)): ?>
+                <div class="mb-3">
+                    <span class="text-sm text-gray-600 font-medium">Participants autorises:</span>
+                    <div class="flex flex-wrap gap-2 mt-2">
+                        <?php foreach ($accessList as $access): ?>
+                        <form method="POST" class="inline">
+                            <input type="hidden" name="action" value="revoke_app_access">
+                            <input type="hidden" name="app_name" value="<?= h($rAppKey) ?>">
+                            <input type="hidden" name="user_id" value="<?= $access['user_id'] ?>">
+                            <button type="submit" class="px-3 py-1.5 bg-green-100 text-green-800 rounded-lg text-sm hover:bg-red-100 hover:text-red-800 transition flex items-center gap-1" title="Cliquer pour revoquer">
+                                <span class="font-medium"><?= h($access['prenom'] . ' ' . $access['nom']) ?></span>
+                                <span class="text-xs text-gray-500">(<?= h($access['username']) ?>)</span>
+                                <span class="ml-1 text-red-400">x</span>
+                            </button>
+                        </form>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <?php else: ?>
+                <p class="text-sm text-amber-600 mb-3">Aucun participant autorise. Seuls les formateurs et super-admins ont acces.</p>
+                <?php endif; ?>
+
+                <!-- Ajouter des acces -->
+                <?php if (!empty($regularUsers)): ?>
+                <form method="POST" class="mt-3 pt-3 border-t">
+                    <input type="hidden" name="action" value="grant_app_access">
+                    <input type="hidden" name="app_name" value="<?= h($rAppKey) ?>">
+                    <div class="flex gap-3 items-end">
+                        <div class="flex-1">
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Autoriser des participants</label>
+                            <select name="user_ids[]" multiple class="w-full px-3 py-2 border rounded-lg text-sm h-28">
+                                <?php
+                                $existingIds = array_column($accessList, 'user_id');
+                                foreach ($regularUsers as $ru):
+                                    if (in_array($ru['id'], $existingIds)) continue;
+                                ?>
+                                <option value="<?= $ru['id'] ?>">
+                                    <?= h($ru['prenom'] . ' ' . $ru['nom']) ?> (<?= h($ru['username']) ?>)
+                                    <?= $ru['organisation'] ? '- ' . h($ru['organisation']) : '' ?>
+                                </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <p class="text-xs text-gray-400 mt-1">Ctrl+clic pour selectionner plusieurs</p>
+                        </div>
+                        <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium">
+                            Autoriser
+                        </button>
+                    </div>
+                </form>
+                <?php else: ?>
+                <p class="text-xs text-gray-400 mt-2">Aucun participant enregistre. Les utilisateurs doivent d'abord creer un compte.</p>
+                <?php endif; ?>
+            </div>
+            <?php endforeach; ?>
         </div>
         <?php endif; ?>
 

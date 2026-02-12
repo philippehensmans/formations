@@ -91,6 +91,16 @@ function initSharedDB($db) {
         $db->exec("ALTER TABLE users ADD COLUMN reset_token_expires DATETIME");
     } catch (Exception $e) { /* Colonne existe deja */ }
 
+    // Table de controle d'acces aux applications restreintes (ex: apps IA)
+    $db->exec("CREATE TABLE IF NOT EXISTS app_access (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        app_name VARCHAR(100) NOT NULL,
+        user_id INTEGER NOT NULL,
+        granted_by INTEGER,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(app_name, user_id)
+    )");
+
     // Creer le compte super-admin par defaut s'il n'existe pas
     $stmt = $db->query("SELECT COUNT(*) FROM users WHERE username = 'formateur'");
     if ($stmt->fetchColumn() == 0) {
@@ -515,4 +525,104 @@ function resetPasswordWithToken($token, $newPassword) {
     $stmt->execute([$hash, $user['id']]);
 
     return ['success' => true];
+}
+
+// =========================================
+// CONTROLE D'ACCES AUX APPLICATIONS
+// =========================================
+
+/**
+ * Liste des applications qui necessitent une autorisation d'acces
+ * (typiquement celles qui utilisent l'API Claude)
+ */
+function getRestrictedApps() {
+    return [
+        'app-pilotage-projet' => 'Pilotage de Projet (IA)',
+    ];
+}
+
+/**
+ * Verifier si un utilisateur a acces a une application restreinte
+ * Les super-admins et formateurs ont toujours acces
+ */
+function hasAppAccess($appName, $userId = null) {
+    $restrictedApps = getRestrictedApps();
+
+    // Si l'app n'est pas restreinte, tout le monde a acces
+    if (!isset($restrictedApps[$appName])) {
+        return true;
+    }
+
+    if ($userId === null) {
+        $user = getLoggedUser();
+        if (!$user) return false;
+        $userId = $user['id'];
+    } else {
+        $db = getSharedDB();
+        $stmt = $db->prepare("SELECT * FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        $user = $stmt->fetch();
+        if (!$user) return false;
+    }
+
+    // Super-admin a toujours acces
+    if (!empty($user['is_super_admin'])) return true;
+
+    // Formateur a toujours acces
+    if (!empty($user['is_formateur'])) return true;
+
+    // Verifier dans la table app_access
+    $db = getSharedDB();
+    $stmt = $db->prepare("SELECT COUNT(*) FROM app_access WHERE app_name = ? AND user_id = ?");
+    $stmt->execute([$appName, $userId]);
+    return $stmt->fetchColumn() > 0;
+}
+
+/**
+ * Accorder l'acces a une application restreinte
+ */
+function grantAppAccess($appName, $userId, $grantedBy = null) {
+    $db = getSharedDB();
+    try {
+        $stmt = $db->prepare("INSERT OR IGNORE INTO app_access (app_name, user_id, granted_by) VALUES (?, ?, ?)");
+        $stmt->execute([$appName, $userId, $grantedBy]);
+        return true;
+    } catch (Exception $e) {
+        return false;
+    }
+}
+
+/**
+ * Revoquer l'acces a une application restreinte
+ */
+function revokeAppAccess($appName, $userId) {
+    $db = getSharedDB();
+    $stmt = $db->prepare("DELETE FROM app_access WHERE app_name = ? AND user_id = ?");
+    return $stmt->execute([$appName, $userId]);
+}
+
+/**
+ * Recuperer tous les acces accordes pour une app
+ */
+function getAppAccessList($appName) {
+    $db = getSharedDB();
+    $stmt = $db->prepare("
+        SELECT aa.*, u.username, u.prenom, u.nom, u.organisation
+        FROM app_access aa
+        JOIN users u ON aa.user_id = u.id
+        WHERE aa.app_name = ?
+        ORDER BY u.nom, u.prenom
+    ");
+    $stmt->execute([$appName]);
+    return $stmt->fetchAll();
+}
+
+/**
+ * Recuperer toutes les apps auxquelles un utilisateur a acces
+ */
+function getUserAppAccess($userId) {
+    $db = getSharedDB();
+    $stmt = $db->prepare("SELECT app_name FROM app_access WHERE user_id = ?");
+    $stmt->execute([$userId]);
+    return array_column($stmt->fetchAll(), 'app_name');
 }
