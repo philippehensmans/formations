@@ -200,7 +200,8 @@ $apps = [
     'app-whiteboard' => 'Tableau Blanc',
     'app-journey-mapping' => 'Journey Mapping',
     'app-personas' => 'Publics & Personas',
-    'app-comm-plan' => 'Mini-Plan de Communication'
+    'app-comm-plan' => 'Mini-Plan de Communication',
+    'app-pilotage-projet' => 'Pilotage de Projet'
 ];
 
 // Recuperer les affectations de sessions pour l'affichage
