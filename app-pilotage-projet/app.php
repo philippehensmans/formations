@@ -32,6 +32,19 @@ $lessonsData = json_decode($analyse['lessons_data'], true) ?: [];
 $isSubmitted = ($analyse['is_shared'] ?? 0) == 1;
 $taskStatuses = getTaskStatuses();
 $checkpointTypes = getCheckpointTypes();
+
+// Check if there's already generated content
+$hasContent = !empty(trim($analyse['nom_projet'] ?? '')) || !empty($objectifsData) || !empty($phasesData);
+
+// Check if AI config exists
+$aiConfigPath = __DIR__ . '/../ai-config.php';
+$hasAiConfig = file_exists($aiConfigPath);
+if ($hasAiConfig) {
+    require_once $aiConfigPath;
+    $hasValidKey = defined('ANTHROPIC_API_KEY') && ANTHROPIC_API_KEY !== 'YOUR_API_KEY_HERE';
+} else {
+    $hasValidKey = false;
+}
 ?>
 <!DOCTYPE html>
 <html lang="<?= getCurrentLanguage() ?>">
@@ -52,6 +65,10 @@ $checkpointTypes = getCheckpointTypes();
         .fade-in { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .phase-card { border-left: 4px solid #059669; }
+        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 15px rgba(5, 150, 105, 0.3); } 50% { box-shadow: 0 0 30px rgba(5, 150, 105, 0.6); } }
+        .generating { animation: pulse-glow 1.5s ease-in-out infinite; }
+        .spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -64,9 +81,9 @@ $checkpointTypes = getCheckpointTypes();
             </div>
             <div class="flex items-center gap-3">
                 <?= renderLanguageSelector('text-sm bg-white/20 text-gray-800 px-2 py-1 rounded border border-gray-300') ?>
-                <button onclick="manualSave()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition">Sauvegarder</button>
+                <button onclick="manualSave()" id="btnSave" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition" style="display:none;">Sauvegarder</button>
                 <span id="saveStatus" class="text-sm px-3 py-1 rounded-full bg-gray-200"><?= $isSubmitted ? 'Soumis' : 'Brouillon' ?></span>
-                <span id="completion" class="text-sm text-gray-600">Completion: <strong>0%</strong></span>
+                <span id="completion" class="text-sm text-gray-600" style="display:none;">Completion: <strong>0%</strong></span>
                 <?php if (isFormateur()): ?>
                 <a href="formateur.php" class="text-sm bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded transition">Formateur</a>
                 <?php endif; ?>
@@ -76,228 +93,340 @@ $checkpointTypes = getCheckpointTypes();
     </div>
 
     <div class="max-w-6xl mx-auto">
-        <!-- En-tete -->
-        <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8 mb-6">
-            <div class="text-center mb-6">
-                <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Pilotage de Projet</h1>
-                <p class="text-gray-600 italic">Structurez votre projet des objectifs jusqu'aux taches concretes</p>
-            </div>
-
-            <div class="bg-gradient-to-r from-emerald-50 via-green-50 to-teal-50 p-6 rounded-lg border-2 border-emerald-200 shadow-md">
-                <p class="text-gray-700 leading-relaxed">
-                    Un bon projet commence par un bon <strong>cadrage</strong>. Definissez clairement ce que vous voulez atteindre,
-                    decoupez en <strong>phases</strong> et <strong>taches concretes</strong>, posez des <strong>points de controle</strong>
-                    pour valider chaque etape, et capitalisez sur vos <strong>lecons apprises</strong>.
-                </p>
-            </div>
-        </div>
-
-        <!-- Onglets -->
-        <div class="flex gap-2 mb-4 no-print">
-            <button onclick="switchTab('cadrage')" id="tab-cadrage" class="tab-btn active flex-1 py-3 rounded-lg text-sm font-medium bg-white/30 text-white text-center">
-                &#x1F3AF; Cadrage
-            </button>
-            <button onclick="switchTab('planification')" id="tab-planification" class="tab-btn flex-1 py-3 rounded-lg text-sm font-medium bg-white/30 text-white text-center">
-                &#x1F4CB; Planification
-            </button>
-            <button onclick="switchTab('checkpoints')" id="tab-checkpoints" class="tab-btn flex-1 py-3 rounded-lg text-sm font-medium bg-white/30 text-white text-center">
-                &#x2705; Points de controle
-            </button>
-            <button onclick="switchTab('suivi')" id="tab-suivi" class="tab-btn flex-1 py-3 rounded-lg text-sm font-medium bg-white/30 text-white text-center">
-                &#x1F4D6; Suivi & Lecons
-            </button>
-        </div>
-
         <!-- ======================== -->
-        <!-- TAB 1: CADRAGE           -->
+        <!-- STEP 1: GENERATION AI    -->
         <!-- ======================== -->
-        <div id="panel-cadrage" class="tab-panel">
+        <div id="generatorPanel" class="<?= $hasContent ? 'hidden' : '' ?>">
             <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8 mb-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-2">&#x1F3AF; Cadrage du projet</h2>
-                <p class="text-gray-600 text-sm mb-6">Definissez clairement votre projet avant de planifier quoi que ce soit.</p>
+                <div class="text-center mb-8">
+                    <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-3">Pilotage de Projet</h1>
+                    <p class="text-gray-600 text-lg">Decrivez votre projet et laissez l'IA structurer votre plan</p>
+                </div>
 
-                <div class="space-y-5">
-                    <div class="bg-emerald-50 p-4 rounded-lg border border-emerald-200">
-                        <label class="block text-lg font-semibold text-gray-800 mb-2">Nom du projet</label>
-                        <input type="text" id="nomProjet"
-                            class="w-full px-4 py-2 border-2 border-emerald-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-lg font-medium"
-                            placeholder="Ex: Journee portes ouvertes 2026, Refonte du site web..."
-                            value="<?= h($analyse['nom_projet'] ?? '') ?>"
-                            oninput="scheduleAutoSave()">
-                    </div>
-
-                    <div>
-                        <label class="block text-lg font-semibold text-gray-800 mb-2">Description du projet</label>
-                        <textarea id="descriptionProjet" rows="3"
-                            class="w-full px-4 py-2 border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-emerald-500"
-                            placeholder="En quelques phrases, decrivez ce que ce projet vise a accomplir..."
-                            oninput="scheduleAutoSave()"><?= h($analyse['description_projet'] ?? '') ?></textarea>
-                    </div>
-
-                    <div class="grid md:grid-cols-2 gap-4">
-                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                            <label class="block text-sm font-semibold text-blue-800 mb-2">&#x1F4D8; Contexte</label>
-                            <p class="text-xs text-blue-600 mb-2 italic">Quel est le contexte dans lequel s'inscrit ce projet ? Pourquoi maintenant ?</p>
-                            <textarea id="contexte" rows="4"
-                                class="w-full px-3 py-2 border rounded-md text-sm resize-none"
-                                placeholder="Contexte organisationnel, technique, historique..."
-                                oninput="scheduleAutoSave()"><?= h($analyse['contexte'] ?? '') ?></textarea>
-                        </div>
-                        <div class="bg-amber-50 p-4 rounded-lg border border-amber-200">
-                            <label class="block text-sm font-semibold text-amber-800 mb-2">&#x26A0;&#xFE0F; Contraintes</label>
-                            <p class="text-xs text-amber-600 mb-2 italic">Budget, delai, equipe, competences, outils, reglementations...</p>
-                            <textarea id="contraintes" rows="4"
-                                class="w-full px-3 py-2 border rounded-md text-sm resize-none"
-                                placeholder="Listez vos contraintes connues..."
-                                oninput="scheduleAutoSave()"><?= h($analyse['contraintes'] ?? '') ?></textarea>
-                        </div>
-                    </div>
-
-                    <!-- Objectifs -->
-                    <div>
-                        <div class="flex justify-between items-center mb-3">
+                <div class="max-w-3xl mx-auto">
+                    <div class="bg-gradient-to-r from-emerald-50 via-green-50 to-teal-50 p-6 rounded-xl border-2 border-emerald-200 shadow-md mb-8">
+                        <div class="flex items-start gap-4">
+                            <div class="text-4xl">&#x1F916;</div>
                             <div>
-                                <label class="block text-lg font-semibold text-gray-800">&#x1F3AF; Objectifs du projet</label>
-                                <p class="text-sm text-gray-500">Formulez des objectifs clairs avec des criteres de succes mesurables</p>
+                                <h3 class="font-bold text-emerald-800 text-lg mb-1">Comment ca marche ?</h3>
+                                <ol class="text-gray-700 space-y-1 text-sm list-decimal list-inside">
+                                    <li><strong>Decrivez</strong> votre projet en quelques phrases</li>
+                                    <li><strong>Ajoutez</strong> le contexte et les contraintes (facultatif mais recommande)</li>
+                                    <li><strong>Generez</strong> : l'IA structure votre plan complet</li>
+                                    <li><strong>Affinez</strong> : modifiez librement le plan genere</li>
+                                </ol>
                             </div>
-                            <button onclick="addObjectif()" class="no-print bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition shadow-md">
-                                &#x2795; Ajouter un objectif
+                        </div>
+                    </div>
+
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block text-lg font-semibold text-gray-800 mb-2">&#x1F4DD; Description du projet <span class="text-red-500">*</span></label>
+                            <p class="text-sm text-gray-500 mb-2">Decrivez ce que vous souhaitez accomplir. Plus vous etes precis, meilleur sera le plan genere.</p>
+                            <textarea id="genDescription" rows="5"
+                                class="w-full px-4 py-3 border-2 border-emerald-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-base"
+                                placeholder="Ex: Organiser une journee portes ouvertes pour notre association sportive. Nous voulons attirer de nouveaux adherents et presenter nos activites au public. L'evenement doit inclure des demonstrations, des stands d'information et un moment convivial..."><?= h($analyse['contexte'] ?? '') ?></textarea>
+                        </div>
+
+                        <div class="grid md:grid-cols-2 gap-5">
+                            <div class="bg-blue-50 p-5 rounded-xl border border-blue-200">
+                                <label class="block text-sm font-semibold text-blue-800 mb-2">&#x1F4D8; Contexte <span class="text-blue-400 text-xs">(recommande)</span></label>
+                                <p class="text-xs text-blue-600 mb-2 italic">Dans quel cadre s'inscrit ce projet ? Quel est l'historique ?</p>
+                                <textarea id="genContexte" rows="4"
+                                    class="w-full px-3 py-2 border rounded-lg text-sm resize-none focus:ring-2 focus:ring-blue-400"
+                                    placeholder="Ex: L'association existe depuis 5 ans, 150 adherents. On a deja fait un evenement similaire il y a 2 ans avec 80 visiteurs..."></textarea>
+                            </div>
+                            <div class="bg-amber-50 p-5 rounded-xl border border-amber-200">
+                                <label class="block text-sm font-semibold text-amber-800 mb-2">&#x26A0;&#xFE0F; Contraintes <span class="text-amber-500 text-xs">(recommande)</span></label>
+                                <p class="text-xs text-amber-600 mb-2 italic">Budget, delais, equipe disponible, contraintes techniques...</p>
+                                <textarea id="genContraintes" rows="4"
+                                    class="w-full px-3 py-2 border rounded-lg text-sm resize-none focus:ring-2 focus:ring-amber-400"
+                                    placeholder="Ex: Budget de 500 euros, equipe de 8 benevoles, la salle est reservee pour le 15 mars..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="text-center pt-4">
+                            <?php if ($hasValidKey): ?>
+                            <button onclick="generatePlan()" id="btnGenerate"
+                                class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-10 py-4 rounded-xl font-bold text-lg transition-all shadow-xl hover:shadow-2xl transform hover:scale-105">
+                                &#x2728; Generer mon plan de projet
+                            </button>
+                            <p class="text-xs text-gray-400 mt-3">La generation prend environ 15-30 secondes</p>
+                            <?php else: ?>
+                            <div class="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700">
+                                <strong>Configuration requise :</strong> La cle API Claude n'est pas configuree.
+                                Copiez <code>ai-config.example.php</code> en <code>ai-config.php</code> et ajoutez votre cle API Anthropic.
+                            </div>
+                            <?php endif; ?>
+                        </div>
+
+                        <?php if ($hasContent): ?>
+                        <div class="text-center pt-2">
+                            <button onclick="showEditor()" class="text-emerald-600 hover:text-emerald-700 underline text-sm">
+                                Revenir a mon plan existant
                             </button>
                         </div>
-                        <div id="objectifsContainer" class="space-y-3"></div>
-                        <div id="objectifEmpty" class="text-center py-8 text-gray-400">
-                            <p class="text-3xl mb-2">&#x1F3AF;</p>
-                            <p>Ajoutez vos objectifs pour cadrer le projet</p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading state -->
+            <div id="generatingPanel" class="hidden">
+                <div class="bg-white rounded-xl shadow-2xl p-8 md:p-12 text-center generating">
+                    <div class="text-6xl mb-6">&#x1F916;</div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-3">Generation en cours...</h2>
+                    <p class="text-gray-600 mb-6">L'IA analyse votre description et structure votre plan de projet</p>
+                    <div class="flex justify-center items-center gap-4">
+                        <div class="spinner border-emerald-600 border-t-emerald-200"></div>
+                        <span id="generatingStatus" class="text-emerald-700 font-medium">Connexion a l'API...</span>
+                    </div>
+                    <div class="mt-8 max-w-md mx-auto">
+                        <div class="bg-gray-100 rounded-full h-2 overflow-hidden">
+                            <div id="progressBar" class="bg-emerald-500 h-2 rounded-full transition-all duration-1000" style="width: 5%"></div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- ======================== -->
-        <!-- TAB 2: PLANIFICATION     -->
-        <!-- ======================== -->
-        <div id="panel-planification" class="tab-panel" style="display:none;">
-            <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8 mb-6">
-                <div class="mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-2">&#x1F4CB; Phases & Taches</h2>
-                    <p class="text-gray-600 text-sm">Decoupez votre projet en phases, puis chaque phase en taches concretes avec un responsable.</p>
-                </div>
-
-                <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-sm text-emerald-800 mb-6">
-                    <strong>Conseil :</strong> Commencez par les grandes phases (ex: Preparation, Realisation, Communication, Bilan), puis detaillez les taches pour chacune.
-                </div>
-
-                <div class="flex flex-wrap justify-between items-center mb-4">
-                    <span id="phaseCount" class="text-sm text-gray-500">0 phase(s)</span>
-                    <button onclick="addPhase()" class="no-print bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition shadow-md">
-                        &#x2795; Ajouter une phase
-                    </button>
-                </div>
-
-                <div id="phasesContainer" class="space-y-6"></div>
-                <div id="phaseEmpty" class="text-center py-10 text-gray-400">
-                    <p class="text-4xl mb-3">&#x1F4CB;</p>
-                    <p>Cliquez sur "Ajouter une phase" pour structurer votre projet</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- ======================== -->
-        <!-- TAB 3: POINTS DE CONTROLE -->
-        <!-- ======================== -->
-        <div id="panel-checkpoints" class="tab-panel" style="display:none;">
-            <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8 mb-6">
-                <div class="mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-2">&#x2705; Points de controle & Approbations</h2>
-                    <p class="text-gray-600 text-sm">Definissez les jalons ou le projet doit etre valide avant de passer a l'etape suivante.</p>
-                </div>
-
-                <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800 mb-6">
-                    <strong>Principe :</strong> Ne marquez jamais une etape comme terminee sans avoir verifie qu'elle fonctionne. Posez des jalons de validation clairs.
-                </div>
-
-                <div class="flex flex-wrap justify-between items-center mb-4">
-                    <span id="checkpointCount" class="text-sm text-gray-500">0 point(s) de controle</span>
-                    <button onclick="addCheckpoint()" class="no-print bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition shadow-md">
-                        &#x2795; Ajouter un point de controle
-                    </button>
-                </div>
-
-                <div id="checkpointsContainer" class="space-y-4"></div>
-                <div id="checkpointEmpty" class="text-center py-10 text-gray-400">
-                    <p class="text-4xl mb-3">&#x2705;</p>
-                    <p>Ajoutez des points de controle pour securiser votre projet</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- ======================== -->
-        <!-- TAB 4: SUIVI & LECONS    -->
-        <!-- ======================== -->
-        <div id="panel-suivi" class="tab-panel" style="display:none;">
-            <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8 mb-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">&#x1F4D6; Suivi & Lecons apprises</h2>
-
-                <!-- Stats rapides -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                    <div class="bg-emerald-50 rounded-xl p-4 text-center border border-emerald-200">
-                        <div id="statObjectifs" class="text-3xl font-bold text-emerald-600">0</div>
-                        <div class="text-sm text-gray-500">Objectifs</div>
-                    </div>
-                    <div class="bg-blue-50 rounded-xl p-4 text-center border border-blue-200">
-                        <div id="statPhases" class="text-3xl font-bold text-blue-600">0</div>
-                        <div class="text-sm text-gray-500">Phases</div>
-                    </div>
-                    <div class="bg-purple-50 rounded-xl p-4 text-center border border-purple-200">
-                        <div id="statTaches" class="text-3xl font-bold text-purple-600">0</div>
-                        <div class="text-sm text-gray-500">Taches</div>
-                    </div>
-                    <div class="bg-amber-50 rounded-xl p-4 text-center border border-amber-200">
-                        <div id="statCheckpoints" class="text-3xl font-bold text-amber-600">0</div>
-                        <div class="text-sm text-gray-500">Points de controle</div>
-                    </div>
-                </div>
-
-                <!-- Lecons apprises -->
-                <div class="mb-6">
-                    <div class="flex justify-between items-center mb-3">
+            <!-- Error state -->
+            <div id="errorPanel" class="hidden">
+                <div class="bg-red-50 rounded-xl shadow-lg p-6 border border-red-200">
+                    <div class="flex items-start gap-4">
+                        <div class="text-3xl">&#x26A0;&#xFE0F;</div>
                         <div>
-                            <label class="block text-lg font-semibold text-gray-800">&#x1F4A1; Lecons apprises</label>
-                            <p class="text-sm text-gray-500">Capturez les enseignements au fur et a mesure pour les projets futurs</p>
+                            <h3 class="font-bold text-red-800 text-lg mb-1">Erreur de generation</h3>
+                            <p id="errorMessage" class="text-red-700 mb-4"></p>
+                            <button onclick="resetGenerator()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition">
+                                Reessayer
+                            </button>
                         </div>
-                        <button onclick="addLesson()" class="no-print bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-medium transition shadow-md">
-                            &#x2795; Ajouter une lecon
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================== -->
+        <!-- EDITOR (after generation) -->
+        <!-- ======================== -->
+        <div id="editorPanel" class="<?= $hasContent ? '' : 'hidden' ?>">
+            <!-- En-tete -->
+            <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8 mb-6">
+                <div class="text-center mb-4">
+                    <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Pilotage de Projet</h1>
+                    <p class="text-gray-600 italic">Affinez et completez votre plan de projet</p>
+                </div>
+
+                <div class="flex flex-wrap justify-center gap-3 no-print">
+                    <button onclick="showGenerator()" class="text-sm bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-4 py-2 rounded-lg font-medium transition">
+                        &#x1F504; Regenerer un nouveau plan
+                    </button>
+                </div>
+            </div>
+
+            <!-- Onglets -->
+            <div class="flex gap-2 mb-4 no-print">
+                <button onclick="switchTab('cadrage')" id="tab-cadrage" class="tab-btn active flex-1 py-3 rounded-lg text-sm font-medium bg-white/30 text-white text-center">
+                    &#x1F3AF; Cadrage
+                </button>
+                <button onclick="switchTab('planification')" id="tab-planification" class="tab-btn flex-1 py-3 rounded-lg text-sm font-medium bg-white/30 text-white text-center">
+                    &#x1F4CB; Planification
+                </button>
+                <button onclick="switchTab('checkpoints')" id="tab-checkpoints" class="tab-btn flex-1 py-3 rounded-lg text-sm font-medium bg-white/30 text-white text-center">
+                    &#x2705; Points de controle
+                </button>
+                <button onclick="switchTab('suivi')" id="tab-suivi" class="tab-btn flex-1 py-3 rounded-lg text-sm font-medium bg-white/30 text-white text-center">
+                    &#x1F4D6; Suivi & Lecons
+                </button>
+            </div>
+
+            <!-- ======================== -->
+            <!-- TAB 1: CADRAGE           -->
+            <!-- ======================== -->
+            <div id="panel-cadrage" class="tab-panel">
+                <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8 mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">&#x1F3AF; Cadrage du projet</h2>
+                    <p class="text-gray-600 text-sm mb-6">Verifiez et ajustez les informations generees.</p>
+
+                    <div class="space-y-5">
+                        <div class="bg-emerald-50 p-4 rounded-lg border border-emerald-200">
+                            <label class="block text-lg font-semibold text-gray-800 mb-2">Nom du projet</label>
+                            <input type="text" id="nomProjet"
+                                class="w-full px-4 py-2 border-2 border-emerald-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-lg font-medium"
+                                placeholder="Ex: Journee portes ouvertes 2026, Refonte du site web..."
+                                value="<?= h($analyse['nom_projet'] ?? '') ?>"
+                                oninput="scheduleAutoSave()">
+                        </div>
+
+                        <div>
+                            <label class="block text-lg font-semibold text-gray-800 mb-2">Description du projet</label>
+                            <textarea id="descriptionProjet" rows="3"
+                                class="w-full px-4 py-2 border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-emerald-500"
+                                placeholder="En quelques phrases, decrivez ce que ce projet vise a accomplir..."
+                                oninput="scheduleAutoSave()"><?= h($analyse['description_projet'] ?? '') ?></textarea>
+                        </div>
+
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                                <label class="block text-sm font-semibold text-blue-800 mb-2">&#x1F4D8; Contexte</label>
+                                <textarea id="contexte" rows="4"
+                                    class="w-full px-3 py-2 border rounded-md text-sm resize-none"
+                                    placeholder="Contexte organisationnel, technique, historique..."
+                                    oninput="scheduleAutoSave()"><?= h($analyse['contexte'] ?? '') ?></textarea>
+                            </div>
+                            <div class="bg-amber-50 p-4 rounded-lg border border-amber-200">
+                                <label class="block text-sm font-semibold text-amber-800 mb-2">&#x26A0;&#xFE0F; Contraintes</label>
+                                <textarea id="contraintes" rows="4"
+                                    class="w-full px-3 py-2 border rounded-md text-sm resize-none"
+                                    placeholder="Listez vos contraintes connues..."
+                                    oninput="scheduleAutoSave()"><?= h($analyse['contraintes'] ?? '') ?></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Recommandations AI -->
+                        <div id="recommandationsBlock" class="hidden bg-emerald-50 border-2 border-emerald-200 rounded-xl p-5">
+                            <h3 class="font-bold text-emerald-800 mb-2">&#x1F4A1; Recommandations de l'IA</h3>
+                            <p id="recommandationsText" class="text-gray-700 text-sm"></p>
+                        </div>
+
+                        <!-- Objectifs -->
+                        <div>
+                            <div class="flex justify-between items-center mb-3">
+                                <div>
+                                    <label class="block text-lg font-semibold text-gray-800">&#x1F3AF; Objectifs du projet</label>
+                                    <p class="text-sm text-gray-500">Formulez des objectifs clairs avec des criteres de succes mesurables</p>
+                                </div>
+                                <button onclick="addObjectif()" class="no-print bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition shadow-md">
+                                    &#x2795; Ajouter un objectif
+                                </button>
+                            </div>
+                            <div id="objectifsContainer" class="space-y-3"></div>
+                            <div id="objectifEmpty" class="text-center py-8 text-gray-400">
+                                <p class="text-3xl mb-2">&#x1F3AF;</p>
+                                <p>Ajoutez vos objectifs pour cadrer le projet</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ======================== -->
+            <!-- TAB 2: PLANIFICATION     -->
+            <!-- ======================== -->
+            <div id="panel-planification" class="tab-panel" style="display:none;">
+                <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8 mb-6">
+                    <div class="mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-2">&#x1F4CB; Phases & Taches</h2>
+                        <p class="text-gray-600 text-sm">Decoupez votre projet en phases, puis chaque phase en taches concretes avec un responsable.</p>
+                    </div>
+
+                    <div class="flex flex-wrap justify-between items-center mb-4">
+                        <span id="phaseCount" class="text-sm text-gray-500">0 phase(s)</span>
+                        <button onclick="addPhase()" class="no-print bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition shadow-md">
+                            &#x2795; Ajouter une phase
                         </button>
                     </div>
-                    <div id="lessonsContainer" class="space-y-3"></div>
-                    <div id="lessonEmpty" class="text-center py-6 text-gray-400">
-                        <p class="text-2xl mb-2">&#x1F4A1;</p>
-                        <p class="text-sm">Les lecons apprises enrichissent vos futurs projets</p>
+
+                    <div id="phasesContainer" class="space-y-6"></div>
+                    <div id="phaseEmpty" class="text-center py-10 text-gray-400">
+                        <p class="text-4xl mb-3">&#x1F4CB;</p>
+                        <p>Cliquez sur "Ajouter une phase" pour structurer votre projet</p>
                     </div>
                 </div>
+            </div>
 
-                <div class="mb-6 bg-gradient-to-r from-emerald-50 to-green-50 p-4 rounded-lg">
-                    <label class="block text-lg font-semibold text-gray-800 mb-2">Synthese du projet</label>
-                    <textarea id="synthese" rows="5"
-                        class="w-full px-4 py-2 border-2 border-emerald-300 rounded-md focus:ring-2 focus:ring-emerald-500"
-                        placeholder="Vue d'ensemble : ou en est le projet ? Quels sont les points d'attention ? Les prochaines priorites ?"
-                        oninput="scheduleAutoSave()"><?= h($analyse['synthese'] ?? '') ?></textarea>
+            <!-- ======================== -->
+            <!-- TAB 3: POINTS DE CONTROLE -->
+            <!-- ======================== -->
+            <div id="panel-checkpoints" class="tab-panel" style="display:none;">
+                <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8 mb-6">
+                    <div class="mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-2">&#x2705; Points de controle & Approbations</h2>
+                        <p class="text-gray-600 text-sm">Definissez les jalons ou le projet doit etre valide avant de passer a l'etape suivante.</p>
+                    </div>
+
+                    <div class="flex flex-wrap justify-between items-center mb-4">
+                        <span id="checkpointCount" class="text-sm text-gray-500">0 point(s) de controle</span>
+                        <button onclick="addCheckpoint()" class="no-print bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition shadow-md">
+                            &#x2795; Ajouter un point de controle
+                        </button>
+                    </div>
+
+                    <div id="checkpointsContainer" class="space-y-4"></div>
+                    <div id="checkpointEmpty" class="text-center py-10 text-gray-400">
+                        <p class="text-4xl mb-3">&#x2705;</p>
+                        <p>Ajoutez des points de controle pour securiser votre projet</p>
+                    </div>
                 </div>
+            </div>
 
-                <div class="mb-6 bg-gray-50 p-4 rounded-lg">
-                    <label class="block text-lg font-semibold text-gray-800 mb-2">&#x270F;&#xFE0F; Notes</label>
-                    <textarea id="notes" rows="3"
-                        class="w-full px-4 py-2 border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-gray-500"
-                        placeholder="Notes libres..."
-                        oninput="scheduleAutoSave()"><?= h($analyse['notes'] ?? '') ?></textarea>
-                </div>
+            <!-- ======================== -->
+            <!-- TAB 4: SUIVI & LECONS    -->
+            <!-- ======================== -->
+            <div id="panel-suivi" class="tab-panel" style="display:none;">
+                <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8 mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">&#x1F4D6; Suivi & Lecons apprises</h2>
 
-                <div class="no-print flex flex-wrap gap-3 pt-4 border-t-2 border-gray-200">
-                    <button onclick="submitAnalyse()" class="bg-emerald-600 text-white px-6 py-3 rounded-md hover:bg-emerald-700 transition font-semibold shadow-md">&#x2705; Soumettre</button>
-                    <button onclick="exportToExcel()" class="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition font-semibold shadow-md">&#x1F4CA; Export Excel</button>
-                    <button onclick="exportJSON()" class="bg-gray-500 text-white px-6 py-3 rounded-md hover:bg-gray-600 transition font-semibold shadow-md">&#x1F4E5; JSON</button>
-                    <button onclick="window.print()" class="bg-gray-600 text-white px-6 py-3 rounded-md hover:bg-gray-700 transition font-semibold shadow-md">&#x1F5A8;&#xFE0F; Imprimer</button>
+                    <!-- Stats rapides -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <div class="bg-emerald-50 rounded-xl p-4 text-center border border-emerald-200">
+                            <div id="statObjectifs" class="text-3xl font-bold text-emerald-600">0</div>
+                            <div class="text-sm text-gray-500">Objectifs</div>
+                        </div>
+                        <div class="bg-blue-50 rounded-xl p-4 text-center border border-blue-200">
+                            <div id="statPhases" class="text-3xl font-bold text-blue-600">0</div>
+                            <div class="text-sm text-gray-500">Phases</div>
+                        </div>
+                        <div class="bg-purple-50 rounded-xl p-4 text-center border border-purple-200">
+                            <div id="statTaches" class="text-3xl font-bold text-purple-600">0</div>
+                            <div class="text-sm text-gray-500">Taches</div>
+                        </div>
+                        <div class="bg-amber-50 rounded-xl p-4 text-center border border-amber-200">
+                            <div id="statCheckpoints" class="text-3xl font-bold text-amber-600">0</div>
+                            <div class="text-sm text-gray-500">Points de controle</div>
+                        </div>
+                    </div>
+
+                    <!-- Lecons apprises -->
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-3">
+                            <div>
+                                <label class="block text-lg font-semibold text-gray-800">&#x1F4A1; Lecons apprises</label>
+                                <p class="text-sm text-gray-500">Capturez les enseignements au fur et a mesure pour les projets futurs</p>
+                            </div>
+                            <button onclick="addLesson()" class="no-print bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-medium transition shadow-md">
+                                &#x2795; Ajouter une lecon
+                            </button>
+                        </div>
+                        <div id="lessonsContainer" class="space-y-3"></div>
+                        <div id="lessonEmpty" class="text-center py-6 text-gray-400">
+                            <p class="text-2xl mb-2">&#x1F4A1;</p>
+                            <p class="text-sm">Les lecons apprises enrichissent vos futurs projets</p>
+                        </div>
+                    </div>
+
+                    <div class="mb-6 bg-gradient-to-r from-emerald-50 to-green-50 p-4 rounded-lg">
+                        <label class="block text-lg font-semibold text-gray-800 mb-2">Synthese du projet</label>
+                        <textarea id="synthese" rows="5"
+                            class="w-full px-4 py-2 border-2 border-emerald-300 rounded-md focus:ring-2 focus:ring-emerald-500"
+                            placeholder="Vue d'ensemble : ou en est le projet ? Quels sont les points d'attention ? Les prochaines priorites ?"
+                            oninput="scheduleAutoSave()"><?= h($analyse['synthese'] ?? '') ?></textarea>
+                    </div>
+
+                    <div class="mb-6 bg-gray-50 p-4 rounded-lg">
+                        <label class="block text-lg font-semibold text-gray-800 mb-2">&#x270F;&#xFE0F; Notes</label>
+                        <textarea id="notes" rows="3"
+                            class="w-full px-4 py-2 border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-gray-500"
+                            placeholder="Notes libres..."
+                            oninput="scheduleAutoSave()"><?= h($analyse['notes'] ?? '') ?></textarea>
+                    </div>
+
+                    <div class="no-print flex flex-wrap gap-3 pt-4 border-t-2 border-gray-200">
+                        <button onclick="submitAnalyse()" class="bg-emerald-600 text-white px-6 py-3 rounded-md hover:bg-emerald-700 transition font-semibold shadow-md">&#x2705; Soumettre</button>
+                        <button onclick="exportToExcel()" class="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition font-semibold shadow-md">&#x1F4CA; Export Excel</button>
+                        <button onclick="exportJSON()" class="bg-gray-500 text-white px-6 py-3 rounded-md hover:bg-gray-600 transition font-semibold shadow-md">&#x1F4E5; JSON</button>
+                        <button onclick="window.print()" class="bg-gray-600 text-white px-6 py-3 rounded-md hover:bg-gray-700 transition font-semibold shadow-md">&#x1F5A8;&#xFE0F; Imprimer</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -311,9 +440,168 @@ $checkpointTypes = getCheckpointTypes();
     let checkpoints = <?= json_encode($checkpointsData) ?>;
     let lessons = <?= json_encode($lessonsData) ?>;
     let autoSaveTimeout = null;
+    let recommandations = '';
 
     const taskStatuses = <?= json_encode($taskStatuses) ?>;
     const checkpointTypes = <?= json_encode($checkpointTypes) ?>;
+    const hasContent = <?= $hasContent ? 'true' : 'false' ?>;
+
+    // ========================
+    // AI GENERATION
+    // ========================
+    async function generatePlan() {
+        const description = document.getElementById('genDescription').value.trim();
+        if (!description) {
+            alert('Veuillez decrire votre projet avant de generer le plan.');
+            document.getElementById('genDescription').focus();
+            return;
+        }
+
+        const contexte = document.getElementById('genContexte').value.trim();
+        const contraintes = document.getElementById('genContraintes').value.trim();
+
+        // Show loading
+        document.getElementById('btnGenerate').parentElement.style.display = 'none';
+        document.getElementById('generatingPanel').classList.remove('hidden');
+        document.getElementById('errorPanel').classList.add('hidden');
+
+        // Animate progress bar
+        let progress = 5;
+        const progressInterval = setInterval(() => {
+            if (progress < 85) {
+                progress += Math.random() * 8;
+                document.getElementById('progressBar').style.width = Math.min(progress, 85) + '%';
+            }
+            // Update status text
+            if (progress > 20 && progress < 40) {
+                document.getElementById('generatingStatus').textContent = 'Analyse de votre description...';
+            } else if (progress > 40 && progress < 60) {
+                document.getElementById('generatingStatus').textContent = 'Structuration des phases...';
+            } else if (progress > 60) {
+                document.getElementById('generatingStatus').textContent = 'Finalisation du plan...';
+            }
+        }, 800);
+
+        try {
+            const response = await fetch('api/generate.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ description, contexte, contraintes })
+            });
+
+            const data = await response.json();
+
+            clearInterval(progressInterval);
+
+            if (!response.ok || data.error) {
+                throw new Error(data.error || 'Erreur lors de la generation');
+            }
+
+            const plan = data.plan;
+
+            // Fill progress to 100%
+            document.getElementById('progressBar').style.width = '100%';
+            document.getElementById('generatingStatus').textContent = 'Plan genere avec succes !';
+
+            // Short delay then apply
+            await new Promise(r => setTimeout(r, 600));
+
+            // Apply generated plan to data
+            applyGeneratedPlan(plan, description, contexte, contraintes);
+
+        } catch (err) {
+            clearInterval(progressInterval);
+            document.getElementById('generatingPanel').classList.add('hidden');
+            document.getElementById('errorPanel').classList.remove('hidden');
+            document.getElementById('errorMessage').textContent = err.message;
+            document.getElementById('btnGenerate').parentElement.style.display = '';
+        }
+    }
+
+    function applyGeneratedPlan(plan, description, contexte, contraintes) {
+        // Set base fields
+        document.getElementById('nomProjet').value = plan.nom_projet || '';
+        document.getElementById('descriptionProjet').value = plan.description_projet || description;
+        document.getElementById('contexte').value = contexte;
+        document.getElementById('contraintes').value = contraintes;
+
+        // Objectifs
+        objectifs = (plan.objectifs || []).map(o => ({
+            titre: o.titre || '',
+            criteres: o.criteres || ''
+        }));
+
+        // Phases with tasks
+        phases = (plan.phases || []).map(p => ({
+            nom: p.nom || '',
+            dates: p.dates || '',
+            livrable: p.livrable || '',
+            taches: (p.taches || []).map(t => ({
+                titre: t.titre || '',
+                responsable: t.responsable || '',
+                statut: t.statut || 'todo'
+            }))
+        }));
+
+        // Checkpoints
+        checkpoints = (plan.checkpoints || []).map(cp => ({
+            type: cp.type || 'validation',
+            apres_phase: cp.apres_phase !== undefined ? cp.apres_phase : '',
+            validateur: cp.validateur || '',
+            description: cp.description || '',
+            criteres: cp.criteres || ''
+        }));
+
+        // Recommendations
+        recommandations = plan.recommandations || '';
+
+        // Switch to editor
+        showEditor();
+
+        // Render everything
+        renderObjectifs();
+        renderPhases();
+        renderCheckpoints();
+        renderLessons();
+
+        // Show recommandations if present
+        if (recommandations) {
+            document.getElementById('recommandationsBlock').classList.remove('hidden');
+            document.getElementById('recommandationsText').textContent = recommandations;
+        }
+
+        // Save immediately
+        scheduleAutoSave();
+    }
+
+    function showEditor() {
+        document.getElementById('generatorPanel').classList.add('hidden');
+        document.getElementById('editorPanel').classList.remove('hidden');
+        document.getElementById('btnSave').style.display = '';
+        document.getElementById('completion').style.display = '';
+    }
+
+    function showGenerator() {
+        if (hasContent || objectifs.length > 0 || phases.length > 0) {
+            if (!confirm('Generer un nouveau plan remplacera les donnees actuelles. Continuer ?')) return;
+        }
+        document.getElementById('editorPanel').classList.add('hidden');
+        document.getElementById('generatorPanel').classList.remove('hidden');
+        document.getElementById('generatingPanel').classList.add('hidden');
+        document.getElementById('errorPanel').classList.add('hidden');
+        document.getElementById('btnGenerate')?.parentElement && (document.getElementById('btnGenerate').parentElement.style.display = '');
+        // Reset progress
+        document.getElementById('progressBar').style.width = '5%';
+        document.getElementById('generatingStatus').textContent = 'Connexion a l\'API...';
+        document.getElementById('btnSave').style.display = 'none';
+        document.getElementById('completion').style.display = 'none';
+    }
+
+    function resetGenerator() {
+        document.getElementById('errorPanel').classList.add('hidden');
+        document.getElementById('generatingPanel').classList.add('hidden');
+        document.getElementById('btnGenerate').parentElement.style.display = '';
+    }
 
     // Onglets
     function switchTab(tab) {
@@ -498,7 +786,6 @@ $checkpointTypes = getCheckpointTypes();
             typeOptions += `<option value="${key}"${cp.type === key ? ' selected' : ''}>${t.icon} ${t.label}</option>`;
         }
 
-        // Phases as options for "after phase"
         let phaseOptions = '<option value="">-- Apres quelle phase ? --</option>';
         phases.forEach((p, i) => {
             phaseOptions += `<option value="${i}"${cp.apres_phase == i ? ' selected' : ''}>${p.nom || 'Phase ' + (i+1)}</option>`;
@@ -673,6 +960,7 @@ $checkpointTypes = getCheckpointTypes();
             objectifs, phases, checkpoints, lessons,
             synthese: document.getElementById('synthese').value,
             notes: document.getElementById('notes').value,
+            recommandations,
             dateExport: new Date().toISOString()
         };
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -694,6 +982,7 @@ $checkpointTypes = getCheckpointTypes();
             [], ['OBJECTIFS'], ['#', 'Objectif', 'Criteres de succes']
         ];
         objectifs.forEach((o, i) => cadData.push([(i+1).toString(), o.titre || '', o.criteres || '']));
+        if (recommandations) { cadData.push([], ['RECOMMANDATIONS'], [recommandations]); }
         const ws1 = XLSX.utils.aoa_to_sheet(cadData);
         ws1['!cols'] = [{wch:15},{wch:50},{wch:50}];
 
@@ -729,7 +1018,16 @@ $checkpointTypes = getCheckpointTypes();
     function esc(t) { const d = document.createElement('div'); d.appendChild(document.createTextNode(t)); return d.innerHTML; }
 
     // Init
-    document.addEventListener('DOMContentLoaded', () => { renderObjectifs(); renderPhases(); renderCheckpoints(); renderLessons(); });
+    document.addEventListener('DOMContentLoaded', () => {
+        if (hasContent) {
+            document.getElementById('btnSave').style.display = '';
+            document.getElementById('completion').style.display = '';
+        }
+        renderObjectifs();
+        renderPhases();
+        renderCheckpoints();
+        renderLessons();
+    });
     </script>
 </body>
 </html>
