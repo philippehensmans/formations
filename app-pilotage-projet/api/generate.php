@@ -22,6 +22,14 @@ if (!isLoggedIn() || !isset($_SESSION['current_session_id'])) {
     exit;
 }
 
+// Verifier l'acces a l'app restreinte
+$user = getLoggedUser();
+if (!$user || !hasAppAccess('app-pilotage-projet', $user['id'])) {
+    http_response_code(403);
+    echo json_encode(['error' => 'Acces non autorise a cette application.']);
+    exit;
+}
+
 if (ANTHROPIC_API_KEY === 'YOUR_API_KEY_HERE') {
     http_response_code(500);
     echo json_encode(['error' => 'Cle API non configuree. Editez ai-config.php avec votre cle API Anthropic.']);

@@ -57,6 +57,8 @@ foreach ($categoriesDef as $catKey => $catDef) {
         }
     }
 }
+
+$restrictedApps = getRestrictedApps();
 ?>
 <!DOCTYPE html>
 <html lang="<?= getCurrentLanguage() ?>">
@@ -167,6 +169,7 @@ foreach ($categoriesDef as $catKey => $catDef) {
                 // Categories de cette app
                 $cats = $appCategories[$appKey] ?? [];
                 $catsJson = htmlspecialchars(json_encode($cats), ENT_QUOTES);
+                $isRestricted = isset($restrictedApps[$appKey]);
             ?>
             <a href="<?= $appKey ?>/login.php" target="_blank"
                class="app-card bg-white rounded-xl shadow-md overflow-hidden"
@@ -174,7 +177,12 @@ foreach ($categoriesDef as $catKey => $catDef) {
                data-app="<?= $appKey ?>">
                 <div class="h-2 bg-<?= $color ?>-500"></div>
                 <div class="p-6">
-                    <h2 class="text-xl font-bold text-gray-800 mb-2"><?= htmlspecialchars($title) ?></h2>
+                    <div class="flex items-start justify-between gap-2">
+                        <h2 class="text-xl font-bold text-gray-800 mb-2"><?= htmlspecialchars($title) ?></h2>
+                        <?php if ($isRestricted): ?>
+                        <span class="shrink-0 px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-xs font-bold border border-amber-200" title="Acces restreint - Autorisation requise">&#x1F512; IA</span>
+                        <?php endif; ?>
+                    </div>
                     <?php if ($description): ?>
                         <p class="text-gray-600 text-sm mb-3"><?= htmlspecialchars($description) ?></p>
                     <?php endif; ?>
