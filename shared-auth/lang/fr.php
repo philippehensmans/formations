@@ -1483,6 +1483,11 @@ return [
             'description' => 'Construisez un plan de communication concret autour d\'une action precise : objectif SMART, public, message, canaux, calendrier et ressources.',
             'color' => 'indigo',
         ],
+        'pilotage-projet' => [
+            'title' => 'Pilotage de Projet',
+            'description' => 'Structurez votre projet des objectifs aux taches concretes, avec phases, points de controle et lecons apprises.',
+            'color' => 'emerald',
+        ],
     ],
 
     // Carte d'identite du Projet
