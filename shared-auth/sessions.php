@@ -106,3 +106,56 @@ function deleteSession($db, $sessionId) {
     $stmt = $db->prepare("DELETE FROM sessions WHERE id = ?");
     return $stmt->execute([$sessionId]);
 }
+
+/**
+ * S'assurer qu'un participant existe dans la base locale de l'app
+ * Corrige le cas ou un utilisateur navigue entre apps :
+ * la session PHP a deja un participant_id (d'une autre app)
+ * donc le login-template saute la creation du participant local
+ */
+function ensureParticipant($db, $sessionId, $user) {
+    $userId = $user['id'];
+    $prenom = $user['prenom'] ?? $user['username'] ?? '';
+    $nom = $user['nom'] ?? '';
+
+    // Verifier si le participant existe deja
+    try {
+        $stmt = $db->prepare("SELECT id FROM participants WHERE session_id = ? AND user_id = ?");
+        $stmt->execute([$sessionId, $userId]);
+        $participant = $stmt->fetch();
+        if ($participant) {
+            $_SESSION['participant_id'] = $participant['id'];
+            return $participant['id'];
+        }
+    } catch (PDOException $e) {
+        // Colonne user_id n'existe peut-etre pas
+    }
+
+    // Chercher par prenom/nom
+    $stmt = $db->prepare("SELECT id FROM participants WHERE session_id = ? AND prenom = ? AND nom = ?");
+    $stmt->execute([$sessionId, $prenom, $nom]);
+    $participant = $stmt->fetch();
+    if ($participant) {
+        $_SESSION['participant_id'] = $participant['id'];
+        return $participant['id'];
+    }
+
+    // Creer le participant
+    try {
+        $stmt = $db->prepare("INSERT INTO participants (session_id, user_id, prenom, nom, created_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)");
+        $stmt->execute([$sessionId, $userId, $prenom, $nom]);
+        $id = $db->lastInsertId();
+        $_SESSION['participant_id'] = $id;
+        return $id;
+    } catch (PDOException $e) {
+        try {
+            $stmt = $db->prepare("INSERT INTO participants (session_id, prenom, nom, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)");
+            $stmt->execute([$sessionId, $prenom, $nom]);
+            $id = $db->lastInsertId();
+            $_SESSION['participant_id'] = $id;
+            return $id;
+        } catch (PDOException $e2) {
+            return null;
+        }
+    }
+}

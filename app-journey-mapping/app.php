@@ -21,6 +21,7 @@ if (!$user) {
 }
 
 $sessionId = $_SESSION['current_session_id'];
+ensureParticipant($db, $sessionId, $user);
 $sessionNom = $_SESSION['current_session_nom'] ?? '';
 
 // Charger l'analyse Journey Mapping
