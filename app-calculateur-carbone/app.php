@@ -9,7 +9,8 @@ if (!$user || !isset($_SESSION['current_session_id'])) {
 }
 
 $db = getDB();
-$sessionId = $_SESSION['current_session_id'];
+$sessionId = validateCurrentSession($db);
+if (!$sessionId) { header('Location: login.php'); exit; }
 $sessionCode = $_SESSION['current_session_code'] ?? '';
 $sessionNom = $_SESSION['current_session_nom'] ?? '';
 $participantId = $_SESSION['participant_id'] ?? 0;

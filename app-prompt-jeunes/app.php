@@ -48,10 +48,12 @@ requireLoginWithSession();
 
 $user = getLoggedUser();
 $db = getDB();
+$sessionId = validateCurrentSession($db);
+if (!$sessionId) { header('Location: login.php'); exit; }
 
 // Recuperer tous les exercices de cet utilisateur pour cette session
 $stmt = $db->prepare("SELECT id, exercice_num, cas_choisi, is_shared, completion_percent, created_at FROM travaux WHERE user_id = ? AND session_id = ? ORDER BY exercice_num ASC");
-$stmt->execute([$user['id'], $_SESSION['current_session_id']]);
+$stmt->execute([$user['id'], $sessionId]);
 $allExercices = $stmt->fetchAll();
 
 // Gerer la creation d'un nouvel exercice
@@ -62,7 +64,7 @@ if (isset($_GET['new'])) {
     }
     $newNum = $maxNum + 1;
     $stmt = $db->prepare("INSERT INTO travaux (user_id, session_id, exercice_num) VALUES (?, ?, ?)");
-    $stmt->execute([$user['id'], $_SESSION['current_session_id'], $newNum]);
+    $stmt->execute([$user['id'], $sessionId, $newNum]);
     header('Location: app.php?ex=' . $newNum);
     exit;
 }
@@ -92,13 +94,13 @@ if ($currentExerciceNum === null) {
 
 // Charger l'exercice courant
 $stmt = $db->prepare("SELECT * FROM travaux WHERE user_id = ? AND session_id = ? AND exercice_num = ?");
-$stmt->execute([$user['id'], $_SESSION['current_session_id'], $currentExerciceNum]);
+$stmt->execute([$user['id'], $sessionId, $currentExerciceNum]);
 $travail = $stmt->fetch();
 
 // Creer l'exercice s'il n'existe pas
 if (!$travail) {
     $stmt = $db->prepare("INSERT INTO travaux (user_id, session_id, exercice_num) VALUES (?, ?, ?)");
-    $stmt->execute([$user['id'], $_SESSION['current_session_id'], $currentExerciceNum]);
+    $stmt->execute([$user['id'], $sessionId, $currentExerciceNum]);
     $travail = [
         'id' => $db->lastInsertId(),
         'exercice_num' => $currentExerciceNum,
@@ -122,7 +124,7 @@ if (!$travail) {
     ];
     // Rafraichir la liste des exercices
     $stmt = $db->prepare("SELECT id, exercice_num, cas_choisi, is_shared, completion_percent, created_at FROM travaux WHERE user_id = ? AND session_id = ? ORDER BY exercice_num ASC");
-    $stmt->execute([$user['id'], $_SESSION['current_session_id']]);
+    $stmt->execute([$user['id'], $sessionId]);
     $allExercices = $stmt->fetchAll();
 } else {
     // S'assurer que les valeurs ne sont jamais null

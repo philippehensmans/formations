@@ -7,15 +7,17 @@ requireLoginWithSession();
 
 $user = getLoggedUser();
 $db = getDB();
+$sessionId = validateCurrentSession($db);
+if (!$sessionId) { header('Location: login.php'); exit; }
 
 // Creer ou recuperer le guide pour cette session
 $stmt = $db->prepare("SELECT * FROM guides WHERE user_id = ? AND session_id = ?");
-$stmt->execute([$user['id'], $_SESSION['current_session_id']]);
+$stmt->execute([$user['id'], $sessionId]);
 $guide = $stmt->fetch();
 
 if (!$guide) {
     $stmt = $db->prepare("INSERT INTO guides (user_id, session_id) VALUES (?, ?)");
-    $stmt->execute([$user['id'], $_SESSION['current_session_id']]);
+    $stmt->execute([$user['id'], $sessionId]);
     $guide = [
         'organisation_nom' => '',
         'organisation_mission' => '',

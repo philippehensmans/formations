@@ -7,15 +7,17 @@ requireLoginWithSession();
 
 $user = getLoggedUser();
 $db = getDB();
+$sessionId = validateCurrentSession($db);
+if (!$sessionId) { header('Location: login.php'); exit; }
 
 // Creer ou recuperer l'atelier pour cette session
 $stmt = $db->prepare("SELECT * FROM ateliers WHERE user_id = ? AND session_id = ?");
-$stmt->execute([$user['id'], $_SESSION['current_session_id']]);
+$stmt->execute([$user['id'], $sessionId]);
 $atelier = $stmt->fetch();
 
 if (!$atelier) {
     $stmt = $db->prepare("INSERT INTO ateliers (user_id, session_id) VALUES (?, ?)");
-    $stmt->execute([$user['id'], $_SESSION['current_session_id']]);
+    $stmt->execute([$user['id'], $sessionId]);
     $atelier = [
         'association_nom' => '',
         'association_mission' => '',

@@ -8,15 +8,17 @@ requireLoginWithSession();
 
 $user = getLoggedUser();
 $db = getDB();
+$sessionId = validateCurrentSession($db);
+if (!$sessionId) { header('Location: login.php'); exit; }
 $chapeaux = getChapeaux();
 
 // Recuperer les informations de la session
 $stmt = $db->prepare("SELECT * FROM sessions WHERE id = ?");
-$stmt->execute([$_SESSION['current_session_id']]);
+$stmt->execute([$sessionId]);
 $session = $stmt->fetch();
 
 // Recuperer les avis existants du participant
-$avis = getAvisParticipant($user['id'], $_SESSION['current_session_id']);
+$avis = getAvisParticipant($user['id'], $sessionId);
 
 // Compter les avis par chapeau
 $avisCounts = [];

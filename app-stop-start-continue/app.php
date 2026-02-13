@@ -15,16 +15,19 @@ if (!$user) {
     exit;
 }
 
+$sessionId = validateCurrentSession($db);
+if (!$sessionId) { header('Location: login.php'); exit; }
+
 // Charger ou creer la retrospective
 $stmt = $db->prepare("SELECT * FROM retrospectives WHERE user_id = ? AND session_id = ?");
-$stmt->execute([$user['id'], $_SESSION['current_session_id']]);
+$stmt->execute([$user['id'], $sessionId]);
 $retro = $stmt->fetch();
 
 if (!$retro) {
     $stmt = $db->prepare("INSERT INTO retrospectives (user_id, session_id) VALUES (?, ?)");
-    $stmt->execute([$user['id'], $_SESSION['current_session_id']]);
+    $stmt->execute([$user['id'], $sessionId]);
     $stmt = $db->prepare("SELECT * FROM retrospectives WHERE user_id = ? AND session_id = ?");
-    $stmt->execute([$user['id'], $_SESSION['current_session_id']]);
+    $stmt->execute([$user['id'], $sessionId]);
     $retro = $stmt->fetch();
 }
 

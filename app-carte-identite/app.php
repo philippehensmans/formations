@@ -11,7 +11,8 @@ if (!isLoggedIn() || !isset($_SESSION['current_session_id'])) {
 
 $db = getDB();
 $user = getLoggedUser();
-$sessionId = $_SESSION['current_session_id'];
+$sessionId = validateCurrentSession($db);
+if (!$sessionId) { header('Location: login.php'); exit; }
 
 // Recuperer ou creer la fiche
 $stmt = $db->prepare("SELECT * FROM fiches WHERE user_id = ? AND session_id = ?");
