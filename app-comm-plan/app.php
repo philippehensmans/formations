@@ -12,6 +12,7 @@ if (!$user) { session_destroy(); header('Location: login.php'); exit; }
 
 $sessionId = $_SESSION['current_session_id'];
 $sessionNom = $_SESSION['current_session_nom'] ?? '';
+ensureParticipant($db, $sessionId, $user);
 
 $stmt = $db->prepare("SELECT * FROM analyses WHERE user_id = ? AND session_id = ?");
 $stmt->execute([$user['id'], $sessionId]);

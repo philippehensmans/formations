@@ -18,6 +18,7 @@ if (!hasAppAccess('app-pilotage-projet', $user['id'])) {
 
 $sessionId = $_SESSION['current_session_id'];
 $sessionNom = $_SESSION['current_session_nom'] ?? '';
+ensureParticipant($db, $sessionId, $user);
 
 $stmt = $db->prepare("SELECT * FROM analyses WHERE user_id = ? AND session_id = ?");
 $stmt->execute([$user['id'], $sessionId]);
