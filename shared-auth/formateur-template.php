@@ -147,6 +147,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $success = t('trainer.session_deleted');
                 break;
 
+            case 'delete_participant':
+                $participantId = (int)($_POST['participant_id'] ?? 0);
+                $fromSession = (int)($_POST['from_session'] ?? 0);
+                if (!canAccessSession($appKey, $fromSession)) {
+                    $error = t('trainer.access_denied');
+                    break;
+                }
+                // Recuperer le participant pour connaitre son user_id
+                $pStmt = $db->prepare("SELECT * FROM participants WHERE id = ? AND session_id = ?");
+                $pStmt->execute([$participantId, $fromSession]);
+                $pToDelete = $pStmt->fetch();
+                if ($pToDelete) {
+                    // Supprimer les donnees dans toutes les tables de l'app
+                    $dtStmt = $db->query("SELECT name FROM sqlite_master WHERE type='table' AND name NOT IN ('sessions', 'participants', 'sqlite_sequence')");
+                    foreach ($dtStmt->fetchAll(PDO::FETCH_COLUMN) as $tbl) {
+                        $cols = array_column($db->query("PRAGMA table_info(" . $tbl . ")")->fetchAll(), 'name');
+                        if (in_array('user_id', $cols) && in_array('session_id', $cols) && !empty($pToDelete['user_id'])) {
+                            $delStmt = $db->prepare("DELETE FROM " . $tbl . " WHERE user_id = ? AND session_id = ?");
+                            $delStmt->execute([$pToDelete['user_id'], $fromSession]);
+                        }
+                    }
+                    // Supprimer le participant
+                    $delStmt = $db->prepare("DELETE FROM participants WHERE id = ?");
+                    $delStmt->execute([$participantId]);
+                    $success = 'Participant supprime.';
+                }
+                break;
+
             case 'logout':
                 logout();
                 header('Location: ' . $_SERVER['PHP_SELF']);
@@ -402,11 +430,19 @@ if (isset($_GET['session'])) {
                                             <td class="py-2 text-gray-600"><?= h($p['organisation'] ?? '-') ?></td>
                                             <td class="py-2 text-gray-500"><?= date('d/m H:i', strtotime($p['created_at'])) ?></td>
                                             <td class="py-2 text-center">
-                                                <a href="view.php?id=<?= $p['id'] ?>"
-                                                   class="inline-block px-3 py-1 bg-<?= $appColor ?>-600 text-white rounded hover:bg-<?= $appColor ?>-700 text-xs"
-                                                   target="_blank">
-                                                    <?= t('common.view') ?>
-                                                </a>
+                                                <div class="flex items-center justify-center gap-1">
+                                                    <a href="view.php?id=<?= $p['id'] ?>"
+                                                       class="inline-block px-3 py-1 bg-<?= $appColor ?>-600 text-white rounded hover:bg-<?= $appColor ?>-700 text-xs"
+                                                       target="_blank">
+                                                        <?= t('common.view') ?>
+                                                    </a>
+                                                    <form method="POST" class="inline" onsubmit="return confirm('Supprimer ce participant et toutes ses donnees dans cette application ?')">
+                                                        <input type="hidden" name="action" value="delete_participant">
+                                                        <input type="hidden" name="participant_id" value="<?= $p['id'] ?>">
+                                                        <input type="hidden" name="from_session" value="<?= $selectedSession['id'] ?>">
+                                                        <button type="submit" class="px-2 py-1 text-red-500 hover:bg-red-50 rounded text-xs" title="Supprimer">🗑</button>
+                                                    </form>
+                                                </div>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
