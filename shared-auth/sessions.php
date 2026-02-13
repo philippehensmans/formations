@@ -108,6 +108,42 @@ function deleteSession($db, $sessionId) {
 }
 
 /**
+ * Valider que la session courante existe dans la base locale de CETTE app
+ * Corrige le cas ou $_SESSION['current_session_id'] vient d'une autre app
+ * (chaque app a sa propre base SQLite avec des IDs independants)
+ * Retourne le session_id corrige, ou false si non trouvee
+ */
+function validateCurrentSession($db) {
+    $sessionId = $_SESSION['current_session_id'] ?? null;
+    if (!$sessionId) return false;
+
+    $session = getSessionById($db, $sessionId);
+
+    // Verifier que le code correspond (les IDs auto-increment peuvent collisionner entre apps)
+    if ($session && isset($_SESSION['current_session_code']) && $session['code'] !== $_SESSION['current_session_code']) {
+        $session = null;
+    }
+
+    // Si pas trouvee par ID, chercher par code
+    if (!$session && isset($_SESSION['current_session_code'])) {
+        $session = getSessionByCode($db, $_SESSION['current_session_code']);
+        if ($session) {
+            $_SESSION['current_session_id'] = $session['id'];
+            $_SESSION['current_session_nom'] = $session['nom'];
+        }
+    }
+
+    if (!$session) {
+        // Session non trouvee dans cette app - nettoyer
+        unset($_SESSION['current_session_id'], $_SESSION['current_session_code'],
+              $_SESSION['current_session_nom'], $_SESSION['participant_id']);
+        return false;
+    }
+
+    return $session['id'];
+}
+
+/**
  * S'assurer qu'un participant existe dans la base locale de l'app
  * Corrige le cas ou un utilisateur navigue entre apps :
  * la session PHP a deja un participant_id (d'une autre app)
