@@ -11,7 +11,8 @@ try {
     $db = getDB();
     $sharedDb = getSharedDB();
     $user = getLoggedUser();
-    $sessionId = $_SESSION['current_session_id'];
+    $sessionId = validateCurrentSession($db);
+if (!$sessionId) { header('Location: login.php'); exit; }
 
     // Recuperer les infos du participant
     $participant = [

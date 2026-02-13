@@ -11,8 +11,9 @@ if (!isLoggedIn() || !isset($_SESSION['current_session_id'])) {
 }
 
 $user = getLoggedUser();
-$sessionId = $_SESSION['current_session_id'];
 $db = getDB();
+$sessionId = validateCurrentSession($db);
+if (!$sessionId) { header('Location: login.php'); exit; }
 
 // Verifier que la session existe et est active
 $stmt = $db->prepare("SELECT * FROM sessions WHERE id = ? AND is_active = 1");

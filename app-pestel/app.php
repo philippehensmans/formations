@@ -20,7 +20,8 @@ if (!$user) {
     exit;
 }
 
-$sessionId = $_SESSION['current_session_id'];
+$sessionId = validateCurrentSession($db);
+if (!$sessionId) { header('Location: login.php'); exit; }
 $sessionNom = $_SESSION['current_session_nom'] ?? '';
 
 // Charger l'analyse PESTEL

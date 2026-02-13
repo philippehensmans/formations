@@ -9,8 +9,9 @@ if (!isset($_SESSION['current_session_id'])) {
 }
 
 $user = getLoggedUser();
-$sessionId = $_SESSION['current_session_id'];
 $db = getDB();
+$sessionId = validateCurrentSession($db);
+if (!$sessionId) { header('Location: login.php'); exit; }
 
 // Récupérer le scénario actif
 $scenario = getActiveScenario($db, $sessionId);
