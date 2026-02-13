@@ -10,7 +10,8 @@ $db = getDB();
 $user = getLoggedUser();
 if (!$user) { session_destroy(); header('Location: login.php'); exit; }
 
-$sessionId = $_SESSION['current_session_id'];
+$sessionId = validateCurrentSession($db);
+if (!$sessionId) { header('Location: login.php'); exit; }
 ensureParticipant($db, $sessionId, $user);
 $sessionNom = $_SESSION['current_session_nom'] ?? '';
 

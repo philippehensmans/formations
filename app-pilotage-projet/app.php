@@ -16,7 +16,8 @@ if (!hasAppAccess('app-pilotage-projet', $user['id'])) {
     exit;
 }
 
-$sessionId = $_SESSION['current_session_id'];
+$sessionId = validateCurrentSession($db);
+if (!$sessionId) { header('Location: login.php'); exit; }
 $sessionNom = $_SESSION['current_session_nom'] ?? '';
 ensureParticipant($db, $sessionId, $user);
 

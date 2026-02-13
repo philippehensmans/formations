@@ -20,10 +20,34 @@ $appColor = $appColor ?? 'blue';
 $redirectAfterLogin = $redirectAfterLogin ?? 'index.php';
 $lang = getCurrentLanguage();
 
-// Si deja connecte avec participant_id, rediriger
+// Si deja connecte avec participant_id, verifier la session dans CETTE app
 if (isLoggedIn() && isset($_SESSION['current_session_id']) && isset($_SESSION['participant_id'])) {
-    header('Location: ' . $redirectAfterLogin);
-    exit;
+    $localSession = getSessionById($db, $_SESSION['current_session_id']);
+
+    // Verifier que le code correspond (les IDs auto-increment peuvent collisionner entre apps)
+    if ($localSession && isset($_SESSION['current_session_code']) && $localSession['code'] !== $_SESSION['current_session_code']) {
+        $localSession = null;
+    }
+
+    // Si pas trouvee par ID, chercher par code dans cette app
+    if (!$localSession && isset($_SESSION['current_session_code'])) {
+        $localSession = getSessionByCode($db, $_SESSION['current_session_code']);
+        if ($localSession) {
+            $_SESSION['current_session_id'] = $localSession['id'];
+            $_SESSION['current_session_nom'] = $localSession['nom'];
+            $user = getLoggedUser();
+            if ($user) ensureParticipant($db, $localSession['id'], $user);
+        }
+    }
+
+    if ($localSession) {
+        header('Location: ' . $redirectAfterLogin);
+        exit;
+    }
+
+    // Session non trouvee dans cette app - nettoyer pour afficher le formulaire
+    unset($_SESSION['current_session_id'], $_SESSION['current_session_code'],
+          $_SESSION['current_session_nom'], $_SESSION['participant_id']);
 }
 
 // Si connecte mais sans participant_id, deconnecter pour recommencer
