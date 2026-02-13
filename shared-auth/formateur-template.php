@@ -188,8 +188,47 @@ if (isset($_GET['session'])) {
         $stmt->execute([$selectedSession['id']]);
         $localParticipants = $stmt->fetchAll();
 
-        // Enrichir avec les donnees utilisateur de la base partagee
+        // Reconcilier : trouver les utilisateurs qui ont des donnees mais pas d'entree participants
+        $existingUserIds = array_filter(array_map(function($p) { return $p['user_id'] ?? null; }, $localParticipants));
+        $dataTablesStmt = $db->query("SELECT name FROM sqlite_master WHERE type='table' AND name NOT IN ('sessions', 'participants', 'sqlite_sequence')");
+        $dataTables = $dataTablesStmt->fetchAll(PDO::FETCH_COLUMN);
         $sharedDb = getSharedDB();
+
+        foreach ($dataTables as $tableName) {
+            // Verifier que la table a user_id et session_id
+            $columns = array_column($db->query("PRAGMA table_info(" . $tableName . ")")->fetchAll(), 'name');
+            if (!in_array('user_id', $columns) || !in_array('session_id', $columns)) continue;
+
+            // Trouver les user_id qui ont des donnees mais pas d'entree participants
+            $sql = "SELECT DISTINCT user_id FROM " . $tableName . " WHERE session_id = ? AND user_id IS NOT NULL AND user_id != 0";
+            $params = [$selectedSession['id']];
+            if (!empty($existingUserIds)) {
+                $placeholders = implode(',', array_fill(0, count($existingUserIds), '?'));
+                $sql .= " AND user_id NOT IN ($placeholders)";
+                $params = array_merge($params, array_values($existingUserIds));
+            }
+
+            $missingStmt = $db->prepare($sql);
+            $missingStmt->execute($params);
+            $missingUserIds = $missingStmt->fetchAll(PDO::FETCH_COLUMN);
+
+            foreach ($missingUserIds as $missingUserId) {
+                $userStmt = $sharedDb->prepare("SELECT prenom, nom FROM users WHERE id = ?");
+                $userStmt->execute([$missingUserId]);
+                $userData = $userStmt->fetch();
+                $prenom = $userData['prenom'] ?? '';
+                $nom = $userData['nom'] ?? '';
+                try {
+                    $insertStmt = $db->prepare("INSERT INTO participants (session_id, user_id, prenom, nom, created_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)");
+                    $insertStmt->execute([$selectedSession['id'], $missingUserId, $prenom, $nom]);
+                    $newId = $db->lastInsertId();
+                    $localParticipants[] = ['id' => $newId, 'session_id' => $selectedSession['id'], 'user_id' => $missingUserId, 'prenom' => $prenom, 'nom' => $nom, 'created_at' => date('Y-m-d H:i:s')];
+                    $existingUserIds[] = $missingUserId;
+                } catch (PDOException $e) {
+                    // Contrainte UNIQUE ou autre erreur - ignorer
+                }
+            }
+        }
         foreach ($localParticipants as $p) {
             // Si le participant a un user_id, essayer de recuperer les donnees de la base partagee
             if (!empty($p['user_id'])) {
