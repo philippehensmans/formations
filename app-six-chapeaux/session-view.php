@@ -155,6 +155,12 @@ foreach ($allAvis as $a) {
                         Voir tous les avis (<?= $totalAllAvis ?>)
                     </a>
                     <?php endif; ?>
+                    <?php if (isSuperAdmin()): ?>
+                    <button onclick="generateAISummary()" id="aiSummaryBtn" class="bg-amber-500 hover:bg-amber-400 px-3 py-1 rounded text-sm flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                        Synthese IA
+                    </button>
+                    <?php endif; ?>
                     <?= renderLanguageSelector('bg-indigo-500 text-white border-0 rounded px-2 py-1 cursor-pointer text-sm') ?>
                     <button onclick="window.print()" class="bg-indigo-500 hover:bg-indigo-400 px-3 py-1 rounded text-sm">
                         Imprimer
@@ -394,6 +400,39 @@ foreach ($allAvis as $a) {
         </div>
     </main>
 
+    <!-- Modal pour la synthese IA -->
+    <?php if (isSuperAdmin()): ?>
+    <div id="aiModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4 no-print">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center p-6 border-b">
+                <div class="flex items-center gap-3">
+                    <div class="bg-amber-100 p-2 rounded-lg">
+                        <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800">Synthese IA</h3>
+                </div>
+                <button onclick="closeAIModal()" class="p-2 hover:bg-gray-100 rounded-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div id="aiContent" class="p-6 overflow-y-auto flex-1">
+                <!-- Le contenu de la synthese sera insere ici -->
+            </div>
+            <div class="p-4 border-t flex justify-end gap-3">
+                <button onclick="closeAIModal()" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+                    Fermer
+                </button>
+                <button onclick="printAISummary()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                    Imprimer
+                </button>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <!-- Modal pour editer le sujet -->
     <div id="sujetModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4 no-print">
         <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6">
@@ -466,7 +505,10 @@ foreach ($allAvis as $a) {
 
         // Fermer avec Escape
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') closeSujetModal();
+            if (e.key === 'Escape') {
+                closeSujetModal();
+                closeAIModal();
+            }
         });
 
         let currentFilter = 'all';
@@ -538,6 +580,82 @@ foreach ($allAvis as $a) {
                 });
             }
         }
+
+        <?php if (isSuperAdmin()): ?>
+        // ===== Synthese IA =====
+        let aiGenerating = false;
+
+        async function generateAISummary() {
+            if (aiGenerating) return;
+            aiGenerating = true;
+
+            const btn = document.getElementById('aiSummaryBtn');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> Generation...';
+            btn.disabled = true;
+            btn.classList.add('opacity-75');
+
+            // Ouvrir la modal avec un loader
+            document.getElementById('aiModal').classList.remove('hidden');
+            document.getElementById('aiContent').innerHTML = `
+                <div class="flex flex-col items-center justify-center py-16">
+                    <svg class="w-12 h-12 text-amber-500 animate-spin mb-4" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                    <p class="text-gray-600 font-medium">Analyse des avis en cours...</p>
+                    <p class="text-gray-400 text-sm mt-2">Claude analyse les contributions de tous les participants</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch('api/ai-summary.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ session_id: sessionId })
+                });
+                const data = await response.json();
+
+                if (!response.ok || data.error) {
+                    throw new Error(data.error || 'Erreur lors de la generation');
+                }
+
+                document.getElementById('aiContent').innerHTML = data.summary;
+            } catch (e) {
+                document.getElementById('aiContent').innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-16">
+                        <svg class="w-12 h-12 text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                        </svg>
+                        <p class="text-red-600 font-medium">Erreur</p>
+                        <p class="text-gray-500 text-sm mt-2">${e.message}</p>
+                    </div>
+                `;
+            } finally {
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+                btn.classList.remove('opacity-75');
+                aiGenerating = false;
+            }
+        }
+
+        function closeAIModal() {
+            document.getElementById('aiModal').classList.add('hidden');
+        }
+
+        function printAISummary() {
+            const content = document.getElementById('aiContent').innerHTML;
+            const w = window.open('', '_blank');
+            w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Synthese IA - <?= h($session['nom']) ?></title>
+                <script src="https://cdn.tailwindcss.com"><\/script>
+                <style>body{font-family:system-ui,sans-serif;padding:2rem;}</style></head>
+                <body><h1 class="text-2xl font-bold mb-2">Synthese IA - <?= h($session['nom']) ?></h1>
+                <p class="text-gray-500 mb-6">Session <?= $session['code'] ?> | Genere le ${new Date().toLocaleDateString('fr-FR')} a ${new Date().toLocaleTimeString('fr-FR')}</p>
+                ${content}</body></html>`);
+            w.document.close();
+            setTimeout(() => { w.print(); }, 500);
+        }
+        <?php endif; ?>
     </script>
 </body>
 </html>
