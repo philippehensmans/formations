@@ -109,8 +109,8 @@ function initSharedDB($db) {
                    VALUES ('formateur', '$hash', 1, 1, 1, 'Formateur', 'Principal')");
     }
 
-    // Mettre a jour l'utilisateur formateur existant pour qu'il soit super_admin
-    $db->exec("UPDATE users SET is_super_admin = 1 WHERE username = 'formateur'");
+    // Mettre a jour l'utilisateur formateur existant pour qu'il soit admin + super_admin
+    $db->exec("UPDATE users SET is_admin = 1, is_super_admin = 1 WHERE username = 'formateur'");
 }
 
 /**
