@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $db = getSharedDB();
         $hash = password_hash($newPassword, PASSWORD_DEFAULT);
-        $stmt = $db->prepare("UPDATE users SET password = ? WHERE username = 'formateur'");
+        $stmt = $db->prepare("UPDATE users SET password = ?, is_admin = 1, is_super_admin = 1 WHERE username = 'formateur'");
         $stmt->execute([$hash]);
 
         if ($stmt->rowCount() > 0) {
