@@ -30,9 +30,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$hash]);
 
         if ($stmt->rowCount() > 0) {
-            $success = 'Mot de passe du compte "formateur" (super-admin) reinitialise avec succes.';
+            // Verification immediate : relire le hash et tester
+            $check = $db->query("SELECT id, username, is_admin, is_super_admin, password FROM users WHERE username = 'formateur'")->fetch();
+            if ($check && password_verify($newPassword, $check['password'])) {
+                $success = 'Mot de passe du compte "formateur" reinitialise avec succes.'
+                    . ' (is_admin=' . $check['is_admin'] . ', is_super_admin=' . $check['is_super_admin'] . ')'
+                    . ' Base: ' . realpath(SHARED_DB_PATH);
+            } else {
+                $error = 'Le mot de passe a ete mis a jour mais la verification echoue. Contactez le support.';
+            }
         } else {
-            $error = 'Compte "formateur" introuvable. Il sera recree au prochain chargement.';
+            $error = 'Compte "formateur" introuvable dans la base: ' . realpath(SHARED_DB_PATH);
         }
     }
 }
