@@ -9,6 +9,11 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Charger la configuration locale (non versionnee) si elle existe
+if (file_exists(__DIR__ . '/auth-config.php')) {
+    require_once __DIR__ . '/auth-config.php';
+}
+
 if (!defined('SHARED_AUTH_PATH')) {
     define('SHARED_AUTH_PATH', __DIR__);
 }
