@@ -13,6 +13,8 @@ require_once __DIR__ . '/lang.php';
 $error = '';
 $success = '';
 $appColor = $appColor ?? 'blue';
+$logoPath = $logoPath ?? '../logo.png';
+$loginUrl = $loginUrl ?? 'login.php';
 $lang = getCurrentLanguage();
 
 // Si deja connecte, rediriger
@@ -65,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body class="min-h-screen bg-gradient-to-br from-<?= $appColor ?>-600 to-<?= $appColor ?>-800 flex items-center justify-center p-4">
     <div class="w-full max-w-md">
         <div class="text-center mb-8">
-            <img src="../logo.png" alt="Logo" class="h-16 mx-auto mb-4">
+            <img src="<?= h($logoPath) ?>" alt="Logo" class="h-16 mx-auto mb-4">
             <h1 class="text-3xl font-bold text-white mb-2"><?= h($appName) ?></h1>
             <p class="text-<?= $appColor ?>-200"><?= t('auth.create_account') ?></p>
         </div>
@@ -87,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php if ($success): ?>
                 <div class="mb-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
                     <?= h($success) ?>
-                    <a href="login.php" class="block mt-2 font-semibold underline"><?= t('auth.connect') ?></a>
+                    <a href="<?= h($loginUrl) ?>" class="block mt-2 font-semibold underline"><?= t('auth.connect') ?></a>
                 </div>
             <?php else: ?>
             <form method="POST" class="space-y-4">
@@ -175,7 +177,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="mt-6 text-center text-sm text-gray-600">
                 <?= t('auth.already_account') ?>
-                <a href="login.php" class="text-<?= $appColor ?>-600 hover:text-<?= $appColor ?>-800 font-medium">
+                <a href="<?= h($loginUrl) ?>" class="text-<?= $appColor ?>-600 hover:text-<?= $appColor ?>-800 font-medium">
                     <?= t('auth.connect') ?>
                 </a>
             </div>
