@@ -2,14 +2,14 @@
 /**
  * Systeme de traduction multilingue
  *
- * Langues supportees: fr (francais), en (anglais), es (espagnol), sl (slovene)
+ * Langues supportees: fr (francais), en (anglais), es (espagnol), sl (slovene), de (allemand)
  *
  * Usage:
  *   require_once __DIR__ . '/../shared-auth/lang.php';
  *   echo t('login.title'); // Affiche le titre traduit
  */
 
-define('SUPPORTED_LANGUAGES', ['fr', 'en', 'es', 'sl']);
+define('SUPPORTED_LANGUAGES', ['fr', 'en', 'es', 'sl', 'de']);
 define('DEFAULT_LANGUAGE', 'fr');
 
 /**
@@ -114,7 +114,8 @@ function renderLanguageSelector($class = '') {
         'fr' => ['name' => 'Français', 'flag' => '🇫🇷'],
         'en' => ['name' => 'English', 'flag' => '🇬🇧'],
         'es' => ['name' => 'Español', 'flag' => '🇪🇸'],
-        'sl' => ['name' => 'Slovenščina', 'flag' => '🇸🇮']
+        'sl' => ['name' => 'Slovenščina', 'flag' => '🇸🇮'],
+        'de' => ['name' => 'Deutsch', 'flag' => '🇩🇪']
     ];
 
     $html = '<select name="lang" onchange="changeLanguage(this.value)" class="' . htmlspecialchars($class) . '">';
