@@ -99,11 +99,11 @@ function requireAdmin() { requireFormateur(); }
  */
 function getTaskStatuses() {
     return [
-        'todo' => ['label' => 'A faire', 'color' => 'gray', 'icon' => "\xE2\x9C\xA6"],
-        'in_progress' => ['label' => 'En cours', 'color' => 'blue', 'icon' => "\xF0\x9F\x94\xB5"],
-        'review' => ['label' => 'En validation', 'color' => 'amber', 'icon' => "\xF0\x9F\x9F\xA1"],
-        'done' => ['label' => 'Termine', 'color' => 'green', 'icon' => "\xE2\x9C\x85"],
-        'blocked' => ['label' => 'Bloque', 'color' => 'red', 'icon' => "\xF0\x9F\x94\xB4"]
+        'todo' => ['label' => t('pp.task_status_todo'), 'color' => 'gray', 'icon' => "\xE2\x9C\xA6"],
+        'in_progress' => ['label' => t('pp.task_status_in_progress'), 'color' => 'blue', 'icon' => "\xF0\x9F\x94\xB5"],
+        'review' => ['label' => t('pp.task_status_review'), 'color' => 'amber', 'icon' => "\xF0\x9F\x9F\xA1"],
+        'done' => ['label' => t('pp.task_status_done'), 'color' => 'green', 'icon' => "\xE2\x9C\x85"],
+        'blocked' => ['label' => t('pp.task_status_blocked'), 'color' => 'red', 'icon' => "\xF0\x9F\x94\xB4"]
     ];
 }
 
@@ -112,10 +112,10 @@ function getTaskStatuses() {
  */
 function getCheckpointTypes() {
     return [
-        'validation' => ['label' => 'Validation / Go-No Go', 'color' => 'green', 'icon' => "\xE2\x9C\x85"],
-        'revue' => ['label' => 'Revue d\'etape', 'color' => 'blue', 'icon' => "\xF0\x9F\x94\x8D"],
-        'livraison' => ['label' => 'Livraison / Jalon', 'color' => 'purple', 'icon' => "\xF0\x9F\x8E\xAF"],
-        'feedback' => ['label' => 'Feedback / Retour', 'color' => 'amber', 'icon' => "\xF0\x9F\x92\xAC"],
-        'decision' => ['label' => 'Point de decision', 'color' => 'red', 'icon' => "\xE2\x9A\xA1"]
+        'validation' => ['label' => t('pp.checkpoint_type_validation'), 'color' => 'green', 'icon' => "\xE2\x9C\x85"],
+        'revue' => ['label' => t('pp.checkpoint_type_revue'), 'color' => 'blue', 'icon' => "\xF0\x9F\x94\x8D"],
+        'livraison' => ['label' => t('pp.checkpoint_type_livraison'), 'color' => 'purple', 'icon' => "\xF0\x9F\x8E\xAF"],
+        'feedback' => ['label' => t('pp.checkpoint_type_feedback'), 'color' => 'amber', 'icon' => "\xF0\x9F\x92\xAC"],
+        'decision' => ['label' => t('pp.checkpoint_type_decision'), 'color' => 'red', 'icon' => "\xE2\x9A\xA1"]
     ];
 }
