@@ -59,7 +59,7 @@ if ($hasAiConfig) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pilotage de Projet - <?= h($user['prenom']) ?> <?= h($user['nom']) ?></title>
+    <title><?= t('pp.title') ?> - <?= h($user['prenom']) ?> <?= h($user['nom']) ?></title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='3' y='4' width='26' height='24' rx='3' fill='%23059669'/><path d='M8 12h16M8 17h12M8 22h8' stroke='%2334d399' stroke-width='2' stroke-linecap='round'/><circle cx='24' cy='20' r='5' fill='%23fbbf24' stroke='%23059669' stroke-width='1.5'/><path d='M22 20l1.5 1.5L26 18.5' stroke='%23059669' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -89,13 +89,13 @@ if ($hasAiConfig) {
             </div>
             <div class="flex items-center gap-3">
                 <?= renderLanguageSelector('text-sm bg-white/20 text-gray-800 px-2 py-1 rounded border border-gray-300') ?>
-                <button onclick="manualSave()" id="btnSave" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition" style="display:none;">Sauvegarder</button>
-                <span id="saveStatus" class="text-sm px-3 py-1 rounded-full bg-gray-200"><?= $isSubmitted ? 'Soumis' : 'Brouillon' ?></span>
-                <span id="completion" class="text-sm text-gray-600" style="display:none;">Completion: <strong>0%</strong></span>
+                <button onclick="manualSave()" id="btnSave" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition" style="display:none;"><?= t('pp.save') ?></button>
+                <span id="saveStatus" class="text-sm px-3 py-1 rounded-full bg-gray-200"><?= $isSubmitted ? t('pp.submitted') : t('pp.draft') ?></span>
+                <span id="completion" class="text-sm text-gray-600" style="display:none;"><?= t('pp.completion') ?>: <strong>0%</strong></span>
                 <?php if (isFormateur()): ?>
-                <a href="formateur.php" class="text-sm bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded transition">Formateur</a>
+                <a href="formateur.php" class="text-sm bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded transition"><?= t('pp.trainer') ?></a>
                 <?php endif; ?>
-                <a href="logout.php" class="text-sm bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded transition">Deconnexion</a>
+                <a href="logout.php" class="text-sm bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded transition"><?= t('pp.logout') ?></a>
             </div>
         </div>
     </div>
@@ -107,8 +107,8 @@ if ($hasAiConfig) {
         <div id="generatorPanel" class="<?= $hasContent ? 'hidden' : '' ?>">
             <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8 mb-6">
                 <div class="text-center mb-8">
-                    <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-3">Pilotage de Projet</h1>
-                    <p class="text-gray-600 text-lg">Decrivez votre projet et laissez l'IA structurer votre plan</p>
+                    <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-3"><?= t('pp.title') ?></h1>
+                    <p class="text-gray-600 text-lg"><?= t('pp.describe_intro') ?></p>
                 </div>
 
                 <div class="max-w-3xl mx-auto">
@@ -116,12 +116,12 @@ if ($hasAiConfig) {
                         <div class="flex items-start gap-4">
                             <div class="text-4xl">&#x1F916;</div>
                             <div>
-                                <h3 class="font-bold text-emerald-800 text-lg mb-1">Comment ca marche ?</h3>
+                                <h3 class="font-bold text-emerald-800 text-lg mb-1"><?= t('pp.how_it_works') ?></h3>
                                 <ol class="text-gray-700 space-y-1 text-sm list-decimal list-inside">
-                                    <li><strong>Decrivez</strong> votre projet en quelques phrases</li>
-                                    <li><strong>Ajoutez</strong> le contexte et les contraintes (facultatif mais recommande)</li>
-                                    <li><strong>Generez</strong> : l'IA structure votre plan complet</li>
-                                    <li><strong>Affinez</strong> : modifiez librement le plan genere</li>
+                                    <li><?= t('pp.how_step1') ?></li>
+                                    <li><?= t('pp.how_step2') ?></li>
+                                    <li><?= t('pp.how_step3') ?></li>
+                                    <li><?= t('pp.how_step4') ?></li>
                                 </ol>
                             </div>
                         </div>
@@ -129,27 +129,27 @@ if ($hasAiConfig) {
 
                     <div class="space-y-5">
                         <div>
-                            <label class="block text-lg font-semibold text-gray-800 mb-2">&#x1F4DD; Description du projet <span class="text-red-500">*</span></label>
-                            <p class="text-sm text-gray-500 mb-2">Decrivez ce que vous souhaitez accomplir. Plus vous etes precis, meilleur sera le plan genere.</p>
+                            <label class="block text-lg font-semibold text-gray-800 mb-2">&#x1F4DD; <?= t('pp.project_desc_label') ?> <span class="text-red-500">*</span></label>
+                            <p class="text-sm text-gray-500 mb-2"><?= t('pp.project_desc_hint') ?></p>
                             <textarea id="genDescription" rows="5"
                                 class="w-full px-4 py-3 border-2 border-emerald-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-base"
-                                placeholder="Ex: Organiser une journee portes ouvertes pour notre association sportive. Nous voulons attirer de nouveaux adherents et presenter nos activites au public. L'evenement doit inclure des demonstrations, des stands d'information et un moment convivial..."><?= h($analyse['contexte'] ?? '') ?></textarea>
+                                placeholder="<?= h(t('pp.project_desc_placeholder')) ?>"><?= h($analyse['contexte'] ?? '') ?></textarea>
                         </div>
 
                         <div class="grid md:grid-cols-2 gap-5">
                             <div class="bg-blue-50 p-5 rounded-xl border border-blue-200">
-                                <label class="block text-sm font-semibold text-blue-800 mb-2">&#x1F4D8; Contexte <span class="text-blue-400 text-xs">(recommande)</span></label>
-                                <p class="text-xs text-blue-600 mb-2 italic">Dans quel cadre s'inscrit ce projet ? Quel est l'historique ?</p>
+                                <label class="block text-sm font-semibold text-blue-800 mb-2">&#x1F4D8; <?= t('pp.context_label') ?> <span class="text-blue-400 text-xs">(<?= t('pp.recommended') ?>)</span></label>
+                                <p class="text-xs text-blue-600 mb-2 italic"><?= t('pp.context_hint') ?></p>
                                 <textarea id="genContexte" rows="4"
                                     class="w-full px-3 py-2 border rounded-lg text-sm resize-none focus:ring-2 focus:ring-blue-400"
-                                    placeholder="Ex: L'association existe depuis 5 ans, 150 adherents. On a deja fait un evenement similaire il y a 2 ans avec 80 visiteurs..."></textarea>
+                                    placeholder="<?= h(t('pp.context_placeholder')) ?>"></textarea>
                             </div>
                             <div class="bg-amber-50 p-5 rounded-xl border border-amber-200">
-                                <label class="block text-sm font-semibold text-amber-800 mb-2">&#x26A0;&#xFE0F; Contraintes <span class="text-amber-500 text-xs">(recommande)</span></label>
-                                <p class="text-xs text-amber-600 mb-2 italic">Budget, delais, equipe disponible, contraintes techniques...</p>
+                                <label class="block text-sm font-semibold text-amber-800 mb-2">&#x26A0;&#xFE0F; <?= t('pp.constraints_label') ?> <span class="text-amber-500 text-xs">(<?= t('pp.recommended') ?>)</span></label>
+                                <p class="text-xs text-amber-600 mb-2 italic"><?= t('pp.constraints_hint') ?></p>
                                 <textarea id="genContraintes" rows="4"
                                     class="w-full px-3 py-2 border rounded-lg text-sm resize-none focus:ring-2 focus:ring-amber-400"
-                                    placeholder="Ex: Budget de 500 euros, equipe de 8 benevoles, la salle est reservee pour le 15 mars..."></textarea>
+                                    placeholder="<?= h(t('pp.constraints_placeholder')) ?>"></textarea>
                             </div>
                         </div>
 
@@ -157,13 +157,13 @@ if ($hasAiConfig) {
                             <?php if ($hasValidKey): ?>
                             <button onclick="generatePlan()" id="btnGenerate"
                                 class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-10 py-4 rounded-xl font-bold text-lg transition-all shadow-xl hover:shadow-2xl transform hover:scale-105">
-                                &#x2728; Generer mon plan de projet
+                                &#x2728; <?= t('pp.generate_plan') ?>
                             </button>
-                            <p class="text-xs text-gray-400 mt-3">La generation prend environ 15-30 secondes</p>
+                            <p class="text-xs text-gray-400 mt-3"><?= t('pp.generation_time') ?></p>
                             <?php else: ?>
                             <div class="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700">
-                                <strong>Configuration requise :</strong> La cle API Claude n'est pas configuree.
-                                Copiez <code>ai-config.example.php</code> en <code>ai-config.php</code> et ajoutez votre cle API Anthropic.
+                                <strong><?= t('pp.api_key_required') ?></strong>
+                                <?= t('pp.api_key_instructions') ?>
                             </div>
                             <?php endif; ?>
                         </div>
@@ -171,7 +171,7 @@ if ($hasAiConfig) {
                         <?php if ($hasContent): ?>
                         <div class="text-center pt-2">
                             <button onclick="showEditor()" class="text-emerald-600 hover:text-emerald-700 underline text-sm">
-                                Revenir a mon plan existant
+                                <?= t('pp.back_to_plan') ?>
                             </button>
                         </div>
                         <?php endif; ?>
@@ -183,11 +183,11 @@ if ($hasAiConfig) {
             <div id="generatingPanel" class="hidden">
                 <div class="bg-white rounded-xl shadow-2xl p-8 md:p-12 text-center generating">
                     <div class="text-6xl mb-6">&#x1F916;</div>
-                    <h2 class="text-2xl font-bold text-gray-800 mb-3">Generation en cours...</h2>
-                    <p class="text-gray-600 mb-6">L'IA analyse votre description et structure votre plan de projet</p>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-3"><?= t('pp.generating') ?></h2>
+                    <p class="text-gray-600 mb-6"><?= t('pp.generating_desc') ?></p>
                     <div class="flex justify-center items-center gap-4">
                         <div class="spinner border-emerald-600 border-t-emerald-200"></div>
-                        <span id="generatingStatus" class="text-emerald-700 font-medium">Connexion a l'API...</span>
+                        <span id="generatingStatus" class="text-emerald-700 font-medium"><?= t('pp.connecting_api') ?></span>
                     </div>
                     <div class="mt-8 max-w-md mx-auto">
                         <div class="bg-gray-100 rounded-full h-2 overflow-hidden">
@@ -203,10 +203,10 @@ if ($hasAiConfig) {
                     <div class="flex items-start gap-4">
                         <div class="text-3xl">&#x26A0;&#xFE0F;</div>
                         <div>
-                            <h3 class="font-bold text-red-800 text-lg mb-1">Erreur de generation</h3>
+                            <h3 class="font-bold text-red-800 text-lg mb-1"><?= t('pp.generation_error') ?></h3>
                             <p id="errorMessage" class="text-red-700 mb-4"></p>
                             <button onclick="resetGenerator()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition">
-                                Reessayer
+                                <?= t('pp.retry') ?>
                             </button>
                         </div>
                     </div>
@@ -221,13 +221,13 @@ if ($hasAiConfig) {
             <!-- En-tete -->
             <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8 mb-6">
                 <div class="text-center mb-4">
-                    <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Pilotage de Projet</h1>
-                    <p class="text-gray-600 italic">Affinez et completez votre plan de projet</p>
+                    <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2"><?= t('pp.title') ?></h1>
+                    <p class="text-gray-600 italic"><?= t('pp.subtitle') ?></p>
                 </div>
 
                 <div class="flex flex-wrap justify-center gap-3 no-print">
                     <button onclick="showGenerator()" class="text-sm bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-4 py-2 rounded-lg font-medium transition">
-                        &#x1F504; Regenerer un nouveau plan
+                        &#x1F504; <?= t('pp.regenerate') ?>
                     </button>
                 </div>
             </div>
@@ -235,16 +235,16 @@ if ($hasAiConfig) {
             <!-- Onglets -->
             <div class="flex gap-2 mb-4 no-print">
                 <button onclick="switchTab('cadrage')" id="tab-cadrage" class="tab-btn active flex-1 py-3 rounded-lg text-sm font-medium bg-white/30 text-white text-center">
-                    &#x1F3AF; Cadrage
+                    &#x1F3AF; <?= t('pp.tab_cadrage') ?>
                 </button>
                 <button onclick="switchTab('planification')" id="tab-planification" class="tab-btn flex-1 py-3 rounded-lg text-sm font-medium bg-white/30 text-white text-center">
-                    &#x1F4CB; Planification
+                    &#x1F4CB; <?= t('pp.tab_planification') ?>
                 </button>
                 <button onclick="switchTab('checkpoints')" id="tab-checkpoints" class="tab-btn flex-1 py-3 rounded-lg text-sm font-medium bg-white/30 text-white text-center">
-                    &#x2705; Points de controle
+                    &#x2705; <?= t('pp.tab_checkpoints') ?>
                 </button>
                 <button onclick="switchTab('suivi')" id="tab-suivi" class="tab-btn flex-1 py-3 rounded-lg text-sm font-medium bg-white/30 text-white text-center">
-                    &#x1F4D6; Suivi & Lecons
+                    &#x1F4D6; <?= t('pp.tab_suivi') ?>
                 </button>
             </div>
 
@@ -253,47 +253,47 @@ if ($hasAiConfig) {
             <!-- ======================== -->
             <div id="panel-cadrage" class="tab-panel">
                 <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8 mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-2">&#x1F3AF; Cadrage du projet</h2>
-                    <p class="text-gray-600 text-sm mb-6">Verifiez et ajustez les informations generees.</p>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">&#x1F3AF; <?= t('pp.cadrage_title') ?></h2>
+                    <p class="text-gray-600 text-sm mb-6"><?= t('pp.cadrage_desc') ?></p>
 
                     <div class="space-y-5">
                         <div class="bg-emerald-50 p-4 rounded-lg border border-emerald-200">
-                            <label class="block text-lg font-semibold text-gray-800 mb-2">Nom du projet</label>
+                            <label class="block text-lg font-semibold text-gray-800 mb-2"><?= t('pp.project_name') ?></label>
                             <input type="text" id="nomProjet"
                                 class="w-full px-4 py-2 border-2 border-emerald-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-lg font-medium"
-                                placeholder="Ex: Journee portes ouvertes 2026, Refonte du site web..."
+                                placeholder="<?= h(t('pp.project_name_placeholder')) ?>"
                                 value="<?= h($analyse['nom_projet'] ?? '') ?>"
                                 oninput="scheduleAutoSave()">
                         </div>
 
                         <div>
-                            <label class="block text-lg font-semibold text-gray-800 mb-2">Description du projet</label>
+                            <label class="block text-lg font-semibold text-gray-800 mb-2"><?= t('pp.project_desc_editor_label') ?></label>
                             <textarea id="descriptionProjet" rows="3"
                                 class="w-full px-4 py-2 border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-emerald-500"
-                                placeholder="En quelques phrases, decrivez ce que ce projet vise a accomplir..."
+                                placeholder="<?= h(t('pp.project_desc_editor_placeholder')) ?>"
                                 oninput="scheduleAutoSave()"><?= h($analyse['description_projet'] ?? '') ?></textarea>
                         </div>
 
                         <div class="grid md:grid-cols-2 gap-4">
                             <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                                <label class="block text-sm font-semibold text-blue-800 mb-2">&#x1F4D8; Contexte</label>
+                                <label class="block text-sm font-semibold text-blue-800 mb-2">&#x1F4D8; <?= t('pp.context_label') ?></label>
                                 <textarea id="contexte" rows="4"
                                     class="w-full px-3 py-2 border rounded-md text-sm resize-none"
-                                    placeholder="Contexte organisationnel, technique, historique..."
+                                    placeholder="<?= h(t('pp.context_placeholder_editor')) ?>"
                                     oninput="scheduleAutoSave()"><?= h($analyse['contexte'] ?? '') ?></textarea>
                             </div>
                             <div class="bg-amber-50 p-4 rounded-lg border border-amber-200">
-                                <label class="block text-sm font-semibold text-amber-800 mb-2">&#x26A0;&#xFE0F; Contraintes</label>
+                                <label class="block text-sm font-semibold text-amber-800 mb-2">&#x26A0;&#xFE0F; <?= t('pp.constraints_label') ?></label>
                                 <textarea id="contraintes" rows="4"
                                     class="w-full px-3 py-2 border rounded-md text-sm resize-none"
-                                    placeholder="Listez vos contraintes connues..."
+                                    placeholder="<?= h(t('pp.constraints_placeholder_editor')) ?>"
                                     oninput="scheduleAutoSave()"><?= h($analyse['contraintes'] ?? '') ?></textarea>
                             </div>
                         </div>
 
                         <!-- Recommandations AI -->
                         <div id="recommandationsBlock" class="hidden bg-emerald-50 border-2 border-emerald-200 rounded-xl p-5">
-                            <h3 class="font-bold text-emerald-800 mb-2">&#x1F4A1; Recommandations de l'IA</h3>
+                            <h3 class="font-bold text-emerald-800 mb-2">&#x1F4A1; <?= t('pp.ai_recommendations') ?></h3>
                             <p id="recommandationsText" class="text-gray-700 text-sm"></p>
                         </div>
 
@@ -301,17 +301,17 @@ if ($hasAiConfig) {
                         <div>
                             <div class="flex justify-between items-center mb-3">
                                 <div>
-                                    <label class="block text-lg font-semibold text-gray-800">&#x1F3AF; Objectifs du projet</label>
-                                    <p class="text-sm text-gray-500">Formulez des objectifs clairs avec des criteres de succes mesurables</p>
+                                    <label class="block text-lg font-semibold text-gray-800">&#x1F3AF; <?= t('pp.objectives_title') ?></label>
+                                    <p class="text-sm text-gray-500"><?= t('pp.objectives_hint') ?></p>
                                 </div>
                                 <button onclick="addObjectif()" class="no-print bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition shadow-md">
-                                    &#x2795; Ajouter un objectif
+                                    &#x2795; <?= t('pp.add_objective') ?>
                                 </button>
                             </div>
                             <div id="objectifsContainer" class="space-y-3"></div>
                             <div id="objectifEmpty" class="text-center py-8 text-gray-400">
                                 <p class="text-3xl mb-2">&#x1F3AF;</p>
-                                <p>Ajoutez vos objectifs pour cadrer le projet</p>
+                                <p><?= t('pp.objectives_empty') ?></p>
                             </div>
                         </div>
                     </div>
@@ -324,21 +324,21 @@ if ($hasAiConfig) {
             <div id="panel-planification" class="tab-panel" style="display:none;">
                 <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8 mb-6">
                     <div class="mb-6">
-                        <h2 class="text-2xl font-bold text-gray-800 mb-2">&#x1F4CB; Phases & Taches</h2>
-                        <p class="text-gray-600 text-sm">Decoupez votre projet en phases, puis chaque phase en taches concretes avec un responsable.</p>
+                        <h2 class="text-2xl font-bold text-gray-800 mb-2">&#x1F4CB; <?= t('pp.phases_title') ?></h2>
+                        <p class="text-gray-600 text-sm"><?= t('pp.phases_desc') ?></p>
                     </div>
 
                     <div class="flex flex-wrap justify-between items-center mb-4">
-                        <span id="phaseCount" class="text-sm text-gray-500">0 phase(s)</span>
+                        <span id="phaseCount" class="text-sm text-gray-500">0 <?= t('pp.phase_count') ?></span>
                         <button onclick="addPhase()" class="no-print bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition shadow-md">
-                            &#x2795; Ajouter une phase
+                            &#x2795; <?= t('pp.add_phase') ?>
                         </button>
                     </div>
 
                     <div id="phasesContainer" class="space-y-6"></div>
                     <div id="phaseEmpty" class="text-center py-10 text-gray-400">
                         <p class="text-4xl mb-3">&#x1F4CB;</p>
-                        <p>Cliquez sur "Ajouter une phase" pour structurer votre projet</p>
+                        <p><?= t('pp.phases_empty') ?></p>
                     </div>
                 </div>
             </div>
@@ -349,21 +349,21 @@ if ($hasAiConfig) {
             <div id="panel-checkpoints" class="tab-panel" style="display:none;">
                 <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8 mb-6">
                     <div class="mb-6">
-                        <h2 class="text-2xl font-bold text-gray-800 mb-2">&#x2705; Points de controle & Approbations</h2>
-                        <p class="text-gray-600 text-sm">Definissez les jalons ou le projet doit etre valide avant de passer a l'etape suivante.</p>
+                        <h2 class="text-2xl font-bold text-gray-800 mb-2">&#x2705; <?= t('pp.checkpoints_title') ?></h2>
+                        <p class="text-gray-600 text-sm"><?= t('pp.checkpoints_desc') ?></p>
                     </div>
 
                     <div class="flex flex-wrap justify-between items-center mb-4">
-                        <span id="checkpointCount" class="text-sm text-gray-500">0 point(s) de controle</span>
+                        <span id="checkpointCount" class="text-sm text-gray-500">0 <?= t('pp.checkpoint_count') ?></span>
                         <button onclick="addCheckpoint()" class="no-print bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition shadow-md">
-                            &#x2795; Ajouter un point de controle
+                            &#x2795; <?= t('pp.add_checkpoint') ?>
                         </button>
                     </div>
 
                     <div id="checkpointsContainer" class="space-y-4"></div>
                     <div id="checkpointEmpty" class="text-center py-10 text-gray-400">
                         <p class="text-4xl mb-3">&#x2705;</p>
-                        <p>Ajoutez des points de controle pour securiser votre projet</p>
+                        <p><?= t('pp.checkpoints_empty') ?></p>
                     </div>
                 </div>
             </div>
@@ -373,25 +373,25 @@ if ($hasAiConfig) {
             <!-- ======================== -->
             <div id="panel-suivi" class="tab-panel" style="display:none;">
                 <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8 mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-4">&#x1F4D6; Suivi & Lecons apprises</h2>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">&#x1F4D6; <?= t('pp.suivi_title') ?></h2>
 
                     <!-- Stats rapides -->
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                         <div class="bg-emerald-50 rounded-xl p-4 text-center border border-emerald-200">
                             <div id="statObjectifs" class="text-3xl font-bold text-emerald-600">0</div>
-                            <div class="text-sm text-gray-500">Objectifs</div>
+                            <div class="text-sm text-gray-500"><?= t('pp.stat_objectives') ?></div>
                         </div>
                         <div class="bg-blue-50 rounded-xl p-4 text-center border border-blue-200">
                             <div id="statPhases" class="text-3xl font-bold text-blue-600">0</div>
-                            <div class="text-sm text-gray-500">Phases</div>
+                            <div class="text-sm text-gray-500"><?= t('pp.stat_phases') ?></div>
                         </div>
                         <div class="bg-purple-50 rounded-xl p-4 text-center border border-purple-200">
                             <div id="statTaches" class="text-3xl font-bold text-purple-600">0</div>
-                            <div class="text-sm text-gray-500">Taches</div>
+                            <div class="text-sm text-gray-500"><?= t('pp.stat_tasks') ?></div>
                         </div>
                         <div class="bg-amber-50 rounded-xl p-4 text-center border border-amber-200">
                             <div id="statCheckpoints" class="text-3xl font-bold text-amber-600">0</div>
-                            <div class="text-sm text-gray-500">Points de controle</div>
+                            <div class="text-sm text-gray-500"><?= t('pp.stat_checkpoints') ?></div>
                         </div>
                     </div>
 
@@ -399,41 +399,41 @@ if ($hasAiConfig) {
                     <div class="mb-6">
                         <div class="flex justify-between items-center mb-3">
                             <div>
-                                <label class="block text-lg font-semibold text-gray-800">&#x1F4A1; Lecons apprises</label>
-                                <p class="text-sm text-gray-500">Capturez les enseignements au fur et a mesure pour les projets futurs</p>
+                                <label class="block text-lg font-semibold text-gray-800">&#x1F4A1; <?= t('pp.lessons_title') ?></label>
+                                <p class="text-sm text-gray-500"><?= t('pp.lessons_hint') ?></p>
                             </div>
                             <button onclick="addLesson()" class="no-print bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-medium transition shadow-md">
-                                &#x2795; Ajouter une lecon
+                                &#x2795; <?= t('pp.add_lesson') ?>
                             </button>
                         </div>
                         <div id="lessonsContainer" class="space-y-3"></div>
                         <div id="lessonEmpty" class="text-center py-6 text-gray-400">
                             <p class="text-2xl mb-2">&#x1F4A1;</p>
-                            <p class="text-sm">Les lecons apprises enrichissent vos futurs projets</p>
+                            <p class="text-sm"><?= t('pp.lessons_empty') ?></p>
                         </div>
                     </div>
 
                     <div class="mb-6 bg-gradient-to-r from-emerald-50 to-green-50 p-4 rounded-lg">
-                        <label class="block text-lg font-semibold text-gray-800 mb-2">Synthese du projet</label>
+                        <label class="block text-lg font-semibold text-gray-800 mb-2"><?= t('pp.synthese_label') ?></label>
                         <textarea id="synthese" rows="5"
                             class="w-full px-4 py-2 border-2 border-emerald-300 rounded-md focus:ring-2 focus:ring-emerald-500"
-                            placeholder="Vue d'ensemble : ou en est le projet ? Quels sont les points d'attention ? Les prochaines priorites ?"
+                            placeholder="<?= h(t('pp.synthese_placeholder')) ?>"
                             oninput="scheduleAutoSave()"><?= h($analyse['synthese'] ?? '') ?></textarea>
                     </div>
 
                     <div class="mb-6 bg-gray-50 p-4 rounded-lg">
-                        <label class="block text-lg font-semibold text-gray-800 mb-2">&#x270F;&#xFE0F; Notes</label>
+                        <label class="block text-lg font-semibold text-gray-800 mb-2">&#x270F;&#xFE0F; <?= t('pp.notes_label') ?></label>
                         <textarea id="notes" rows="3"
                             class="w-full px-4 py-2 border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-gray-500"
-                            placeholder="Notes libres..."
+                            placeholder="<?= h(t('pp.notes_placeholder')) ?>"
                             oninput="scheduleAutoSave()"><?= h($analyse['notes'] ?? '') ?></textarea>
                     </div>
 
                     <div class="no-print flex flex-wrap gap-3 pt-4 border-t-2 border-gray-200">
-                        <button onclick="submitAnalyse()" class="bg-emerald-600 text-white px-6 py-3 rounded-md hover:bg-emerald-700 transition font-semibold shadow-md">&#x2705; Soumettre</button>
-                        <button onclick="exportToExcel()" class="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition font-semibold shadow-md">&#x1F4CA; Export Excel</button>
-                        <button onclick="exportJSON()" class="bg-gray-500 text-white px-6 py-3 rounded-md hover:bg-gray-600 transition font-semibold shadow-md">&#x1F4E5; JSON</button>
-                        <button onclick="window.print()" class="bg-gray-600 text-white px-6 py-3 rounded-md hover:bg-gray-700 transition font-semibold shadow-md">&#x1F5A8;&#xFE0F; Imprimer</button>
+                        <button onclick="submitAnalyse()" class="bg-emerald-600 text-white px-6 py-3 rounded-md hover:bg-emerald-700 transition font-semibold shadow-md">&#x2705; <?= t('pp.submit') ?></button>
+                        <button onclick="exportToExcel()" class="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition font-semibold shadow-md">&#x1F4CA; <?= t('pp.export_excel') ?></button>
+                        <button onclick="exportJSON()" class="bg-gray-500 text-white px-6 py-3 rounded-md hover:bg-gray-600 transition font-semibold shadow-md">&#x1F4E5; <?= t('pp.export_json') ?></button>
+                        <button onclick="window.print()" class="bg-gray-600 text-white px-6 py-3 rounded-md hover:bg-gray-700 transition font-semibold shadow-md">&#x1F5A8;&#xFE0F; <?= t('pp.print') ?></button>
                     </div>
                 </div>
             </div>
@@ -454,13 +454,92 @@ if ($hasAiConfig) {
     const checkpointTypes = <?= json_encode($checkpointTypes) ?>;
     const hasContent = <?= $hasContent ? 'true' : 'false' ?>;
 
+    // Translations for JS
+    const T = {
+        describe_first: <?= json_encode(t('pp.describe_first')) ?>,
+        analyzing_desc: <?= json_encode(t('pp.analyzing_desc')) ?>,
+        structuring_phases: <?= json_encode(t('pp.structuring_phases')) ?>,
+        finalizing_plan: <?= json_encode(t('pp.finalizing_plan')) ?>,
+        plan_generated: <?= json_encode(t('pp.plan_generated')) ?>,
+        generation_api_error: <?= json_encode(t('pp.generation_api_error')) ?>,
+        connecting_api: <?= json_encode(t('pp.connecting_api')) ?>,
+        confirm_regenerate: <?= json_encode(t('pp.confirm_regenerate')) ?>,
+        confirm_delete_objective: <?= json_encode(t('pp.confirm_delete_objective')) ?>,
+        confirm_delete_phase: <?= json_encode(t('pp.confirm_delete_phase')) ?>,
+        confirm_delete_task: <?= json_encode(t('pp.confirm_delete_task')) ?>,
+        confirm_delete_checkpoint: <?= json_encode(t('pp.confirm_delete_checkpoint')) ?>,
+        confirm_delete_lesson: <?= json_encode(t('pp.confirm_delete_lesson')) ?>,
+        confirm_submit: <?= json_encode(t('pp.confirm_submit')) ?>,
+        project_submitted: <?= json_encode(t('pp.project_submitted')) ?>,
+        saving: <?= json_encode(t('pp.saving')) ?>,
+        saved: <?= json_encode(t('pp.saved')) ?>,
+        error: <?= json_encode(t('pp.error')) ?>,
+        network_error: <?= json_encode(t('pp.network_error')) ?>,
+        completion: <?= json_encode(t('pp.completion')) ?>,
+        phase_count: <?= json_encode(t('pp.phase_count')) ?>,
+        checkpoint_count: <?= json_encode(t('pp.checkpoint_count')) ?>,
+        phase_label: <?= json_encode(t('pp.phase_label')) ?>,
+        phase_name_placeholder: <?= json_encode(t('pp.phase_name_placeholder')) ?>,
+        phase_dates_label: <?= json_encode(t('pp.phase_dates_label')) ?>,
+        phase_dates_placeholder: <?= json_encode(t('pp.phase_dates_placeholder')) ?>,
+        phase_deliverable_label: <?= json_encode(t('pp.phase_deliverable_label')) ?>,
+        phase_deliverable_placeholder: <?= json_encode(t('pp.phase_deliverable_placeholder')) ?>,
+        tasks_label: <?= json_encode(t('pp.tasks_label')) ?>,
+        add_task: <?= json_encode(t('pp.add_task')) ?>,
+        task_placeholder: <?= json_encode(t('pp.task_placeholder')) ?>,
+        responsible_placeholder: <?= json_encode(t('pp.responsible_placeholder')) ?>,
+        tasks_count: <?= json_encode(t('pp.tasks_count')) ?>,
+        no_tasks: <?= json_encode(t('pp.no_tasks')) ?>,
+        objective_placeholder: <?= json_encode(t('pp.objective_placeholder')) ?>,
+        criteria_placeholder: <?= json_encode(t('pp.criteria_placeholder')) ?>,
+        checkpoint_type: <?= json_encode(t('pp.checkpoint_type')) ?>,
+        checkpoint_type_select: <?= json_encode(t('pp.checkpoint_type_select')) ?>,
+        checkpoint_after_phase: <?= json_encode(t('pp.checkpoint_after_phase')) ?>,
+        checkpoint_after_phase_select: <?= json_encode(t('pp.checkpoint_after_phase_select')) ?>,
+        checkpoint_validator: <?= json_encode(t('pp.checkpoint_validator')) ?>,
+        checkpoint_validator_placeholder: <?= json_encode(t('pp.checkpoint_validator_placeholder')) ?>,
+        checkpoint_desc_label: <?= json_encode(t('pp.checkpoint_desc_label')) ?>,
+        checkpoint_desc_placeholder: <?= json_encode(t('pp.checkpoint_desc_placeholder')) ?>,
+        checkpoint_criteria_label: <?= json_encode(t('pp.checkpoint_criteria_label')) ?>,
+        checkpoint_criteria_placeholder: <?= json_encode(t('pp.checkpoint_criteria_placeholder')) ?>,
+        lesson_success: <?= json_encode(t('pp.lesson_success')) ?>,
+        lesson_problem: <?= json_encode(t('pp.lesson_problem')) ?>,
+        lesson_improvement: <?= json_encode(t('pp.lesson_improvement')) ?>,
+        lesson_placeholder: <?= json_encode(t('pp.lesson_placeholder')) ?>,
+        submitted: <?= json_encode(t('pp.submitted')) ?>,
+        excel_cadrage: <?= json_encode(t('pp.excel_cadrage')) ?>,
+        excel_objectives: <?= json_encode(t('pp.excel_objectives')) ?>,
+        excel_objective: <?= json_encode(t('pp.excel_objective')) ?>,
+        excel_success_criteria: <?= json_encode(t('pp.excel_success_criteria')) ?>,
+        excel_recommendations: <?= json_encode(t('pp.excel_recommendations')) ?>,
+        excel_phases_tasks: <?= json_encode(t('pp.excel_phases_tasks')) ?>,
+        excel_phase: <?= json_encode(t('pp.excel_phase')) ?>,
+        excel_dates: <?= json_encode(t('pp.excel_dates')) ?>,
+        excel_deliverable: <?= json_encode(t('pp.excel_deliverable')) ?>,
+        excel_task: <?= json_encode(t('pp.excel_task')) ?>,
+        excel_responsible: <?= json_encode(t('pp.excel_responsible')) ?>,
+        excel_status: <?= json_encode(t('pp.excel_status')) ?>,
+        excel_checkpoints: <?= json_encode(t('pp.excel_checkpoints')) ?>,
+        excel_type: <?= json_encode(t('pp.excel_type')) ?>,
+        excel_after_phase: <?= json_encode(t('pp.excel_after_phase')) ?>,
+        excel_who_validates: <?= json_encode(t('pp.excel_who_validates')) ?>,
+        excel_description: <?= json_encode(t('pp.excel_description')) ?>,
+        excel_criteria: <?= json_encode(t('pp.excel_criteria')) ?>,
+        cadrage_sheet: <?= json_encode(t('pp.cadrage_sheet')) ?>,
+        phases_sheet: <?= json_encode(t('pp.phases_sheet')) ?>,
+        checkpoints_sheet: <?= json_encode(t('pp.checkpoints_sheet')) ?>,
+        project_name: <?= json_encode(t('pp.project_name')) ?>,
+        context_label: <?= json_encode(t('pp.context_label')) ?>,
+        constraints_label: <?= json_encode(t('pp.constraints_label')) ?>,
+    };
+
     // ========================
     // AI GENERATION
     // ========================
     async function generatePlan() {
         const description = document.getElementById('genDescription').value.trim();
         if (!description) {
-            alert('Veuillez decrire votre projet avant de generer le plan.');
+            alert(T.describe_first);
             document.getElementById('genDescription').focus();
             return;
         }
@@ -482,11 +561,11 @@ if ($hasAiConfig) {
             }
             // Update status text
             if (progress > 20 && progress < 40) {
-                document.getElementById('generatingStatus').textContent = 'Analyse de votre description...';
+                document.getElementById('generatingStatus').textContent = T.analyzing_desc;
             } else if (progress > 40 && progress < 60) {
-                document.getElementById('generatingStatus').textContent = 'Structuration des phases...';
+                document.getElementById('generatingStatus').textContent = T.structuring_phases;
             } else if (progress > 60) {
-                document.getElementById('generatingStatus').textContent = 'Finalisation du plan...';
+                document.getElementById('generatingStatus').textContent = T.finalizing_plan;
             }
         }, 800);
 
@@ -502,14 +581,14 @@ if ($hasAiConfig) {
             clearInterval(progressInterval);
 
             if (!response.ok || data.error) {
-                throw new Error(data.error || 'Erreur lors de la generation');
+                throw new Error(data.error || T.generation_api_error);
             }
 
             const plan = data.plan;
 
             // Fill progress to 100%
             document.getElementById('progressBar').style.width = '100%';
-            document.getElementById('generatingStatus').textContent = 'Plan genere avec succes !';
+            document.getElementById('generatingStatus').textContent = T.plan_generated;
 
             // Short delay then apply
             await new Promise(r => setTimeout(r, 600));
@@ -591,7 +670,7 @@ if ($hasAiConfig) {
 
     function showGenerator() {
         if (hasContent || objectifs.length > 0 || phases.length > 0) {
-            if (!confirm('Generer un nouveau plan remplacera les donnees actuelles. Continuer ?')) return;
+            if (!confirm(T.confirm_regenerate)) return;
         }
         document.getElementById('editorPanel').classList.add('hidden');
         document.getElementById('generatorPanel').classList.remove('hidden');
@@ -600,7 +679,7 @@ if ($hasAiConfig) {
         document.getElementById('btnGenerate')?.parentElement && (document.getElementById('btnGenerate').parentElement.style.display = '');
         // Reset progress
         document.getElementById('progressBar').style.width = '5%';
-        document.getElementById('generatingStatus').textContent = 'Connexion a l\'API...';
+        document.getElementById('generatingStatus').textContent = T.connecting_api;
         document.getElementById('btnSave').style.display = 'none';
         document.getElementById('completion').style.display = 'none';
     }
@@ -641,11 +720,11 @@ if ($hasAiConfig) {
                 <div class="flex-1">
                     <input type="text" value="${esc(o.titre || '')}"
                         class="w-full px-3 py-2 border-2 border-emerald-200 rounded-md text-sm font-bold focus:ring-2 focus:ring-emerald-500 mb-2"
-                        placeholder="Objectif (ex: Augmenter la frequentation de 30%)"
+                        placeholder="${esc(T.objective_placeholder)}"
                         oninput="updateObj(${index}, 'titre', this.value)">
                     <input type="text" value="${esc(o.criteres || '')}"
                         class="w-full px-3 py-2 border rounded-md text-sm"
-                        placeholder="Criteres de succes : comment saurez-vous que c'est atteint ?"
+                        placeholder="${esc(T.criteria_placeholder)}"
                         oninput="updateObj(${index}, 'criteres', this.value)">
                 </div>
                 <button onclick="removeObjectif(${index})" class="no-print text-red-400 hover:text-red-600">&#x2716;</button>
@@ -659,7 +738,7 @@ if ($hasAiConfig) {
         renderObjectifs(); scheduleAutoSave();
         setTimeout(() => { document.getElementById('objectifsContainer').lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
     }
-    function removeObjectif(i) { if (!confirm('Supprimer cet objectif ?')) return; objectifs.splice(i, 1); renderObjectifs(); scheduleAutoSave(); }
+    function removeObjectif(i) { if (!confirm(T.confirm_delete_objective)) return; objectifs.splice(i, 1); renderObjectifs(); scheduleAutoSave(); }
     function updateObj(i, f, v) { if (objectifs[i]) { objectifs[i][f] = v; scheduleAutoSave(); } }
 
     // ========================
@@ -690,11 +769,11 @@ if ($hasAiConfig) {
                     <div class="flex-1 grid md:grid-cols-4 gap-2">
                         <div class="md:col-span-2">
                             <input type="text" value="${esc(t.titre || '')}" class="w-full px-2 py-1.5 border rounded text-sm"
-                                placeholder="Description de la tache" oninput="updateTask(${index}, ${ti}, 'titre', this.value)">
+                                placeholder="${esc(T.task_placeholder)}" oninput="updateTask(${index}, ${ti}, 'titre', this.value)">
                         </div>
                         <div>
                             <input type="text" value="${esc(t.responsable || '')}" class="w-full px-2 py-1.5 border rounded text-sm"
-                                placeholder="Responsable" oninput="updateTask(${index}, ${ti}, 'responsable', this.value)">
+                                placeholder="${esc(T.responsible_placeholder)}" oninput="updateTask(${index}, ${ti}, 'responsable', this.value)">
                         </div>
                         <div class="flex gap-2">
                             <select class="flex-1 px-2 py-1.5 border rounded text-sm bg-white"
@@ -713,13 +792,13 @@ if ($hasAiConfig) {
         div.innerHTML = `
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center gap-3">
-                    <span class="bg-emerald-600 text-white text-sm font-bold px-3 py-1 rounded-full">Phase ${index + 1}</span>
+                    <span class="bg-emerald-600 text-white text-sm font-bold px-3 py-1 rounded-full">${T.phase_label} ${index + 1}</span>
                     <input type="text" value="${esc(p.nom || '')}"
                         class="text-lg font-bold text-gray-800 border-0 border-b-2 border-transparent focus:border-emerald-400 focus:outline-none bg-transparent"
-                        placeholder="Nom de la phase..." oninput="updatePhase(${index}, 'nom', this.value)">
+                        placeholder="${esc(T.phase_name_placeholder)}" oninput="updatePhase(${index}, 'nom', this.value)">
                 </div>
                 <div class="flex items-center gap-3">
-                    <span class="text-xs text-gray-500">${doneCount}/${taskCount} taches</span>
+                    <span class="text-xs text-gray-500">${doneCount}/${taskCount} ${T.tasks_count}</span>
                     <div class="w-20 bg-gray-200 rounded-full h-2">
                         <div class="bg-emerald-500 h-2 rounded-full" style="width: ${pct}%"></div>
                     </div>
@@ -728,23 +807,23 @@ if ($hasAiConfig) {
             </div>
             <div class="grid md:grid-cols-2 gap-3 mb-4">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-500 mb-1">Dates / Periode</label>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">${T.phase_dates_label}</label>
                     <input type="text" value="${esc(p.dates || '')}" class="w-full px-3 py-1.5 border rounded text-sm"
-                        placeholder="Ex: Semaines 1-3, Mars 2026..." oninput="updatePhase(${index}, 'dates', this.value)">
+                        placeholder="${esc(T.phase_dates_placeholder)}" oninput="updatePhase(${index}, 'dates', this.value)">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-500 mb-1">Livrable attendu</label>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">${T.phase_deliverable_label}</label>
                     <input type="text" value="${esc(p.livrable || '')}" class="w-full px-3 py-1.5 border rounded text-sm"
-                        placeholder="Qu'est-ce qui doit etre produit a la fin de cette phase ?" oninput="updatePhase(${index}, 'livrable', this.value)">
+                        placeholder="${esc(T.phase_deliverable_placeholder)}" oninput="updatePhase(${index}, 'livrable', this.value)">
                 </div>
             </div>
 
             <div class="mb-2 flex justify-between items-center">
-                <span class="text-xs font-semibold text-gray-500">Taches</span>
-                <button onclick="addTask(${index})" class="no-print text-xs bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-3 py-1 rounded font-medium">+ Tache</button>
+                <span class="text-xs font-semibold text-gray-500">${T.tasks_label}</span>
+                <button onclick="addTask(${index})" class="no-print text-xs bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-3 py-1 rounded font-medium">+ ${T.add_task}</button>
             </div>
             <div class="space-y-2">${tasksHTML}</div>
-            ${taskCount === 0 ? '<p class="text-center text-gray-400 text-sm py-3">Aucune tache — cliquez sur "+ Tache"</p>' : ''}
+            ${taskCount === 0 ? '<p class="text-center text-gray-400 text-sm py-3">' + T.no_tasks + '</p>' : ''}
         `;
         return div;
     }
@@ -754,7 +833,7 @@ if ($hasAiConfig) {
         renderPhases(); scheduleAutoSave();
         setTimeout(() => { document.getElementById('phasesContainer').lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
     }
-    function removePhase(i) { if (!confirm('Supprimer cette phase et ses taches ?')) return; phases.splice(i, 1); renderPhases(); scheduleAutoSave(); }
+    function removePhase(i) { if (!confirm(T.confirm_delete_phase)) return; phases.splice(i, 1); renderPhases(); scheduleAutoSave(); }
     function updatePhase(i, f, v) { if (phases[i]) { phases[i][f] = v; scheduleAutoSave(); } }
 
     function addTask(phaseIndex) {
@@ -763,12 +842,12 @@ if ($hasAiConfig) {
         renderPhases(); scheduleAutoSave();
     }
     function removeTask(pi, ti) {
-        if (!confirm('Supprimer cette tache ?')) return;
+        if (!confirm(T.confirm_delete_task)) return;
         phases[pi].taches.splice(ti, 1); renderPhases(); scheduleAutoSave();
     }
     function updateTask(pi, ti, f, v) { if (phases[pi]?.taches?.[ti]) { phases[pi].taches[ti][f] = v; scheduleAutoSave(); } }
     function updateTaskStatus(pi, ti, v) { if (phases[pi]?.taches?.[ti]) { phases[pi].taches[ti].statut = v; renderPhases(); scheduleAutoSave(); } }
-    function updatePhaseCount() { document.getElementById('phaseCount').textContent = phases.length + ' phase(s)'; }
+    function updatePhaseCount() { document.getElementById('phaseCount').textContent = phases.length + ' ' + T.phase_count; }
 
     // ========================
     // CHECKPOINTS
@@ -789,14 +868,14 @@ if ($hasAiConfig) {
         const borderColor = typeInfo.color ? `border-${typeInfo.color}-400` : 'border-gray-300';
         div.className = `card-hover fade-in bg-white rounded-lg border-l-4 ${borderColor} shadow p-4`;
 
-        let typeOptions = '<option value="">-- Type --</option>';
+        let typeOptions = `<option value="">${T.checkpoint_type_select}</option>`;
         for (const [key, t] of Object.entries(checkpointTypes)) {
             typeOptions += `<option value="${key}"${cp.type === key ? ' selected' : ''}>${t.icon} ${t.label}</option>`;
         }
 
-        let phaseOptions = '<option value="">-- Apres quelle phase ? --</option>';
+        let phaseOptions = `<option value="">${T.checkpoint_after_phase_select}</option>`;
         phases.forEach((p, i) => {
-            phaseOptions += `<option value="${i}"${cp.apres_phase == i ? ' selected' : ''}>${p.nom || 'Phase ' + (i+1)}</option>`;
+            phaseOptions += `<option value="${i}"${cp.apres_phase == i ? ' selected' : ''}>${p.nom || T.phase_label + ' ' + (i+1)}</option>`;
         });
 
         div.innerHTML = `
@@ -804,31 +883,31 @@ if ($hasAiConfig) {
                 <div class="flex-1">
                     <div class="grid md:grid-cols-3 gap-3 mb-3">
                         <div>
-                            <label class="block text-xs font-semibold text-gray-500 mb-1">Type</label>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">${T.checkpoint_type}</label>
                             <select class="w-full px-3 py-2 border rounded-md text-sm bg-white" onchange="updateCP(${index}, 'type', this.value); renderCheckpoints();">${typeOptions}</select>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-gray-500 mb-1">Apres la phase</label>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">${T.checkpoint_after_phase}</label>
                             <select class="w-full px-3 py-2 border rounded-md text-sm bg-white" onchange="updateCP(${index}, 'apres_phase', this.value)">${phaseOptions}</select>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-gray-500 mb-1">Qui valide ?</label>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">${T.checkpoint_validator}</label>
                             <input type="text" value="${esc(cp.validateur || '')}" class="w-full px-3 py-2 border rounded-md text-sm"
-                                placeholder="Ex: Le CA, le coordinateur..."
+                                placeholder="${esc(T.checkpoint_validator_placeholder)}"
                                 oninput="updateCP(${index}, 'validateur', this.value)">
                         </div>
                     </div>
                     <div class="grid md:grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-xs font-semibold text-gray-500 mb-1">Description / Question a trancher</label>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">${T.checkpoint_desc_label}</label>
                             <input type="text" value="${esc(cp.description || '')}" class="w-full px-3 py-2 border rounded-md text-sm"
-                                placeholder="Que doit-on verifier ou decider a ce moment ?"
+                                placeholder="${esc(T.checkpoint_desc_placeholder)}"
                                 oninput="updateCP(${index}, 'description', this.value)">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-gray-500 mb-1">Criteres de validation</label>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">${T.checkpoint_criteria_label}</label>
                             <input type="text" value="${esc(cp.criteres || '')}" class="w-full px-3 py-2 border rounded-md text-sm"
-                                placeholder="Conditions pour passer a la suite"
+                                placeholder="${esc(T.checkpoint_criteria_placeholder)}"
                                 oninput="updateCP(${index}, 'criteres', this.value)">
                         </div>
                     </div>
@@ -844,9 +923,9 @@ if ($hasAiConfig) {
         renderCheckpoints(); scheduleAutoSave();
         setTimeout(() => { document.getElementById('checkpointsContainer').lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
     }
-    function removeCheckpoint(i) { if (!confirm('Supprimer ce point de controle ?')) return; checkpoints.splice(i, 1); renderCheckpoints(); scheduleAutoSave(); }
+    function removeCheckpoint(i) { if (!confirm(T.confirm_delete_checkpoint)) return; checkpoints.splice(i, 1); renderCheckpoints(); scheduleAutoSave(); }
     function updateCP(i, f, v) { if (checkpoints[i]) { checkpoints[i][f] = v; scheduleAutoSave(); } }
-    function updateCheckpointCount() { document.getElementById('checkpointCount').textContent = checkpoints.length + ' point(s) de controle'; }
+    function updateCheckpointCount() { document.getElementById('checkpointCount').textContent = checkpoints.length + ' ' + T.checkpoint_count; }
 
     // ========================
     // LECONS APPRISES
@@ -871,13 +950,13 @@ if ($hasAiConfig) {
                 <div class="flex-1">
                     <div class="flex gap-3 mb-2">
                         <select class="px-2 py-1 border rounded text-sm bg-white" onchange="updateLesson(${index}, 'categorie', this.value); renderLessons();">
-                            <option value="success"${l.categorie === 'success' ? ' selected' : ''}>&#x2705; Ce qui a bien marche</option>
-                            <option value="problem"${l.categorie === 'problem' ? ' selected' : ''}>&#x26A0;&#xFE0F; Probleme rencontre</option>
-                            <option value="improvement"${l.categorie === 'improvement' ? ' selected' : ''}>&#x1F4A1; A ameliorer</option>
+                            <option value="success"${l.categorie === 'success' ? ' selected' : ''}>&#x2705; ${T.lesson_success}</option>
+                            <option value="problem"${l.categorie === 'problem' ? ' selected' : ''}>&#x26A0;&#xFE0F; ${T.lesson_problem}</option>
+                            <option value="improvement"${l.categorie === 'improvement' ? ' selected' : ''}>&#x1F4A1; ${T.lesson_improvement}</option>
                         </select>
                     </div>
                     <input type="text" value="${esc(l.lecon || '')}" class="w-full px-3 py-2 border rounded-md text-sm"
-                        placeholder="Decrivez la lecon apprise..." oninput="updateLesson(${index}, 'lecon', this.value)">
+                        placeholder="${esc(T.lesson_placeholder)}" oninput="updateLesson(${index}, 'lecon', this.value)">
                 </div>
                 <button onclick="removeLesson(${index})" class="no-print text-red-400 hover:text-red-600">&#x2716;</button>
             </div>
@@ -889,7 +968,7 @@ if ($hasAiConfig) {
         lessons.push({ categorie: 'improvement', lecon: '' });
         renderLessons(); scheduleAutoSave();
     }
-    function removeLesson(i) { if (!confirm('Supprimer ?')) return; lessons.splice(i, 1); renderLessons(); scheduleAutoSave(); }
+    function removeLesson(i) { if (!confirm(T.confirm_delete_lesson)) return; lessons.splice(i, 1); renderLessons(); scheduleAutoSave(); }
     function updateLesson(i, f, v) { if (lessons[i]) { lessons[i][f] = v; scheduleAutoSave(); } }
 
     // Stats
@@ -907,7 +986,7 @@ if ($hasAiConfig) {
     // ========================
     function scheduleAutoSave() {
         if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
-        document.getElementById('saveStatus').textContent = 'Sauvegarde...';
+        document.getElementById('saveStatus').textContent = T.saving;
         document.getElementById('saveStatus').className = 'text-sm px-3 py-1 rounded-full bg-yellow-400 text-yellow-900';
         autoSaveTimeout = setTimeout(saveData, 1000);
     }
@@ -929,15 +1008,15 @@ if ($hasAiConfig) {
             const r = await fetch('api/save.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             const res = await r.json();
             if (res.success) {
-                document.getElementById('saveStatus').textContent = 'Sauvegarde';
+                document.getElementById('saveStatus').textContent = T.saved;
                 document.getElementById('saveStatus').className = 'text-sm px-3 py-1 rounded-full bg-green-500 text-white';
-                document.getElementById('completion').innerHTML = 'Completion: <strong>' + res.completion + '%</strong>';
+                document.getElementById('completion').innerHTML = T.completion + ': <strong>' + res.completion + '%</strong>';
             } else {
-                document.getElementById('saveStatus').textContent = 'Erreur';
+                document.getElementById('saveStatus').textContent = T.error;
                 document.getElementById('saveStatus').className = 'text-sm px-3 py-1 rounded-full bg-red-500 text-white';
             }
         } catch (e) {
-            document.getElementById('saveStatus').textContent = 'Erreur reseau';
+            document.getElementById('saveStatus').textContent = T.network_error;
             document.getElementById('saveStatus').className = 'text-sm px-3 py-1 rounded-full bg-red-500 text-white';
         }
     }
@@ -945,15 +1024,15 @@ if ($hasAiConfig) {
     async function manualSave() { if (autoSaveTimeout) clearTimeout(autoSaveTimeout); await saveData(); }
 
     async function submitAnalyse() {
-        if (!confirm('Soumettre votre projet au formateur ?')) return;
+        if (!confirm(T.confirm_submit)) return;
         await saveData();
         try {
             const r = await fetch('api/submit.php', { method: 'POST' });
             const res = await r.json();
             if (res.success) {
-                document.getElementById('saveStatus').textContent = 'Soumis';
+                document.getElementById('saveStatus').textContent = T.submitted;
                 document.getElementById('saveStatus').className = 'text-sm px-3 py-1 rounded-full bg-emerald-500 text-white';
-                alert('Projet soumis !');
+                alert(T.project_submitted);
             }
         } catch (e) { console.error(e); }
     }
@@ -982,26 +1061,26 @@ if ($hasAiConfig) {
         const nom = document.getElementById('nomProjet').value || 'Mon projet';
 
         // Cadrage
-        const cadData = [['CADRAGE — ' + nom], [],
-            ['Nom', nom],
-            ['Description', document.getElementById('descriptionProjet').value],
-            ['Contexte', document.getElementById('contexte').value],
-            ['Contraintes', document.getElementById('contraintes').value],
-            [], ['OBJECTIFS'], ['#', 'Objectif', 'Criteres de succes']
+        const cadData = [[T.excel_cadrage + ' — ' + nom], [],
+            [T.project_name, nom],
+            [T.excel_description, document.getElementById('descriptionProjet').value],
+            [T.context_label, document.getElementById('contexte').value],
+            [T.constraints_label, document.getElementById('contraintes').value],
+            [], [T.excel_objectives], ['#', T.excel_objective, T.excel_success_criteria]
         ];
         objectifs.forEach((o, i) => cadData.push([(i+1).toString(), o.titre || '', o.criteres || '']));
-        if (recommandations) { cadData.push([], ['RECOMMANDATIONS'], [recommandations]); }
+        if (recommandations) { cadData.push([], [T.excel_recommendations], [recommandations]); }
         const ws1 = XLSX.utils.aoa_to_sheet(cadData);
         ws1['!cols'] = [{wch:15},{wch:50},{wch:50}];
 
         // Phases & Taches
-        const ptData = [['PHASES & TACHES'], [], ['Phase', 'Dates', 'Livrable', 'Tache', 'Responsable', 'Statut']];
+        const ptData = [[T.excel_phases_tasks], [], [T.excel_phase, T.excel_dates, T.excel_deliverable, T.excel_task, T.excel_responsible, T.excel_status]];
         phases.forEach((p, i) => {
             if (!p.taches || p.taches.length === 0) {
-                ptData.push([p.nom || 'Phase ' + (i+1), p.dates || '', p.livrable || '', '', '', '']);
+                ptData.push([p.nom || T.phase_label + ' ' + (i+1), p.dates || '', p.livrable || '', '', '', '']);
             } else {
                 p.taches.forEach((t, ti) => {
-                    ptData.push([ti === 0 ? (p.nom || 'Phase ' + (i+1)) : '', ti === 0 ? (p.dates || '') : '', ti === 0 ? (p.livrable || '') : '', t.titre || '', t.responsable || '', taskStatuses[t.statut]?.label || t.statut || '']);
+                    ptData.push([ti === 0 ? (p.nom || T.phase_label + ' ' + (i+1)) : '', ti === 0 ? (p.dates || '') : '', ti === 0 ? (p.livrable || '') : '', t.titre || '', t.responsable || '', taskStatuses[t.statut]?.label || t.statut || '']);
                 });
             }
         });
@@ -1009,17 +1088,17 @@ if ($hasAiConfig) {
         ws2['!cols'] = [{wch:20},{wch:20},{wch:30},{wch:40},{wch:20},{wch:15}];
 
         // Checkpoints
-        const cpData = [['POINTS DE CONTROLE'], [], ['Type', 'Apres phase', 'Qui valide', 'Description', 'Criteres']];
+        const cpData = [[T.excel_checkpoints], [], [T.excel_type, T.excel_after_phase, T.excel_who_validates, T.excel_description, T.excel_criteria]];
         checkpoints.forEach(cp => {
-            const phaseName = phases[cp.apres_phase]?.nom || 'Phase ' + (parseInt(cp.apres_phase)+1) || '';
+            const phaseName = phases[cp.apres_phase]?.nom || T.phase_label + ' ' + (parseInt(cp.apres_phase)+1) || '';
             cpData.push([checkpointTypes[cp.type]?.label || cp.type || '', phaseName, cp.validateur || '', cp.description || '', cp.criteres || '']);
         });
         const ws3 = XLSX.utils.aoa_to_sheet(cpData);
         ws3['!cols'] = [{wch:25},{wch:20},{wch:20},{wch:40},{wch:40}];
 
-        XLSX.utils.book_append_sheet(wb, ws1, 'Cadrage');
-        XLSX.utils.book_append_sheet(wb, ws2, 'Phases & Taches');
-        XLSX.utils.book_append_sheet(wb, ws3, 'Points de controle');
+        XLSX.utils.book_append_sheet(wb, ws1, T.cadrage_sheet);
+        XLSX.utils.book_append_sheet(wb, ws2, T.phases_sheet);
+        XLSX.utils.book_append_sheet(wb, ws3, T.checkpoints_sheet);
         XLSX.writeFile(wb, 'projet_' + nom.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '_' + new Date().toISOString().split('T')[0] + '.xlsx');
     }
 
