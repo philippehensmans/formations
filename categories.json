@@ -66,6 +66,7 @@
         "app-whiteboard": ["collaboration", "creativite"],
         "app-personas": ["communication", "analyse_strategique"],
         "app-comm-plan": ["communication", "gestion_projet"],
-        "app-pilotage-projet": ["gestion_projet", "collaboration"]
+        "app-pilotage-projet": ["gestion_projet", "collaboration"],
+        "app-craintes-attentes": ["evaluation", "collaboration"]
     }
 }
