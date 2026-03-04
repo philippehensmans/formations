@@ -16,6 +16,18 @@ $categoriesConfig = file_exists(__DIR__ . '/categories.php')
 $categoriesDef = $categoriesConfig['categories'] ?? [];
 $appCategories = $categoriesConfig['apps'] ?? [];
 
+// Applications externes (hebergees ailleurs)
+$externalApps = [
+    'ext-prompt-asbl' => [
+        'title' => 'Prompt ASBL',
+        'description' => 'Exercice de prompting IA applique au contexte des ASBL et associations',
+        'url' => 'https://www.k1m.be/exercices/PromptASBL',
+        'color' => 'violet',
+        'categories' => ['intelligence_artificielle', 'creativite'],
+        'icon' => '🤖'
+    ]
+];
+
 // Detecter automatiquement toutes les applications
 function getApplications() {
     $apps = [];
@@ -43,6 +55,14 @@ foreach ($appCategories as $appKey => $cats) {
         $categoryApps[$cat][] = $appKey;
     }
 }
+// Ajouter les apps externes aux categories
+foreach ($externalApps as $extKey => $extApp) {
+    foreach ($extApp['categories'] as $cat) {
+        $categoryApps[$cat][] = $extKey;
+    }
+}
+
+$totalAppCount = count($applications) + count($externalApps);
 
 // Determiner quelles categories ont des apps existantes
 $activeCategories = [];
@@ -50,7 +70,7 @@ foreach ($categoriesDef as $catKey => $catDef) {
     if (!empty($categoryApps[$catKey])) {
         $count = 0;
         foreach ($categoryApps[$catKey] as $appKey) {
-            if (in_array($appKey, $applications)) $count++;
+            if (in_array($appKey, $applications) || isset($externalApps[$appKey])) $count++;
         }
         if ($count > 0) {
             $activeCategories[$catKey] = array_merge($catDef, ['count' => $count]);
@@ -129,7 +149,7 @@ $restrictedApps = getRestrictedApps();
         <div class="mb-6 text-center">
             <p class="text-gray-600 text-lg"><?= t('home.description') ?></p>
             <p class="text-gray-500 mt-2">
-                <span id="visibleCount"><?= count($applications) ?></span> / <?= count($applications) ?> <?= t('home.apps_available') ?>
+                <span id="visibleCount"><?= $totalAppCount ?></span> / <?= $totalAppCount ?> <?= t('home.apps_available') ?>
             </p>
         </div>
 
@@ -140,7 +160,7 @@ $restrictedApps = getRestrictedApps();
                 <button type="button" onclick="filterByCategory('all')" id="cat-btn-all"
                     class="cat-btn active inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-md border-2 border-indigo-500 text-indigo-700 font-medium text-sm">
                     Toutes
-                    <span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-0.5 rounded-full"><?= count($applications) ?></span>
+                    <span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-0.5 rounded-full"><?= $totalAppCount ?></span>
                 </button>
                 <?php foreach ($activeCategories as $catKey => $catDef): ?>
                 <button type="button" onclick="filterByCategory('<?= $catKey ?>')" id="cat-btn-<?= $catKey ?>"
@@ -207,6 +227,48 @@ $restrictedApps = getRestrictedApps();
                         <?= t('home.open_app') ?>
                         <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </span>
+                </div>
+            </a>
+            <?php endforeach; ?>
+
+            <?php // Applications externes
+            foreach ($externalApps as $extKey => $extApp):
+                $cats = $extApp['categories'];
+                $catsJson = htmlspecialchars(json_encode($cats), ENT_QUOTES);
+                $color = $extApp['color'] ?? 'indigo';
+            ?>
+            <a href="<?= htmlspecialchars($extApp['url']) ?>" target="_blank"
+               class="app-card bg-white rounded-xl shadow-md overflow-hidden"
+               data-categories="<?= $catsJson ?>"
+               data-app="<?= $extKey ?>">
+                <div class="h-2 bg-<?= $color ?>-500"></div>
+                <div class="p-6">
+                    <div class="flex items-start justify-between gap-2">
+                        <h2 class="text-xl font-bold text-gray-800 mb-2"><?= htmlspecialchars($extApp['title']) ?></h2>
+                        <span class="shrink-0 px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-bold border border-blue-200" title="Application externe">&#x1F517; Externe</span>
+                    </div>
+                    <?php if (!empty($extApp['description'])): ?>
+                        <p class="text-gray-600 text-sm mb-3"><?= htmlspecialchars($extApp['description']) ?></p>
+                    <?php endif; ?>
+                    <?php if (!empty($cats)): ?>
+                    <div class="flex flex-wrap gap-1">
+                        <?php foreach ($cats as $cat):
+                            if (isset($categoriesDef[$cat])):
+                        ?>
+                        <span class="cat-badge inline-flex items-center gap-1 px-2 py-0.5 bg-<?= $categoriesDef[$cat]['color'] ?>-50 text-<?= $categoriesDef[$cat]['color'] ?>-700 rounded text-xs border border-<?= $categoriesDef[$cat]['color'] ?>-200">
+                            <?= $categoriesDef[$cat]['icon'] ?> <?= htmlspecialchars($categoriesDef[$cat]['label']) ?>
+                        </span>
+                        <?php endif; endforeach; ?>
+                    </div>
+                    <?php endif; ?>
+                </div>
+                <div class="px-6 pb-4">
+                    <span class="inline-flex items-center text-<?= $color ?>-600 text-sm font-medium">
+                        <?= t('home.open_app') ?>
+                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
                         </svg>
                     </span>
                 </div>
