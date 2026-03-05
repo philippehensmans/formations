@@ -5,8 +5,8 @@
  */
 require_once __DIR__ . '/config.php';
 
-if (!isFormateur()) {
-    header('Location: login.php');
+if (!isLoggedIn() || !isFormateur()) {
+    header('Location: formateur.php');
     exit;
 }
 
