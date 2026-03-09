@@ -153,6 +153,74 @@ $etapeCourante = $mesure['etape_courante'] ?: 1;
         </div>
     </div>
 
+    <!-- Introduction Mesure d'Impact -->
+    <div class="max-w-7xl mx-auto px-4 pt-6">
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <button onclick="document.getElementById('impactIntro').classList.toggle('hidden'); this.querySelector('.arrow').classList.toggle('rotate-180')"
+                    class="w-full flex items-center justify-between p-5 hover:bg-gray-50 transition">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">📊</span>
+                    <h2 class="text-lg font-bold text-gray-800">Pourquoi et comment mesurer son impact social ?</h2>
+                </div>
+                <span class="arrow transition-transform duration-200 text-gray-400">▼</span>
+            </button>
+            <div id="impactIntro" class="px-5 pb-5">
+                <p class="text-gray-600 mb-4">
+                    Mesurer l'impact social, c'est aller au-dela du simple comptage d'activites pour comprendre les <strong>changements reels</strong> produits par vos actions sur les personnes et la societe. C'est un outil essentiel pour piloter, ameliorer et communiquer sur vos projets.
+                </p>
+
+                <div class="grid sm:grid-cols-3 gap-4 mb-4">
+                    <div class="rounded-lg p-4 border-l-4 border-blue-500 bg-blue-50">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-sm">O</span>
+                            <span class="font-bold text-blue-700">Output</span>
+                        </div>
+                        <p class="text-sm text-gray-700 font-medium mb-1">Produit / Realisation</p>
+                        <p class="text-xs text-gray-600">Ce que vous avez fait concretement : nombre de participants, ateliers organises, documents produits...</p>
+                        <p class="text-xs text-blue-600 mt-2 italic">"45 jeunes ont participe aux ateliers"</p>
+                    </div>
+                    <div class="rounded-lg p-4 border-l-4 border-emerald-500 bg-emerald-50">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-sm">O</span>
+                            <span class="font-bold text-emerald-700">Outcome</span>
+                        </div>
+                        <p class="text-sm text-gray-700 font-medium mb-1">Effet / Changement</p>
+                        <p class="text-xs text-gray-600">Ce qui a change chez les beneficiaires : nouvelles competences, comportements, attitudes...</p>
+                        <p class="text-xs text-emerald-600 mt-2 italic">"Les participants se sentent plus a l'aise pour prendre la parole"</p>
+                    </div>
+                    <div class="rounded-lg p-4 border-l-4 border-purple-500 bg-purple-50">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center font-bold text-sm">I</span>
+                            <span class="font-bold text-purple-700">Impact</span>
+                        </div>
+                        <p class="text-sm text-gray-700 font-medium mb-1">Changement societal</p>
+                        <p class="text-xs text-gray-600">Le changement durable a grande echelle sur la societe, au-dela de vos seuls beneficiaires.</p>
+                        <p class="text-xs text-purple-600 mt-2 italic">"Reduction du decrochage scolaire dans le quartier"</p>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 rounded-lg p-4 border mb-3">
+                    <p class="text-sm text-gray-700 mb-2">
+                        <strong>La chaine de valeur :</strong> vos <span class="text-blue-600 font-medium">activites</span> produisent des <span class="text-blue-600 font-medium">outputs</span>, qui generent des <span class="text-emerald-600 font-medium">outcomes</span> (changements chez les personnes), contribuant a un <span class="text-purple-600 font-medium">impact</span> societal plus large.
+                    </p>
+                    <div class="flex items-center justify-center gap-2 text-sm font-medium py-2">
+                        <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded">Activites</span>
+                        <span class="text-gray-400">→</span>
+                        <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded">Outputs</span>
+                        <span class="text-gray-400">→</span>
+                        <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded">Outcomes</span>
+                        <span class="text-gray-400">→</span>
+                        <span class="bg-purple-100 text-purple-700 px-3 py-1 rounded">Impact</span>
+                    </div>
+                </div>
+
+                <p class="text-gray-500 text-sm">
+                    Cet exercice en <strong>5 etapes</strong> vous guide pour : <em>classifier</em> des enonces, construire votre <em>theorie du changement</em>, definir des <em>indicateurs</em>, planifier la <em>collecte de donnees</em>, et produire votre <em>cadre de mesure</em> complet.
+                </p>
+            </div>
+        </div>
+    </div>
+
     <!-- Main content -->
     <main class="max-w-7xl mx-auto px-4 py-6">
         <?php if ($isSubmitted): ?>
