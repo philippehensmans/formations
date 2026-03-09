@@ -71,29 +71,27 @@ function initDatabase($db) {
         try { $db->exec($sql); } catch (Exception $e) { /* Colonne existe deja */ }
     }
 
-    // Table des cartes (adapté à la structure existante)
-    $db->exec("CREATE TABLE IF NOT EXISTS cartes (
+    // Table des cartes projet
+    $db->exec("CREATE TABLE IF NOT EXISTS cartes_projet (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
-        session_id INTEGER,
-        titre_projet TEXT,
-        carte_data TEXT DEFAULT '{}',
-        is_shared INTEGER DEFAULT 0,
+        session_id INTEGER NOT NULL,
+        titre TEXT DEFAULT '',
+        objectifs TEXT DEFAULT '',
+        public_cible TEXT DEFAULT '',
+        territoire TEXT DEFAULT '',
+        partenaires TEXT DEFAULT '[]',
+        ressources_humaines TEXT DEFAULT '',
+        ressources_materielles TEXT DEFAULT '',
+        ressources_financieres TEXT DEFAULT '',
+        calendrier TEXT DEFAULT '',
+        resultats TEXT DEFAULT '',
+        notes TEXT DEFAULT '',
+        completion_percent INTEGER DEFAULT 0,
+        is_submitted INTEGER DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )");
-
-    // Migration: ajouter session_id si la colonne n'existe pas
-    try {
-        $db->exec("ALTER TABLE cartes ADD COLUMN session_id INTEGER");
-    } catch (Exception $e) {
-        // Colonne existe deja
-    }
-    try {
-        $db->exec("ALTER TABLE cartes ADD COLUMN is_shared INTEGER DEFAULT 0");
-    } catch (Exception $e) {
-        // Colonne existe deja
-    }
 }
 
 /**
