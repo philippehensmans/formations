@@ -71,6 +71,7 @@ $families = getPublicFamilies();
                 <?php if (isFormateur()): ?>
                 <a href="formateur.php" class="text-sm bg-rose-600 hover:bg-rose-500 text-white px-3 py-1 rounded transition">Formateur</a>
                 <?php endif; ?>
+                <?= renderHomeLink() ?>
                 <a href="logout.php" class="text-sm bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded transition">Deconnexion</a>
             </div>
         </div>

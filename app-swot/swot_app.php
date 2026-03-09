@@ -578,6 +578,7 @@ $currentLang = getCurrentLanguage();
             <?php if (isFormateur()): ?>
             <a href="formateur.php" class="btn-logout" style="background: #10b981; color: white; text-decoration: none;"><?= t('trainer.title') ?></a>
             <?php endif; ?>
+            <a href="../" class="btn-logout" style="background: #6366f1; color: white; text-decoration: none;"><?= t('common.all_apps') ?? 'Toutes les apps' ?></a>
             <button class="btn-logout" onclick="logout()"><?= t('swot.logout') ?></button>
         </div>
     </div>

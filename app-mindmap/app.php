@@ -164,7 +164,8 @@ foreach ($participantIds as $pid) {
             <?php if (isFormateur()): ?>
             <a href="formateur.php" class="text-sm text-violet-600 hover:text-violet-800"><?= t('trainer.title') ?></a>
             <?php endif; ?>
-            <a href="logout.php" class="text-sm text-gray-500 hover:text-gray-700"><?= t('mindmap.logout') ?></a>
+            <?= renderHomeLink() ?>
+                <a href="logout.php" class="text-sm text-gray-500 hover:text-gray-700"><?= t('mindmap.logout') ?></a>
         </div>
     </header>
     <?= renderLanguageScript() ?>

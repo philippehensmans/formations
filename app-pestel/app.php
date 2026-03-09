@@ -88,6 +88,7 @@ function getEmptyPestel() {
                 <?php if (isFormateur()): ?>
                 <a href="formateur.php" class="text-sm bg-purple-600 hover:bg-purple-500 text-white px-3 py-1 rounded transition"><?= t('trainer.title') ?></a>
                 <?php endif; ?>
+                <?= renderHomeLink() ?>
                 <a href="logout.php" class="text-sm bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded transition"><?= t('auth.logout') ?></a>
             </div>
         </div>

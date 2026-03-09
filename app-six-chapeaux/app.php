@@ -68,6 +68,7 @@ $avisPartages = count(array_filter($avis, fn($a) => $a['is_shared'] == 1));
                 <?php if (isFormateur()): ?>
                 <a href="formateur.php" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg">Formateur</a>
                 <?php endif; ?>
+                <?= renderHomeLink() ?>
                 <a href="logout.php" class="bg-red-500/80 hover:bg-red-600 px-4 py-2 rounded-lg">Deconnexion</a>
             </div>
         </div>

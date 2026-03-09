@@ -548,7 +548,8 @@ $project['sprint'] = $project['sprint'] ?: '{"number":1,"start":"","end":"","goa
             <?php if (isFormateur()): ?>
             <a href="formateur.php" style="background: rgba(16,185,129,0.3);"><?= t('trainer.title') ?></a>
             <?php endif; ?>
-            <a href="logout.php"><?= t('auth.logout') ?></a>
+            <?= renderHomeLink() ?>
+                <a href="logout.php"><?= t('auth.logout') ?></a>
         </div>
     </div>
     <?= renderLanguageScript() ?>

@@ -424,7 +424,8 @@ $user = getCurrentUser();
                 <label for="shareToggle"><?= t('problemtree.share_trainer') ?></label>
             </div>
             <div class="save-status" id="saveStatus"><?= t('common.loading') ?></div>
-            <a href="logout.php"><?= t('auth.logout') ?></a>
+            <?= renderHomeLink() ?>
+                <a href="logout.php"><?= t('auth.logout') ?></a>
         </div>
 
         <div class="container">

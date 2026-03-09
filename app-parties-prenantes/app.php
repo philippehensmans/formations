@@ -119,6 +119,7 @@ $isSubmitted = ($carto['is_submitted'] ?? 0) == 1;
                 <?php if (isFormateur()): ?>
                 <a href="formateur.php" class="text-sm bg-blue-600 hover:bg-blue-500 px-3 py-1 rounded transition"><?= t('trainer.title') ?></a>
                 <?php endif; ?>
+                <?= renderHomeLink() ?>
                 <a href="logout.php" class="text-sm bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded transition"><?= t('auth.logout') ?></a>
             </div>
         </div>

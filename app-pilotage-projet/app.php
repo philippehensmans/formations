@@ -95,6 +95,7 @@ if ($hasAiConfig) {
                 <?php if (isFormateur()): ?>
                 <a href="formateur.php" class="text-sm bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded transition"><?= t('pp.trainer') ?></a>
                 <?php endif; ?>
+                <?= renderHomeLink() ?>
                 <a href="logout.php" class="text-sm bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded transition"><?= t('pp.logout') ?></a>
             </div>
         </div>

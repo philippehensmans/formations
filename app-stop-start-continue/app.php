@@ -85,7 +85,8 @@ $isSubmitted = ($retro['is_shared'] ?? 0) == 1;
                         <?= t('trainer.title') ?>
                     </a>
                     <?php endif; ?>
-                    <a href="logout.php" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm">
+                    <?= renderHomeLink() ?>
+                <a href="logout.php" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm">
                         <?= t('ssc.logout') ?>
                     </a>
                 </div>
