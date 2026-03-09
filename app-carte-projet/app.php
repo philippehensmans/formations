@@ -2,29 +2,37 @@
 /**
  * Interface de travail - Carte d'identite du projet
  */
-require_once 'config/database.php';
-requireParticipant();
+require_once __DIR__ . '/config.php';
 
-$db = getDB();
-$participant = getCurrentParticipant();
-
-// Verifier que le participant existe
-if (!$participant) {
-    session_destroy();
-    header('Location: index.php');
+// Verifier l'authentification
+if (!isLoggedIn() || !isset($_SESSION['current_session_id'])) {
+    header('Location: login.php');
     exit;
 }
 
+$db = getDB();
+$user = getLoggedUser();
+
+if (!$user) {
+    session_destroy();
+    header('Location: login.php');
+    exit;
+}
+
+$sessionId = validateCurrentSession($db);
+if (!$sessionId) { header('Location: login.php'); exit; }
+$sessionNom = $_SESSION['current_session_nom'] ?? '';
+
 // Charger la carte projet
-$stmt = $db->prepare("SELECT * FROM cartes_projet WHERE participant_id = ?");
-$stmt->execute([$participant['id']]);
+$stmt = $db->prepare("SELECT * FROM cartes_projet WHERE user_id = ? AND session_id = ?");
+$stmt->execute([$user['id'], $sessionId]);
 $carte = $stmt->fetch();
 
 if (!$carte) {
-    $stmt = $db->prepare("INSERT INTO cartes_projet (participant_id, session_id) VALUES (?, ?)");
-    $stmt->execute([$participant['id'], $participant['session_id']]);
-    $stmt = $db->prepare("SELECT * FROM cartes_projet WHERE participant_id = ?");
-    $stmt->execute([$participant['id']]);
+    $stmt = $db->prepare("INSERT INTO cartes_projet (user_id, session_id) VALUES (?, ?)");
+    $stmt->execute([$user['id'], $sessionId]);
+    $stmt = $db->prepare("SELECT * FROM cartes_projet WHERE user_id = ? AND session_id = ?");
+    $stmt->execute([$user['id'], $sessionId]);
     $carte = $stmt->fetch();
 }
 
@@ -36,7 +44,7 @@ $isSubmitted = $carte['is_submitted'] == 1;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= t('carte.title') ?> - <?= sanitize($participant['prenom']) ?> <?= sanitize($participant['nom']) ?></title>
+    <title><?= t('carte.title') ?> - <?= h($user['prenom']) ?> <?= h($user['nom']) ?></title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='4' y='4' width='24' height='24' rx='3' fill='%23fff' stroke='%230ea5e9' stroke-width='2'/><rect x='8' y='8' width='8' height='6' fill='%230ea5e9'/><line x1='8' y1='18' x2='24' y2='18' stroke='%23cbd5e1' stroke-width='2'/><line x1='8' y1='22' x2='20' y2='22' stroke='%23cbd5e1' stroke-width='2'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -55,8 +63,8 @@ $isSubmitted = $carte['is_submitted'] == 1;
             <div>
                 <h1 class="font-bold"><?= t('carte.title') ?></h1>
                 <p class="text-purple-200 text-sm">
-                    <?= sanitize($participant['prenom']) ?> <?= sanitize($participant['nom']) ?>
-                    | Session: <?= sanitize($participant['session_code']) ?>
+                    <?= h($user['prenom']) ?> <?= h($user['nom']) ?>
+                    | Session: <?= h($sessionNom) ?>
                 </p>
             </div>
             <div class="flex items-center gap-3">
@@ -99,9 +107,8 @@ $isSubmitted = $carte['is_submitted'] == 1;
                 <label class="block text-lg font-semibold text-gray-800 mb-2">
                     Titre du projet
                 </label>
-                <input type="text" id="titre" value="<?= sanitize($carte['titre']) ?>"
-                       
-                       class="w-full px-4 py-2 border-2 border-purple-200 rounded-md focus:ring-2 focus:ring-purple-500 "
+                <input type="text" id="titre" value="<?= h($carte['titre']) ?>"
+                       class="w-full px-4 py-2 border-2 border-purple-200 rounded-md focus:ring-2 focus:ring-purple-500"
                        placeholder="Indiquez le titre de votre projet...">
             </div>
 
@@ -111,9 +118,9 @@ $isSubmitted = $carte['is_submitted'] == 1;
                     Objectifs du projet
                 </label>
                 <p class="text-sm text-gray-600 mb-2 italic">Que cherche-t-on a atteindre ? Quelles transformations souhaitees ?</p>
-                <textarea id="objectifs" rows="4" 
-                          class="w-full px-4 py-2 border-2 border-blue-200 rounded-md focus:ring-2 focus:ring-blue-500 "
-                          placeholder="Decrivez les objectifs principaux de votre projet..."><?= sanitize($carte['objectifs']) ?></textarea>
+                <textarea id="objectifs" rows="4"
+                          class="w-full px-4 py-2 border-2 border-blue-200 rounded-md focus:ring-2 focus:ring-blue-500"
+                          placeholder="Decrivez les objectifs principaux de votre projet..."><?= h($carte['objectifs']) ?></textarea>
             </div>
 
             <!-- Public cible -->
@@ -122,9 +129,9 @@ $isSubmitted = $carte['is_submitted'] == 1;
                     Public(s) cible(s)
                 </label>
                 <p class="text-sm text-gray-600 mb-2 italic">A qui s'adresse le projet ? (age, situation, territoire, nombre estime, etc.)</p>
-                <textarea id="publicCible" rows="3" 
-                          class="w-full px-4 py-2 border-2 border-green-200 rounded-md focus:ring-2 focus:ring-green-500 "
-                          placeholder="Decrivez le(s) public(s) vise(s)..."><?= sanitize($carte['public_cible']) ?></textarea>
+                <textarea id="publicCible" rows="3"
+                          class="w-full px-4 py-2 border-2 border-green-200 rounded-md focus:ring-2 focus:ring-green-500"
+                          placeholder="Decrivez le(s) public(s) vise(s)..."><?= h($carte['public_cible']) ?></textarea>
             </div>
 
             <!-- Zone d'action -->
@@ -132,9 +139,8 @@ $isSubmitted = $carte['is_submitted'] == 1;
                 <label class="block text-lg font-semibold text-gray-800 mb-2">
                     Zone d'action / Territoire concerne
                 </label>
-                <input type="text" id="territoire" value="<?= sanitize($carte['territoire']) ?>"
-                       
-                       class="w-full px-4 py-2 border-2 border-yellow-200 rounded-md focus:ring-2 focus:ring-yellow-500 "
+                <input type="text" id="territoire" value="<?= h($carte['territoire']) ?>"
+                       class="w-full px-4 py-2 border-2 border-yellow-200 rounded-md focus:ring-2 focus:ring-yellow-500"
                        placeholder="Indiquez la zone geographique...">
             </div>
 
@@ -172,23 +178,20 @@ $isSubmitted = $carte['is_submitted'] == 1;
                 <div class="space-y-3">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Humaines :</label>
-                        <input type="text" id="ressourcesHumaines" value="<?= sanitize($carte['ressources_humaines']) ?>"
-                               
-                               class="w-full px-3 py-2 border-2 border-indigo-200 rounded-md focus:ring-2 focus:ring-indigo-500 "
+                        <input type="text" id="ressourcesHumaines" value="<?= h($carte['ressources_humaines']) ?>"
+                               class="w-full px-3 py-2 border-2 border-indigo-200 rounded-md focus:ring-2 focus:ring-indigo-500"
                                placeholder="Equipe, benevoles, competences disponibles...">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Materielles :</label>
-                        <input type="text" id="ressourcesMaterielles" value="<?= sanitize($carte['ressources_materielles']) ?>"
-                               
-                               class="w-full px-3 py-2 border-2 border-indigo-200 rounded-md focus:ring-2 focus:ring-indigo-500 "
+                        <input type="text" id="ressourcesMaterielles" value="<?= h($carte['ressources_materielles']) ?>"
+                               class="w-full px-3 py-2 border-2 border-indigo-200 rounded-md focus:ring-2 focus:ring-indigo-500"
                                placeholder="Locaux, equipements, materiel...">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Financieres :</label>
-                        <input type="text" id="ressourcesFinancieres" value="<?= sanitize($carte['ressources_financieres']) ?>"
-                               
-                               class="w-full px-3 py-2 border-2 border-indigo-200 rounded-md focus:ring-2 focus:ring-indigo-500 "
+                        <input type="text" id="ressourcesFinancieres" value="<?= h($carte['ressources_financieres']) ?>"
+                               class="w-full px-3 py-2 border-2 border-indigo-200 rounded-md focus:ring-2 focus:ring-indigo-500"
                                placeholder="Budget, subventions, sources de financement...">
                     </div>
                 </div>
@@ -199,9 +202,8 @@ $isSubmitted = $carte['is_submitted'] == 1;
                 <label class="block text-lg font-semibold text-gray-800 mb-2">
                     Calendrier previsionnel / Periode de mise en oeuvre
                 </label>
-                <input type="text" id="calendrier" value="<?= sanitize($carte['calendrier']) ?>"
-                       
-                       class="w-full px-4 py-2 border-2 border-orange-200 rounded-md focus:ring-2 focus:ring-orange-500 "
+                <input type="text" id="calendrier" value="<?= h($carte['calendrier']) ?>"
+                       class="w-full px-4 py-2 border-2 border-orange-200 rounded-md focus:ring-2 focus:ring-orange-500"
                        placeholder="Ex: Janvier 2025 - Decembre 2025, ou phases specifiques...">
             </div>
 
@@ -211,9 +213,9 @@ $isSubmitted = $carte['is_submitted'] == 1;
                     Resultats attendus (effets ou changements vises)
                 </label>
                 <p class="text-sm text-gray-600 mb-2 italic">Qu'esperez-vous observer concretement ? Qu'est-ce qui prouvera la reussite ?</p>
-                <textarea id="resultats" rows="4" 
-                          class="w-full px-4 py-2 border-2 border-teal-200 rounded-md focus:ring-2 focus:ring-teal-500 "
-                          placeholder="Decrivez les resultats attendus et les indicateurs de reussite..."><?= sanitize($carte['resultats']) ?></textarea>
+                <textarea id="resultats" rows="4"
+                          class="w-full px-4 py-2 border-2 border-teal-200 rounded-md focus:ring-2 focus:ring-teal-500"
+                          placeholder="Decrivez les resultats attendus et les indicateurs de reussite..."><?= h($carte['resultats']) ?></textarea>
             </div>
 
             <!-- Notes complementaires -->
@@ -221,9 +223,9 @@ $isSubmitted = $carte['is_submitted'] == 1;
                 <label class="block text-lg font-semibold text-gray-800 mb-2">
                     Notes complementaires / Observations
                 </label>
-                <textarea id="notes" rows="3" 
-                          class="w-full px-4 py-2 border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-gray-500 "
-                          placeholder="Ajoutez toute information complementaire pertinente..."><?= sanitize($carte['notes']) ?></textarea>
+                <textarea id="notes" rows="3"
+                          class="w-full px-4 py-2 border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-gray-500"
+                          placeholder="Ajoutez toute information complementaire pertinente..."><?= h($carte['notes']) ?></textarea>
             </div>
 
             <!-- Boutons d'action -->
@@ -264,7 +266,7 @@ $isSubmitted = $carte['is_submitted'] == 1;
         document.addEventListener('DOMContentLoaded', function() {
             renderPartenaires();
 
-            // Auto-save sur tous les champs (toujours actif)
+            // Auto-save sur tous les champs
             const fields = ['titre', 'objectifs', 'publicCible', 'territoire', 'ressourcesHumaines',
                            'ressourcesMaterielles', 'ressourcesFinancieres', 'calendrier', 'resultats', 'notes'];
             fields.forEach(id => {
@@ -396,7 +398,6 @@ $isSubmitted = $carte['is_submitted'] == 1;
             const data = getFormData();
             const wb = XLSX.utils.book_new();
 
-            // Feuille principale
             const mainData = [
                 ['CARTE D\'IDENTITE DU PROJET'],
                 [''],
@@ -419,7 +420,6 @@ $isSubmitted = $carte['is_submitted'] == 1;
             ws1['!cols'] = [{ wch: 30 }, { wch: 80 }];
             XLSX.utils.book_append_sheet(wb, ws1, 'Informations');
 
-            // Feuille Partenaires
             const partData = [
                 ['PARTENAIRES'],
                 [''],
@@ -433,7 +433,6 @@ $isSubmitted = $carte['is_submitted'] == 1;
             ws2['!cols'] = [{ wch: 30 }, { wch: 40 }, { wch: 30 }];
             XLSX.utils.book_append_sheet(wb, ws2, 'Partenaires');
 
-            // Feuille Ressources
             const resData = [
                 ['RESSOURCES'],
                 [''],

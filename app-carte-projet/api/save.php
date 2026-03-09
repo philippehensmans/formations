@@ -3,10 +3,11 @@
  * API Sauvegarde - Carte d'identite du projet
  */
 header('Content-Type: application/json');
-require_once '../config/database.php';
+require_once __DIR__ . '/../config.php';
 
-if (!isParticipantLoggedIn()) {
-    echo json_encode(['success' => false, 'error' => 'Non connecte']);
+if (!isLoggedIn() || !isset($_SESSION['current_session_id'])) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'error' => 'Non authentifie']);
     exit;
 }
 
@@ -17,18 +18,24 @@ if (!$input) {
 }
 
 $db = getDB();
+$user = getLoggedUser();
+$sessionId = validateCurrentSession($db);
 
-// Verifier que le participant a une carte
-$stmt = $db->prepare("SELECT id, is_submitted FROM cartes_projet WHERE participant_id = ?");
-$stmt->execute([$_SESSION['participant_id']]);
+if (!$user || !$sessionId) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'error' => 'Session invalide']);
+    exit;
+}
+
+// Verifier que la carte existe
+$stmt = $db->prepare("SELECT id, is_submitted FROM cartes_projet WHERE user_id = ? AND session_id = ?");
+$stmt->execute([$user['id'], $sessionId]);
 $carte = $stmt->fetch();
 
 if (!$carte) {
     echo json_encode(['success' => false, 'error' => 'Carte projet non trouvee']);
     exit;
 }
-
-// Permettre les modifications meme apres soumission
 
 // Calculer completion
 $fields = ['titre', 'objectifs', 'public_cible', 'territoire', 'calendrier', 'resultats',
@@ -60,7 +67,7 @@ $stmt = $db->prepare("UPDATE cartes_projet SET
     notes = ?,
     completion_percent = ?,
     updated_at = CURRENT_TIMESTAMP
-    WHERE participant_id = ?");
+    WHERE user_id = ? AND session_id = ?");
 
 $stmt->execute([
     $input['titre'] ?? '',
@@ -75,7 +82,8 @@ $stmt->execute([
     $input['resultats'] ?? '',
     $input['notes'] ?? '',
     $completion,
-    $_SESSION['participant_id']
+    $user['id'],
+    $sessionId
 ]);
 
 echo json_encode(['success' => true, 'completion' => $completion]);
