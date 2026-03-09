@@ -1,7 +1,7 @@
 <?php
 /**
  * Vue globale de session - Prompt Jeunes
- * Affiche les exercices de prompting de tous les participants
+ * Affiche tous les travaux de tous les participants
  */
 require_once __DIR__ . '/config.php';
 
@@ -21,12 +21,10 @@ if (!$sessionId) {
 $db = getDB();
 $sharedDb = getSharedDB();
 
-// Verifier l'acces a cette session
 if (!canAccessSession($appKey, $sessionId)) {
-    die("Acces refuse a cette session.");
+    die("Acces refuse.");
 }
 
-// Recuperer la session
 $stmt = $db->prepare("SELECT * FROM sessions WHERE id = ?");
 $stmt->execute([$sessionId]);
 $session = $stmt->fetch();
@@ -36,21 +34,19 @@ if (!$session) {
     exit;
 }
 
-// Option pour voir tous ou seulement les partages
 $showAll = isset($_GET['all']) && $_GET['all'] == '1';
 
 // Recuperer les travaux de la session
 if ($showAll) {
-    $stmt = $db->prepare("SELECT * FROM travaux WHERE session_id = ? ORDER BY user_id, exercice_num ASC");
+    $stmt = $db->prepare("SELECT * FROM travaux WHERE session_id = ? ORDER BY updated_at DESC");
     $stmt->execute([$sessionId]);
 } else {
-    $stmt = $db->prepare("SELECT * FROM travaux WHERE session_id = ? AND is_shared = 1 ORDER BY user_id, exercice_num ASC");
+    $stmt = $db->prepare("SELECT * FROM travaux WHERE session_id = ? AND is_shared = 1 ORDER BY updated_at DESC");
     $stmt->execute([$sessionId]);
 }
 $allTravaux = $stmt->fetchAll();
 
-// Enrichir avec les infos utilisateur et grouper par participant
-$travauxByParticipant = [];
+// Enrichir avec les infos utilisateur
 foreach ($allTravaux as &$t) {
     $userStmt = $sharedDb->prepare("SELECT prenom, nom, organisation FROM users WHERE id = ?");
     $userStmt->execute([$t['user_id']]);
@@ -58,42 +54,23 @@ foreach ($allTravaux as &$t) {
     $t['user_prenom'] = $userInfo['prenom'] ?? '';
     $t['user_nom'] = $userInfo['nom'] ?? '';
     $t['user_organisation'] = $userInfo['organisation'] ?? '';
-
-    $uid = $t['user_id'];
-    if (!isset($travauxByParticipant[$uid])) {
-        $travauxByParticipant[$uid] = [
-            'user' => [
-                'prenom' => $t['user_prenom'],
-                'nom' => $t['user_nom'],
-                'organisation' => $t['user_organisation']
-            ],
-            'travaux' => []
-        ];
-    }
-    $travauxByParticipant[$uid]['travaux'][] = $t;
 }
 unset($t);
 
 // Statistiques
+$totalTravaux = count($allTravaux);
+
+$stmt = $db->prepare("SELECT COUNT(DISTINCT user_id) as count FROM travaux WHERE session_id = ?");
+$stmt->execute([$sessionId]);
+$totalParticipants = $stmt->fetch()['count'];
+
 $stmt = $db->prepare("SELECT COUNT(*) as total, SUM(CASE WHEN is_shared = 1 THEN 1 ELSE 0 END) as shared FROM travaux WHERE session_id = ?");
 $stmt->execute([$sessionId]);
 $counts = $stmt->fetch();
 $totalAll = $counts['total'];
 $totalShared = $counts['shared'];
 
-$stmt = $db->prepare("SELECT COUNT(DISTINCT user_id) as count FROM travaux WHERE session_id = ?");
-$stmt->execute([$sessionId]);
-$participantsCount = $stmt->fetch()['count'];
-
-// Nombre d'exercices distincts
-$stmt = $db->prepare("SELECT COUNT(DISTINCT exercice_num) as count FROM travaux WHERE session_id = ?");
-$stmt->execute([$sessionId]);
-$exercicesCount = $stmt->fetch()['count'];
-
-// Moyenne de completion
-$stmt = $db->prepare("SELECT AVG(completion_percent) as avg_completion FROM travaux WHERE session_id = ?");
-$stmt->execute([$sessionId]);
-$avgCompletion = round($stmt->fetch()['avg_completion'] ?? 0);
+$avgCompletion = $totalTravaux > 0 ? round(array_sum(array_column($allTravaux, 'completion_percent')) / $totalTravaux) : 0;
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -101,6 +78,7 @@ $avgCompletion = round($stmt->fetch()['avg_completion'] ?? 0);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prompt Jeunes - Vue Session - <?= h($session['nom']) ?></title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>🚀</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @media print {
@@ -108,8 +86,6 @@ $avgCompletion = round($stmt->fetch()['avg_completion'] ?? 0);
             body { background: white !important; }
             .page-break { page-break-before: always; }
         }
-        .travail-card { transition: all 0.3s ease; }
-        .travail-card:hover { transform: translateY(-2px); }
     </style>
 </head>
 <body class="bg-gradient-to-br from-rose-50 to-pink-100 min-h-screen">
@@ -118,7 +94,7 @@ $avgCompletion = round($stmt->fetch()['avg_completion'] ?? 0);
         <div class="max-w-7xl mx-auto px-4 py-4">
             <div class="flex justify-between items-center">
                 <div>
-                    <h1 class="text-2xl font-bold">🤖 Prompt Jeunes</h1>
+                    <h1 class="text-2xl font-bold">🚀 Prompt Jeunes</h1>
                     <p class="text-rose-200 text-sm"><?= h($session['nom']) ?> - <?= $session['code'] ?></p>
                 </div>
                 <div class="flex items-center gap-4">
@@ -154,89 +130,129 @@ $avgCompletion = round($stmt->fetch()['avg_completion'] ?? 0);
         <!-- Statistiques -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             <div class="bg-white rounded-xl shadow p-4 text-center">
-                <div class="text-3xl font-bold text-rose-600"><?= count($allTravaux) ?></div>
-                <div class="text-gray-500 text-sm"><?= $showAll ? 'Travaux (tous)' : 'Travaux partages' ?></div>
-            </div>
-            <div class="bg-white rounded-xl shadow p-4 text-center">
-                <div class="text-3xl font-bold text-pink-600"><?= $participantsCount ?></div>
+                <div class="text-3xl font-bold text-rose-600"><?= $totalParticipants ?></div>
                 <div class="text-gray-500 text-sm">Participants</div>
             </div>
             <div class="bg-white rounded-xl shadow p-4 text-center">
-                <div class="text-3xl font-bold text-purple-600"><?= $exercicesCount ?></div>
-                <div class="text-gray-500 text-sm">Exercices</div>
+                <div class="text-3xl font-bold text-pink-600"><?= $totalTravaux ?></div>
+                <div class="text-gray-500 text-sm"><?= $showAll ? 'Travaux (tous)' : 'Travaux partages' ?></div>
             </div>
             <div class="bg-white rounded-xl shadow p-4 text-center">
                 <div class="text-3xl font-bold text-indigo-600"><?= $avgCompletion ?>%</div>
                 <div class="text-gray-500 text-sm">Completion moyenne</div>
             </div>
+            <div class="bg-white rounded-xl shadow p-4 text-center">
+                <div class="text-3xl font-bold text-green-600"><?= $totalShared ?></div>
+                <div class="text-gray-500 text-sm">Travaux partages</div>
+            </div>
         </div>
 
-        <!-- Travaux par participant -->
-        <div class="space-y-8">
-            <?php foreach ($travauxByParticipant as $userId => $data): ?>
-            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-                <!-- En-tete participant -->
+        <!-- Travaux des participants -->
+        <div class="space-y-6">
+            <?php if (empty($allTravaux)): ?>
+            <div class="bg-white rounded-xl shadow-lg p-12 text-center">
+                <p class="text-gray-400 text-lg">Aucun travail pour le moment.</p>
+            </div>
+            <?php endif; ?>
+
+            <?php foreach ($allTravaux as $t): ?>
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden <?= (!$t['is_shared'] && $showAll) ? 'opacity-75 border-2 border-orange-200' : '' ?>">
                 <div class="bg-gradient-to-r from-rose-500 to-pink-500 text-white p-4">
                     <div class="flex justify-between items-center">
                         <div>
-                            <span class="font-bold text-lg"><?= h($data['user']['prenom']) ?> <?= h($data['user']['nom']) ?></span>
-                            <?php if (!empty($data['user']['organisation'])): ?>
-                            <span class="text-rose-200 text-sm ml-2">(<?= h($data['user']['organisation']) ?>)</span>
+                            <span class="font-bold text-lg"><?= h($t['user_prenom']) ?> <?= h($t['user_nom']) ?></span>
+                            <?php if (!empty($t['user_organisation'])): ?>
+                            <span class="text-rose-200 text-sm ml-2">(<?= h($t['user_organisation']) ?>)</span>
+                            <?php endif; ?>
+                            <?php if (!$t['is_shared'] && $showAll): ?>
+                            <span class="bg-orange-400 text-white text-xs px-2 py-0.5 rounded ml-2">Non partage</span>
                             <?php endif; ?>
                         </div>
-                        <span class="bg-white/30 px-3 py-1 rounded text-sm"><?= count($data['travaux']) ?> exercice(s)</span>
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm text-rose-200">Organisation: <?= h($t['organisation_nom'] ?: 'Non definie') ?></span>
+                            <span class="bg-white/20 px-2 py-0.5 rounded text-xs">Exercice <?= (int)$t['exercice_num'] ?></span>
+                        </div>
+                    </div>
+                    <!-- Barre de completion -->
+                    <div class="mt-3">
+                        <div class="flex justify-between text-xs text-rose-200 mb-1">
+                            <span>Progression</span>
+                            <span><?= (int)$t['completion_percent'] ?>%</span>
+                        </div>
+                        <div class="w-full bg-white/20 rounded-full h-2">
+                            <div class="bg-white h-2 rounded-full transition-all" style="width: <?= (int)$t['completion_percent'] ?>%"></div>
+                        </div>
                     </div>
                 </div>
+                <div class="p-4">
+                    <!-- Cas choisi -->
+                    <?php if (!empty($t['cas_choisi'])): ?>
+                    <div class="mb-4">
+                        <h4 class="font-bold text-gray-700 mb-2 flex items-center gap-2">
+                            <span class="text-rose-500">🎯</span> Cas choisi
+                        </h4>
+                        <p class="text-sm text-gray-700 bg-rose-50 rounded-lg p-3 border border-rose-100"><?= h($t['cas_choisi']) ?></p>
+                    </div>
+                    <?php endif; ?>
 
-                <div class="p-6 space-y-4">
-                    <?php foreach ($data['travaux'] as $travail): ?>
-                    <div class="travail-card border rounded-lg overflow-hidden <?= (!$travail['is_shared'] && $showAll) ? 'opacity-75 border-orange-300' : 'border-rose-200' ?>">
-                        <div class="bg-rose-50 px-4 py-2 flex justify-between items-center">
-                            <div class="flex items-center gap-2">
-                                <span class="bg-rose-500 text-white text-xs font-bold px-2 py-0.5 rounded">
-                                    Exercice <?= (int)$travail['exercice_num'] ?>
-                                </span>
-                                <?php if (!empty($travail['organisation_nom'])): ?>
-                                <span class="text-gray-600 text-sm"><?= h($travail['organisation_nom']) ?></span>
-                                <?php endif; ?>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <?php if (!$travail['is_shared'] && $showAll): ?>
-                                <span class="bg-orange-200 text-orange-800 text-xs px-2 py-0.5 rounded">Non partage</span>
-                                <?php endif; ?>
-                                <span class="text-xs text-gray-500"><?= (int)($travail['completion_percent'] ?? 0) ?>%</span>
-                            </div>
-                        </div>
-
-                        <div class="p-4 space-y-3">
-                            <!-- Prompt initial -->
-                            <?php if (!empty($travail['prompt_initial'])): ?>
-                            <div>
-                                <div class="text-xs font-semibold text-rose-500 uppercase mb-1">Prompt initial</div>
-                                <div class="bg-gray-50 rounded-lg p-3 text-sm text-gray-700 font-mono whitespace-pre-wrap"><?= h($travail['prompt_initial']) ?></div>
-                            </div>
-                            <?php endif; ?>
-
-                            <!-- Resultat initial -->
-                            <?php if (!empty($travail['resultat_initial'])): ?>
-                            <div>
-                                <div class="text-xs font-semibold text-pink-500 uppercase mb-1">Resultat</div>
-                                <div class="bg-pink-50 rounded-lg p-3 text-sm text-gray-700"><?= nl2br(h($travail['resultat_initial'])) ?></div>
-                            </div>
-                            <?php endif; ?>
+                    <!-- Prompt initial -->
+                    <?php if (!empty($t['prompt_initial'])): ?>
+                    <div class="mb-4">
+                        <h4 class="font-bold text-gray-700 mb-2 flex items-center gap-2">
+                            <span class="text-rose-500">💬</span> Prompt initial
+                        </h4>
+                        <div class="bg-rose-50 rounded-lg p-3 border border-rose-100">
+                            <p class="text-sm text-gray-700 whitespace-pre-wrap"><?= h($t['prompt_initial']) ?></p>
                         </div>
                     </div>
-                    <?php endforeach; ?>
+                    <?php endif; ?>
+
+                    <!-- Resultat initial -->
+                    <?php if (!empty($t['resultat_initial'])): ?>
+                    <div class="mb-4">
+                        <h4 class="font-bold text-gray-700 mb-2 flex items-center gap-2">
+                            <span class="text-pink-500">📄</span> Resultat initial
+                        </h4>
+                        <div class="bg-pink-50 rounded-lg p-3 border border-pink-100">
+                            <p class="text-sm text-gray-700 whitespace-pre-wrap"><?= h($t['resultat_initial']) ?></p>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+
+                    <!-- Prompt ameliore -->
+                    <?php if (!empty($t['prompt_ameliore'])): ?>
+                    <div class="mb-4">
+                        <h4 class="font-bold text-gray-700 mb-2 flex items-center gap-2">
+                            <span class="text-rose-600">✨</span> Prompt ameliore
+                        </h4>
+                        <div class="bg-gradient-to-r from-rose-50 to-pink-50 rounded-lg p-3 border border-rose-200">
+                            <p class="text-sm text-gray-700 whitespace-pre-wrap"><?= h($t['prompt_ameliore']) ?></p>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+
+                    <!-- Resultat ameliore -->
+                    <?php if (!empty($t['resultat_ameliore'])): ?>
+                    <div class="mb-4">
+                        <h4 class="font-bold text-gray-700 mb-2 flex items-center gap-2">
+                            <span class="text-pink-600">🌟</span> Resultat ameliore
+                        </h4>
+                        <div class="bg-gradient-to-r from-pink-50 to-fuchsia-50 rounded-lg p-3 border border-pink-200">
+                            <p class="text-sm text-gray-700 whitespace-pre-wrap"><?= h($t['resultat_ameliore']) ?></p>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+
+                    <?php if (empty($t['cas_choisi']) && empty($t['prompt_initial']) && empty($t['prompt_ameliore'])): ?>
+                    <p class="text-gray-400 text-sm italic">Aucun contenu encore.</p>
+                    <?php endif; ?>
+
+                    <div class="mt-3 text-xs text-gray-400 text-right">
+                        Mis a jour: <?= date('d/m/Y H:i', strtotime($t['updated_at'])) ?>
+                    </div>
                 </div>
             </div>
             <?php endforeach; ?>
-
-            <?php if (empty($allTravaux)): ?>
-            <div class="bg-white rounded-xl shadow-lg p-12 text-center">
-                <div class="text-6xl mb-4">🤖</div>
-                <p class="text-gray-500 text-lg">Aucun travail <?= $showAll ? '' : 'partage' ?> pour cette session.</p>
-            </div>
-            <?php endif; ?>
         </div>
     </main>
 </body>

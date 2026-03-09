@@ -23,7 +23,7 @@ $sharedDb = getSharedDB();
 
 // Verifier l'acces a cette session
 if (!canAccessSession($appKey, $sessionId)) {
-    die("Acces refuse a cette session.");
+    die("Acces refuse.");
 }
 
 // Recuperer la session
@@ -102,8 +102,8 @@ $avgCompletion = round($stmt->fetch()['avg_completion'] ?? 0);
         <div class="max-w-7xl mx-auto px-4 py-4">
             <div class="flex justify-between items-center">
                 <div>
-                    <h1 class="text-2xl font-bold">📋 Carte Projet</h1>
-                    <p class="text-purple-200 text-sm"><?= h($session['nom']) ?> - <?= $session['code'] ?></p>
+                    <h1 class="text-2xl font-bold">Carte Projet</h1>
+                    <p class="text-purple-200 text-sm"><?= h($session['nom']) ?> - <?= h($session['code']) ?></p>
                 </div>
                 <div class="flex items-center gap-4">
                     <?php if ($showAll): ?>
@@ -156,7 +156,7 @@ $avgCompletion = round($stmt->fetch()['avg_completion'] ?? 0);
         </div>
 
         <!-- Cartes des participants -->
-        <div class="space-y-8">
+        <div class="space-y-6">
             <?php foreach ($allCartes as $carte): ?>
             <div class="projet-card bg-white rounded-xl shadow-lg overflow-hidden <?= (!$carte['is_submitted'] && $showAll) ? 'opacity-75 border-2 border-orange-300' : '' ?>">
                 <!-- En-tete participant -->
@@ -227,62 +227,14 @@ $avgCompletion = round($stmt->fetch()['avg_completion'] ?? 0);
                             </div>
                         </div>
                         <?php endif; ?>
-
-                        <!-- Ressources humaines -->
-                        <?php if (!empty($carte['ressources_humaines'])): ?>
-                        <div class="bg-blue-50 rounded-lg p-4">
-                            <div class="text-xs font-semibold text-blue-500 uppercase mb-1">Ressources humaines</div>
-                            <p class="text-gray-700 text-sm"><?= nl2br(h($carte['ressources_humaines'])) ?></p>
-                        </div>
-                        <?php endif; ?>
-
-                        <!-- Ressources materielles -->
-                        <?php if (!empty($carte['ressources_materielles'])): ?>
-                        <div class="bg-teal-50 rounded-lg p-4">
-                            <div class="text-xs font-semibold text-teal-500 uppercase mb-1">Ressources materielles</div>
-                            <p class="text-gray-700 text-sm"><?= nl2br(h($carte['ressources_materielles'])) ?></p>
-                        </div>
-                        <?php endif; ?>
-
-                        <!-- Ressources financieres -->
-                        <?php if (!empty($carte['ressources_financieres'])): ?>
-                        <div class="bg-emerald-50 rounded-lg p-4">
-                            <div class="text-xs font-semibold text-emerald-500 uppercase mb-1">Ressources financieres</div>
-                            <p class="text-gray-700 text-sm"><?= nl2br(h($carte['ressources_financieres'])) ?></p>
-                        </div>
-                        <?php endif; ?>
-
-                        <!-- Calendrier -->
-                        <?php if (!empty($carte['calendrier'])): ?>
-                        <div class="bg-amber-50 rounded-lg p-4">
-                            <div class="text-xs font-semibold text-amber-500 uppercase mb-1">Calendrier</div>
-                            <p class="text-gray-700 text-sm"><?= nl2br(h($carte['calendrier'])) ?></p>
-                        </div>
-                        <?php endif; ?>
                     </div>
-
-                    <!-- Resultats attendus -->
-                    <?php if (!empty($carte['resultats'])): ?>
-                    <div class="mt-4 bg-green-50 rounded-lg p-4">
-                        <div class="text-xs font-semibold text-green-500 uppercase mb-1">Resultats attendus</div>
-                        <p class="text-gray-700 text-sm"><?= nl2br(h($carte['resultats'])) ?></p>
-                    </div>
-                    <?php endif; ?>
-
-                    <!-- Notes -->
-                    <?php if (!empty($carte['notes'])): ?>
-                    <div class="mt-4 bg-gray-50 rounded-lg p-4">
-                        <div class="text-xs font-semibold text-gray-500 uppercase mb-1">Notes</div>
-                        <p class="text-gray-700 text-sm"><?= nl2br(h($carte['notes'])) ?></p>
-                    </div>
-                    <?php endif; ?>
                 </div>
             </div>
             <?php endforeach; ?>
 
             <?php if (empty($allCartes)): ?>
             <div class="bg-white rounded-xl shadow-lg p-12 text-center">
-                <div class="text-6xl mb-4">📋</div>
+                <div class="text-6xl mb-4">&#x1F4CB;</div>
                 <p class="text-gray-500 text-lg">Aucune carte projet <?= $showAll ? '' : 'soumise' ?> pour cette session.</p>
             </div>
             <?php endif; ?>
