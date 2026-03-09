@@ -1,7 +1,7 @@
 <?php
 /**
- * Vue globale de session - Empreinte Carbone IA
- * Affiche les scenarios et votes/choix des participants
+ * Vue globale de session - Empreinte Carbone
+ * Affiche les scenarios et resultats de votes agreges
  */
 require_once __DIR__ . '/config.php';
 
@@ -23,7 +23,7 @@ $sharedDb = getSharedDB();
 
 // Verifier l'acces a cette session
 if (!canAccessSession($appKey, $sessionId)) {
-    die("Acces refuse a cette session.");
+    die("Acces refuse.");
 }
 
 // Recuperer la session
@@ -36,80 +36,80 @@ if (!$session) {
     exit;
 }
 
-// Recuperer tous les scenarios de la session
-$stmt = $db->prepare("SELECT * FROM scenarios WHERE session_id = ? ORDER BY created_at DESC");
+// Recuperer les scenarios de la session
+$stmt = $db->prepare("SELECT * FROM scenarios WHERE session_id = ? ORDER BY id ASC");
 $stmt->execute([$sessionId]);
 $scenarios = $stmt->fetchAll();
 
-// Pour chaque scenario, recuperer les votes et les moyennes
-$scenarioData = [];
-foreach ($scenarios as $sc) {
-    $averages = calculateAverages($db, $sc['id']);
-    $votes = getVotes($db, $sc['id']);
+// Pour chaque scenario, recuperer les votes et calculer les agregats
+$scenariosData = [];
+$totalVotes = 0;
+$totalParticipantIds = [];
 
-    // Enrichir les votes avec infos participant
-    $votesByParticipant = [];
+foreach ($scenarios as $scenario) {
+    $stmtVotes = $db->prepare("SELECT * FROM votes WHERE scenario_id = ?");
+    $stmtVotes->execute([$scenario['id']]);
+    $votes = $stmtVotes->fetchAll();
+
+    $totalVotes += count($votes);
+
+    // Compter votes par option et accumuler scores
+    $optionCounts = [1 => 0, 2 => 0, 3 => 0];
+    $optionScores = [
+        1 => ['impact' => [], 'qualite' => [], 'temps' => []],
+        2 => ['impact' => [], 'qualite' => [], 'temps' => []],
+        3 => ['impact' => [], 'qualite' => [], 'temps' => []],
+    ];
+
     foreach ($votes as $v) {
-        $pid = $v['participant_id'];
-        if (!isset($votesByParticipant[$pid])) {
-            // Recuperer le user_id depuis la table participants
-            $pStmt = $db->prepare("SELECT user_id FROM participants WHERE id = ?");
-            $pStmt->execute([$pid]);
-            $pRow = $pStmt->fetch();
-            $userId = $pRow['user_id'] ?? null;
-
-            $userName = 'Participant #' . $pid;
-            $userOrg = '';
-            if ($userId) {
-                $userStmt = $sharedDb->prepare("SELECT prenom, nom, organisation FROM users WHERE id = ?");
-                $userStmt->execute([$userId]);
-                $userInfo = $userStmt->fetch();
-                if ($userInfo) {
-                    $userName = trim(($userInfo['prenom'] ?? '') . ' ' . ($userInfo['nom'] ?? ''));
-                    $userOrg = $userInfo['organisation'] ?? '';
-                }
-            }
-
-            $votesByParticipant[$pid] = [
-                'name' => $userName,
-                'organisation' => $userOrg,
-                'votes' => []
-            ];
+        $opt = (int)$v['option_number'];
+        if ($opt >= 1 && $opt <= 3) {
+            $optionCounts[$opt]++;
+            $optionScores[$opt]['impact'][] = (float)($v['impact'] ?? 0);
+            $optionScores[$opt]['qualite'][] = (float)($v['qualite'] ?? 0);
+            $optionScores[$opt]['temps'][] = (float)($v['temps'] ?? 0);
         }
-        $votesByParticipant[$pid]['votes'][$v['option_number']] = $v;
+        if (!empty($v['participant_id'])) {
+            $totalParticipantIds[$v['participant_id']] = true;
+        }
     }
 
-    $totalVoters = 0;
-    for ($i = 1; $i <= 3; $i++) {
-        $totalVoters = max($totalVoters, $averages[$i]['voters'] ?? 0);
+    // Calculer les moyennes par option
+    $optionAvgs = [];
+    foreach ([1, 2, 3] as $opt) {
+        $c = count($optionScores[$opt]['impact']);
+        $optionAvgs[$opt] = [
+            'count' => $optionCounts[$opt],
+            'avg_impact' => $c > 0 ? round(array_sum($optionScores[$opt]['impact']) / $c, 1) : 0,
+            'avg_qualite' => $c > 0 ? round(array_sum($optionScores[$opt]['qualite']) / $c, 1) : 0,
+            'avg_temps' => $c > 0 ? round(array_sum($optionScores[$opt]['temps']) / $c, 1) : 0,
+        ];
     }
 
-    $scenarioData[] = [
-        'scenario' => $sc,
-        'averages' => $averages,
-        'votesByParticipant' => $votesByParticipant,
-        'totalVoters' => count($votesByParticipant),
+    $optionNames = [
+        1 => $scenario['option1_name'] ?? 'Option 1',
+        2 => $scenario['option2_name'] ?? 'Option 2',
+        3 => $scenario['option3_name'] ?? 'Option 3',
+    ];
+
+    $scenariosData[] = [
+        'scenario' => $scenario,
+        'votes_count' => count($votes),
+        'option_names' => $optionNames,
+        'option_avgs' => $optionAvgs,
     ];
 }
 
 // Statistiques globales
-$stmt = $db->prepare("SELECT COUNT(DISTINCT user_id) as count FROM participants WHERE session_id = ?");
-$stmt->execute([$sessionId]);
-$totalParticipants = $stmt->fetch()['count'];
-
-$totalScenarios = count($scenarios);
-$totalVotes = 0;
-foreach ($scenarioData as $sd) {
-    $totalVotes += $sd['totalVoters'];
-}
+$scenariosCount = count($scenarios);
+$participantsCount = count($totalParticipantIds);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Empreinte Carbone IA - Vue Session - <?= h($session['nom']) ?></title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>🌱</text></svg>">
+    <title>Empreinte Carbone - Vue Session - <?= h($session['nom']) ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @media print {
@@ -117,6 +117,8 @@ foreach ($scenarioData as $sd) {
             body { background: white !important; }
             .page-break { page-break-before: always; }
         }
+        .scenario-card { transition: all 0.3s ease; }
+        .scenario-card:hover { transform: translateY(-2px); }
     </style>
 </head>
 <body class="bg-gradient-to-br from-green-50 to-emerald-100 min-h-screen">
@@ -125,8 +127,8 @@ foreach ($scenarioData as $sd) {
         <div class="max-w-7xl mx-auto px-4 py-4">
             <div class="flex justify-between items-center">
                 <div>
-                    <h1 class="text-2xl font-bold">🌱 Empreinte Carbone IA</h1>
-                    <p class="text-green-200 text-sm"><?= h($session['nom']) ?> - <?= $session['code'] ?></p>
+                    <h1 class="text-2xl font-bold">Empreinte Carbone</h1>
+                    <p class="text-green-200 text-sm"><?= h($session['nom']) ?> - <?= h($session['code']) ?></p>
                 </div>
                 <div class="flex items-center gap-4">
                     <button onclick="window.print()" class="bg-green-500 hover:bg-green-400 px-3 py-1 rounded text-sm">
@@ -144,156 +146,100 @@ foreach ($scenarioData as $sd) {
         <!-- Statistiques -->
         <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
             <div class="bg-white rounded-xl shadow p-4 text-center">
-                <div class="text-3xl font-bold text-green-600"><?= $totalParticipants ?></div>
-                <div class="text-gray-500 text-sm">Participants</div>
-            </div>
-            <div class="bg-white rounded-xl shadow p-4 text-center">
-                <div class="text-3xl font-bold text-emerald-600"><?= $totalScenarios ?></div>
+                <div class="text-3xl font-bold text-green-600"><?= $scenariosCount ?></div>
                 <div class="text-gray-500 text-sm">Scenarios</div>
             </div>
             <div class="bg-white rounded-xl shadow p-4 text-center">
+                <div class="text-3xl font-bold text-emerald-600"><?= $participantsCount ?></div>
+                <div class="text-gray-500 text-sm">Participants votants</div>
+            </div>
+            <div class="bg-white rounded-xl shadow p-4 text-center">
                 <div class="text-3xl font-bold text-teal-600"><?= $totalVotes ?></div>
-                <div class="text-gray-500 text-sm">Participants ayant vote</div>
+                <div class="text-gray-500 text-sm">Votes totaux</div>
             </div>
         </div>
 
-        <!-- Scenarios et resultats -->
-        <?php if (empty($scenarioData)): ?>
-        <div class="bg-white rounded-xl shadow-lg p-12 text-center">
-            <p class="text-gray-400 text-lg">Aucun scenario pour le moment.</p>
-        </div>
-        <?php endif; ?>
-
-        <?php foreach ($scenarioData as $sd):
-            $sc = $sd['scenario'];
-            $avg = $sd['averages'];
-        ?>
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
-            <div class="bg-gradient-to-r from-green-500 to-emerald-500 text-white p-4">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h2 class="text-xl font-bold"><?= h($sc['title']) ?></h2>
-                        <?php if (!empty($sc['description'])): ?>
-                        <p class="text-green-200 text-sm mt-1"><?= h($sc['description']) ?></p>
-                        <?php endif; ?>
-                    </div>
-                    <div class="text-right">
-                        <span class="text-green-200 text-sm"><?= $sd['totalVoters'] ?> votant(s)</span>
-                        <?php if (!$sc['is_active']): ?>
-                        <span class="bg-gray-500 text-white text-xs px-2 py-0.5 rounded ml-2">Inactif</span>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-
-            <div class="p-6">
-                <!-- Resultats par option -->
-                <h3 class="font-bold text-gray-700 mb-4">Resultats par option</h3>
-                <div class="grid md:grid-cols-3 gap-4 mb-6">
-                    <?php
-                    $optionNames = [
-                        1 => $sc['option1_name'] ?? 'Option 1',
-                        2 => $sc['option2_name'] ?? 'Option 2',
-                        3 => $sc['option3_name'] ?? 'Option 3',
-                    ];
-                    $optionDescs = [
-                        1 => $sc['option1_desc'] ?? '',
-                        2 => $sc['option2_desc'] ?? '',
-                        3 => $sc['option3_desc'] ?? '',
-                    ];
-                    $optColors = [1 => 'red', 2 => 'yellow', 3 => 'green'];
-                    ?>
-                    <?php for ($opt = 1; $opt <= 3; $opt++): ?>
-                    <div class="border rounded-lg p-4 <?= $opt === 1 ? 'border-red-200 bg-red-50' : ($opt === 2 ? 'border-yellow-200 bg-yellow-50' : 'border-green-200 bg-green-50') ?>">
-                        <h4 class="font-bold text-sm mb-1"><?= h($optionNames[$opt]) ?></h4>
-                        <p class="text-xs text-gray-500 mb-3"><?= h($optionDescs[$opt]) ?></p>
-                        <div class="space-y-2">
-                            <div class="flex justify-between text-xs">
-                                <span class="text-gray-600">Votants</span>
-                                <span class="font-bold"><?= $avg[$opt]['voters'] ?></span>
-                            </div>
-                            <div>
-                                <div class="flex justify-between text-xs mb-0.5">
-                                    <span class="text-gray-600">Impact env.</span>
-                                    <span class="font-medium"><?= $avg[$opt]['impact'] ?>/3</span>
-                                </div>
-                                <div class="w-full bg-gray-200 rounded-full h-2">
-                                    <div class="bg-red-400 h-2 rounded-full" style="width: <?= round($avg[$opt]['impact'] / 3 * 100) ?>%"></div>
-                                </div>
-                            </div>
-                            <div>
-                                <div class="flex justify-between text-xs mb-0.5">
-                                    <span class="text-gray-600">Qualite</span>
-                                    <span class="font-medium"><?= $avg[$opt]['qualite'] ?>/5</span>
-                                </div>
-                                <div class="w-full bg-gray-200 rounded-full h-2">
-                                    <div class="bg-blue-400 h-2 rounded-full" style="width: <?= round($avg[$opt]['qualite'] / 5 * 100) ?>%"></div>
-                                </div>
-                            </div>
-                            <div>
-                                <div class="flex justify-between text-xs mb-0.5">
-                                    <span class="text-gray-600">Temps</span>
-                                    <span class="font-medium"><?= $avg[$opt]['temps'] ?>/3</span>
-                                </div>
-                                <div class="w-full bg-gray-200 rounded-full h-2">
-                                    <div class="bg-purple-400 h-2 rounded-full" style="width: <?= round($avg[$opt]['temps'] / 3 * 100) ?>%"></div>
-                                </div>
-                            </div>
-                            <div class="pt-2 border-t">
-                                <div class="flex justify-between text-xs">
-                                    <span class="text-gray-600 font-medium">Score global</span>
-                                    <span class="font-bold text-green-700"><?= $avg[$opt]['score_global'] ?>%</span>
-                                </div>
-                            </div>
+        <!-- Scenarios -->
+        <div class="space-y-8">
+            <?php foreach ($scenariosData as $idx => $sd):
+                $sc = $sd['scenario'];
+                $maxVotes = max($sd['option_avgs'][1]['count'], $sd['option_avgs'][2]['count'], $sd['option_avgs'][3]['count'], 1);
+            ?>
+            <div class="scenario-card bg-white rounded-xl shadow-lg overflow-hidden">
+                <!-- En-tete scenario -->
+                <div class="bg-gradient-to-r from-green-500 to-emerald-500 text-white p-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <span class="text-green-200 text-xs uppercase font-semibold">Scenario <?= $idx + 1 ?></span>
+                            <h3 class="font-bold text-lg"><?= h($sc['title']) ?></h3>
+                            <?php if (!empty($sc['description'])): ?>
+                            <p class="text-green-100 text-sm mt-1"><?= h($sc['description']) ?></p>
+                            <?php endif; ?>
+                        </div>
+                        <div>
+                            <span class="bg-white/30 px-3 py-1 rounded text-sm"><?= $sd['votes_count'] ?> votes</span>
                         </div>
                     </div>
-                    <?php endfor; ?>
                 </div>
 
-                <!-- Detail des votes par participant -->
-                <?php if (!empty($sd['votesByParticipant'])): ?>
-                <h3 class="font-bold text-gray-700 mb-3">Detail des votes</h3>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead>
-                            <tr class="bg-green-50">
-                                <th class="text-left px-3 py-2 font-semibold text-green-700">Participant</th>
-                                <?php for ($opt = 1; $opt <= 3; $opt++): ?>
-                                <th class="text-center px-3 py-2 font-semibold text-green-700" colspan="3">
-                                    <?= h($optionNames[$opt]) ?>
-                                    <div class="text-xs font-normal text-gray-400">Imp / Qual / Tps</div>
-                                </th>
-                                <?php endfor; ?>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($sd['votesByParticipant'] as $pid => $pData): ?>
-                            <tr class="border-b border-gray-100 hover:bg-gray-50">
-                                <td class="px-3 py-2 font-medium text-gray-800">
-                                    <?= h($pData['name']) ?>
-                                    <?php if (!empty($pData['organisation'])): ?>
-                                    <span class="text-gray-400 text-xs">(<?= h($pData['organisation']) ?>)</span>
-                                    <?php endif; ?>
-                                </td>
-                                <?php for ($opt = 1; $opt <= 3; $opt++): ?>
-                                <?php $v = $pData['votes'][$opt] ?? null; ?>
-                                <?php if ($v): ?>
-                                <td class="px-1 py-2 text-center text-xs"><?= (int)$v['impact'] ?></td>
-                                <td class="px-1 py-2 text-center text-xs"><?= (int)$v['qualite'] ?></td>
-                                <td class="px-1 py-2 text-center text-xs"><?= (int)$v['temps'] ?></td>
-                                <?php else: ?>
-                                <td class="px-1 py-2 text-center text-gray-300 text-xs" colspan="3">-</td>
-                                <?php endif; ?>
-                                <?php endfor; ?>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
+                <div class="p-6">
+                    <?php if ($sd['votes_count'] === 0): ?>
+                    <p class="text-gray-400 text-center italic">Aucun vote pour ce scenario.</p>
+                    <?php else: ?>
+                    <!-- Options avec barres de votes et scores moyens -->
+                    <div class="space-y-6">
+                        <?php
+                        $optColors = [
+                            1 => ['bg' => 'bg-green-100', 'bar' => 'bg-green-500', 'text' => 'text-green-700', 'light' => 'text-green-500'],
+                            2 => ['bg' => 'bg-blue-100', 'bar' => 'bg-blue-500', 'text' => 'text-blue-700', 'light' => 'text-blue-500'],
+                            3 => ['bg' => 'bg-amber-100', 'bar' => 'bg-amber-500', 'text' => 'text-amber-700', 'light' => 'text-amber-500'],
+                        ];
+                        foreach ([1, 2, 3] as $opt):
+                            $avg = $sd['option_avgs'][$opt];
+                            $barW = $maxVotes > 0 ? round(($avg['count'] / $maxVotes) * 100) : 0;
+                            $col = $optColors[$opt];
+                        ?>
+                        <div class="<?= $col['bg'] ?> rounded-lg p-4">
+                            <div class="flex justify-between items-center mb-2">
+                                <h4 class="font-bold <?= $col['text'] ?>"><?= h($sd['option_names'][$opt]) ?></h4>
+                                <span class="<?= $col['text'] ?> font-bold text-lg"><?= $avg['count'] ?> vote<?= $avg['count'] > 1 ? 's' : '' ?></span>
+                            </div>
+                            <!-- Barre de votes -->
+                            <div class="w-full bg-white/60 rounded-full h-3 mb-3">
+                                <div class="<?= $col['bar'] ?> h-3 rounded-full" style="width: <?= $barW ?>%"></div>
+                            </div>
+                            <?php if ($avg['count'] > 0): ?>
+                            <!-- Scores moyens -->
+                            <div class="grid grid-cols-3 gap-3">
+                                <div class="text-center">
+                                    <div class="text-xs <?= $col['light'] ?> font-semibold uppercase">Impact</div>
+                                    <div class="text-lg font-bold <?= $col['text'] ?>"><?= $avg['avg_impact'] ?>/5</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-xs <?= $col['light'] ?> font-semibold uppercase">Qualite</div>
+                                    <div class="text-lg font-bold <?= $col['text'] ?>"><?= $avg['avg_qualite'] ?>/5</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-xs <?= $col['light'] ?> font-semibold uppercase">Temps</div>
+                                    <div class="text-lg font-bold <?= $col['text'] ?>"><?= $avg['avg_temps'] ?>/5</div>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php endif; ?>
                 </div>
-                <?php endif; ?>
             </div>
+            <?php endforeach; ?>
+
+            <?php if (empty($scenariosData)): ?>
+            <div class="bg-white rounded-xl shadow-lg p-12 text-center">
+                <div class="text-6xl mb-4">&#x1F3AF;</div>
+                <p class="text-gray-500 text-lg">Aucun scenario pour cette session.</p>
+            </div>
+            <?php endif; ?>
         </div>
-        <?php endforeach; ?>
     </main>
 </body>
 </html>
