@@ -112,6 +112,60 @@ $exemples = getExemplesParDomaine();
         </div>
     </div>
 
+    <!-- Introduction SMART -->
+    <div class="max-w-5xl mx-auto px-4 py-4">
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <button onclick="document.getElementById('smartIntro').classList.toggle('hidden'); this.querySelector('.arrow').classList.toggle('rotate-180')"
+                    class="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">🎯</span>
+                    <h2 class="text-lg font-bold text-gray-800">Qu'est-ce qu'un objectif SMART ?</h2>
+                </div>
+                <span class="arrow transition-transform duration-200 text-gray-400">▼</span>
+            </button>
+            <div id="smartIntro" class="px-4 pb-4">
+                <p class="text-gray-600 mb-4">
+                    Un objectif bien defini est la cle de la reussite d'un projet. La methode <strong>SMART</strong> est un outil simple et puissant pour formuler des objectifs clairs, motivants et realisables. Chaque lettre correspond a un critere :
+                </p>
+                <div class="grid sm:grid-cols-5 gap-3 mb-4">
+                    <div class="bg-amber-50 rounded-lg p-3 text-center border border-amber-200">
+                        <div class="smart-letter smart-S mx-auto mb-2">S</div>
+                        <div class="font-bold text-amber-700 text-sm">Specifique</div>
+                        <p class="text-xs text-gray-600 mt-1">L'objectif doit etre precis et sans ambiguite. Qui, quoi, ou, comment ?</p>
+                    </div>
+                    <div class="bg-blue-50 rounded-lg p-3 text-center border border-blue-200">
+                        <div class="smart-letter smart-M mx-auto mb-2">M</div>
+                        <div class="font-bold text-blue-700 text-sm">Mesurable</div>
+                        <p class="text-xs text-gray-600 mt-1">On doit pouvoir quantifier le resultat. Quel indicateur chiffre ?</p>
+                    </div>
+                    <div class="bg-green-50 rounded-lg p-3 text-center border border-green-200">
+                        <div class="smart-letter smart-A mx-auto mb-2">A</div>
+                        <div class="font-bold text-green-700 text-sm">Atteignable</div>
+                        <p class="text-xs text-gray-600 mt-1">L'objectif doit etre ambitieux mais realiste avec les moyens disponibles.</p>
+                    </div>
+                    <div class="bg-pink-50 rounded-lg p-3 text-center border border-pink-200">
+                        <div class="smart-letter smart-R mx-auto mb-2">R</div>
+                        <div class="font-bold text-pink-700 text-sm">Relevant</div>
+                        <p class="text-xs text-gray-600 mt-1">Il doit etre pertinent et aligne avec la strategie ou la mission globale.</p>
+                    </div>
+                    <div class="bg-indigo-50 rounded-lg p-3 text-center border border-indigo-200">
+                        <div class="smart-letter smart-T mx-auto mb-2">T</div>
+                        <div class="font-bold text-indigo-700 text-sm">Temporel</div>
+                        <p class="text-xs text-gray-600 mt-1">Une echeance claire doit etre definie. Pour quand ?</p>
+                    </div>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-4 border">
+                    <p class="text-sm text-gray-500 mb-2 font-semibold">Exemple :</p>
+                    <p class="text-sm text-red-600 mb-1">✗ <em>"Ameliorer la satisfaction client"</em> — trop vague, pas mesurable, pas de delai.</p>
+                    <p class="text-sm text-green-600">✓ <em>"Augmenter le score de satisfaction client de 3,2 a 4,0/5 d'ici decembre 2025 en formant 100% de l'equipe support au nouveau protocole d'accueil, afin de reduire le taux de reclamation de 20%."</em></p>
+                </div>
+                <p class="text-gray-500 text-sm mt-3">
+                    L'exercice se deroule en <strong>3 etapes</strong> : d'abord <em>analyser</em> des objectifs existants, puis <em>reformuler</em> des objectifs vagues en SMART, et enfin <em>creer</em> vos propres objectifs SMART.
+                </p>
+            </div>
+        </div>
+    </div>
+
     <?php if ($isSubmitted): ?>
         <div class="max-w-5xl mx-auto px-4 mb-4">
             <div class="bg-green-100 border-l-4 border-green-500 p-4 rounded">
