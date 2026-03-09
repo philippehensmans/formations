@@ -104,6 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $code = generateSessionCode();
                     $stmt = $db->prepare("INSERT INTO sessions (code, nom, formateur_id, is_active, created_at) VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)");
                     $stmt->execute([$code, $nom, $user['id']]);
+                    syncCreateSession($db, $code, $nom, $user['id']);
                     $success = "Session creee avec le code: $code";
                 }
                 break;
@@ -112,14 +113,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $sessionId = (int)($_POST['session_id'] ?? 0);
                 $stmt = $db->prepare("UPDATE sessions SET is_active = NOT is_active WHERE id = ?");
                 $stmt->execute([$sessionId]);
+                $toggledSession = getSessionById($db, $sessionId);
+                if ($toggledSession) syncToggleSession($db, $toggledSession['code']);
                 $success = "Statut de la session modifie.";
                 break;
 
             case 'delete_session':
                 $sessionId = (int)($_POST['session_id'] ?? 0);
+                $sessionToDelete = getSessionById($db, $sessionId);
                 $db->prepare("DELETE FROM arbres WHERE session_id = ?")->execute([$sessionId]);
                 $db->prepare("DELETE FROM participants WHERE session_id = ?")->execute([$sessionId]);
                 $db->prepare("DELETE FROM sessions WHERE id = ?")->execute([$sessionId]);
+                if ($sessionToDelete) syncDeleteSession($db, $sessionToDelete['code']);
                 $success = "Session supprimee.";
                 break;
 
@@ -130,6 +135,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+// Importer les sessions des autres applications
+importMissingSessions($db);
 
 // Recuperer les sessions
 $sessions = $db->query("SELECT * FROM sessions ORDER BY created_at DESC")->fetchAll();

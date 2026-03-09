@@ -126,6 +126,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// Importer les sessions des autres applications si elles n'existent pas encore ici
+importMissingSessions($db);
+
 $sessions = getActiveSessions($db);
 ?>
 <!DOCTYPE html>

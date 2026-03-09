@@ -123,6 +123,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $code = generateSessionCode();
                     $stmt = $db->prepare("INSERT INTO sessions (code, nom, formateur_id, is_active, created_at) VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)");
                     $stmt->execute([$code, $nom, $user['id']]);
+                    // Synchroniser vers toutes les autres applications
+                    syncCreateSession($db, $code, $nom, $user['id']);
                     $success = t('trainer.session_created', ['code' => $code]);
                 }
                 break;
@@ -134,6 +136,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     break;
                 }
                 toggleSession($db, $sessionId);
+                // Synchroniser le changement de statut vers toutes les autres applications
+                $toggledSession = getSessionById($db, $sessionId);
+                if ($toggledSession) {
+                    syncToggleSession($db, $toggledSession['code']);
+                }
                 $success = t('trainer.session_status_changed');
                 break;
 
@@ -143,7 +150,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $error = t('trainer.access_denied');
                     break;
                 }
+                // Recuperer le code avant suppression pour synchroniser
+                $sessionToDelete = getSessionById($db, $sessionId);
                 deleteSession($db, $sessionId);
+                // Synchroniser la suppression vers toutes les autres applications
+                if ($sessionToDelete) {
+                    syncDeleteSession($db, $sessionToDelete['code']);
+                }
                 $success = t('trainer.session_deleted');
                 break;
 
@@ -182,6 +195,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+// Importer les sessions des autres applications si elles n'existent pas encore ici
+importMissingSessions($db);
 
 // Recuperer les sessions (filtrees si le formateur a des restrictions)
 if ($allowedSessionIds === null) {
