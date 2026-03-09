@@ -132,6 +132,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
                 break;
 
+            case 'reparent':
+                // Changer le parent d'un noeud
+                $nodeId = (int)($input['id'] ?? 0);
+                $newParentId = (int)($input['new_parent_id'] ?? 0);
+
+                if (!$nodeId || !$newParentId) {
+                    echo json_encode(['error' => 'ID et new_parent_id requis']);
+                    exit;
+                }
+
+                // Verifier que le noeud n'est pas la racine
+                $stmt = $db->prepare("SELECT is_root FROM nodes WHERE id = ? AND mindmap_id = ?");
+                $stmt->execute([$nodeId, $mindmapId]);
+                $node = $stmt->fetch();
+                if (!$node || $node['is_root']) {
+                    echo json_encode(['error' => 'Impossible de deplacer le noeud racine']);
+                    exit;
+                }
+
+                // Verifier que le nouveau parent existe
+                $stmt = $db->prepare("SELECT id FROM nodes WHERE id = ? AND mindmap_id = ?");
+                $stmt->execute([$newParentId, $mindmapId]);
+                if (!$stmt->fetch()) {
+                    echo json_encode(['error' => 'Parent cible introuvable']);
+                    exit;
+                }
+
+                // Verifier qu'on ne cree pas de cycle (le nouveau parent ne doit pas etre un descendant du noeud)
+                if (isDescendant($db, $newParentId, $nodeId, $mindmapId)) {
+                    echo json_encode(['error' => 'Impossible: cela creerait une boucle']);
+                    exit;
+                }
+
+                $stmt = $db->prepare("UPDATE nodes SET parent_id = ?, updated_by = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND mindmap_id = ?");
+                $stmt->execute([$newParentId, $user['id'], $nodeId, $mindmapId]);
+
+                updateMindmapTimestamp($mindmapId);
+
+                echo json_encode([
+                    'success' => true,
+                    'nodes' => getNodes($mindmapId),
+                    'updated_at' => date('Y-m-d H:i:s')
+                ]);
+                break;
+
             case 'delete':
                 // Supprimer un noeud (et ses enfants en cascade)
                 $nodeId = (int)($input['id'] ?? 0);
@@ -190,4 +235,17 @@ function deleteNodeRecursive($db, $nodeId, $mindmapId) {
 
     // Puis supprimer le noeud
     $db->prepare("DELETE FROM nodes WHERE id = ? AND mindmap_id = ?")->execute([$nodeId, $mindmapId]);
+}
+
+function isDescendant($db, $candidateId, $ancestorId, $mindmapId) {
+    // Verifie si candidateId est un descendant de ancestorId
+    $stmt = $db->prepare("SELECT id FROM nodes WHERE parent_id = ? AND mindmap_id = ?");
+    $stmt->execute([$ancestorId, $mindmapId]);
+    $children = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+    foreach ($children as $childId) {
+        if ($childId == $candidateId) return true;
+        if (isDescendant($db, $candidateId, $childId, $mindmapId)) return true;
+    }
+    return false;
 }

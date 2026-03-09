@@ -88,6 +88,7 @@ foreach ($participantIds as $pid) {
         }
         .node:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.25); }
         .node.dragging { opacity: 0.8; z-index: 1000; }
+        .node.drop-target { outline: 4px dashed #8b5cf6; outline-offset: 4px; transform: scale(1.08); }
         .node.root {
             min-width: 150px;
             font-weight: bold;
@@ -428,41 +429,93 @@ foreach ($participantIds as $pid) {
             svg.appendChild(arrow);
         }
 
-        // Setup drag & drop
-        function setupDrag(el, node) {
-            let startX, startY, origX, origY;
-            let isDragging = false;
+        // Setup drag & drop (avec reparentage)
+        let dragState = null; // {el, node, startX, startY, origX, origY, hasMoved}
 
+        function setupDrag(el, node) {
             el.addEventListener('mousedown', (e) => {
                 if (e.target.classList.contains('node-btn')) return;
                 e.stopPropagation();
-                isDragging = true;
+                dragState = {
+                    el, node,
+                    startX: e.clientX,
+                    startY: e.clientY,
+                    origX: parseFloat(node.pos_x),
+                    origY: parseFloat(node.pos_y),
+                    hasMoved: false
+                };
                 el.classList.add('dragging');
-                startX = e.clientX;
-                startY = e.clientY;
-                origX = parseFloat(node.pos_x);
-                origY = parseFloat(node.pos_y);
             });
+        }
 
-            document.addEventListener('mousemove', (e) => {
-                if (!isDragging) return;
-                const dx = (e.clientX - startX) / scale;
-                const dy = (e.clientY - startY) / scale;
-                node.pos_x = origX + dx;
-                node.pos_y = origY + dy;
-                el.style.left = node.pos_x + 'px';
-                el.style.top = node.pos_y + 'px';
-                render(); // Redessiner les liens
-            });
+        document.addEventListener('mousemove', (e) => {
+            if (!dragState) return;
+            const dx = (e.clientX - dragState.startX) / scale;
+            const dy = (e.clientY - dragState.startY) / scale;
+            if (Math.abs(dx) > 3 || Math.abs(dy) > 3) dragState.hasMoved = true;
+            dragState.node.pos_x = dragState.origX + dx;
+            dragState.node.pos_y = dragState.origY + dy;
+            dragState.el.style.left = dragState.node.pos_x + 'px';
+            dragState.el.style.top = dragState.node.pos_y + 'px';
 
-            document.addEventListener('mouseup', () => {
-                if (isDragging) {
-                    isDragging = false;
-                    el.classList.remove('dragging');
-                    // Sauvegarder position
-                    apiCall('move', {id: node.id, x: node.pos_x, y: node.pos_y});
+            // Highlight noeud cible pour reparentage
+            clearDropTargets();
+            const target = getDropTarget(e.clientX, e.clientY, dragState.node.id);
+            if (target) target.el.classList.add('drop-target');
+
+            render();
+        });
+
+        document.addEventListener('mouseup', (e) => {
+            if (!dragState) return;
+            const ds = dragState;
+            dragState = null;
+            ds.el.classList.remove('dragging');
+            clearDropTargets();
+
+            if (!ds.hasMoved) return;
+
+            // Verifier si on lache sur un autre noeud (reparentage)
+            const target = getDropTarget(e.clientX, e.clientY, ds.node.id);
+            if (target && !ds.node.is_root && target.node.id != ds.node.parent_id) {
+                // Reparenter: remettre a la position d'origine et laisser l'API mettre a jour
+                ds.node.pos_x = ds.origX;
+                ds.node.pos_y = ds.origY;
+                apiCall('reparent', {id: ds.node.id, new_parent_id: target.node.id});
+            } else {
+                // Simple deplacement
+                apiCall('move', {id: ds.node.id, x: ds.node.pos_x, y: ds.node.pos_y});
+            }
+        });
+
+        function getDropTarget(clientX, clientY, draggedId) {
+            const allNodes = document.querySelectorAll('.node');
+            for (const el of allNodes) {
+                const id = parseInt(el.dataset.id);
+                if (id === draggedId) continue;
+                const rect = el.getBoundingClientRect();
+                if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
+                    const node = nodes.find(n => n.id == id);
+                    // Ne pas permettre de reparenter vers un descendant
+                    if (node && !isDescendantOf(id, draggedId)) {
+                        return {el, node};
+                    }
                 }
-            });
+            }
+            return null;
+        }
+
+        function isDescendantOf(candidateId, ancestorId) {
+            const children = nodes.filter(n => n.parent_id == ancestorId);
+            for (const child of children) {
+                if (child.id == candidateId) return true;
+                if (isDescendantOf(candidateId, child.id)) return true;
+            }
+            return false;
+        }
+
+        function clearDropTargets() {
+            document.querySelectorAll('.node.drop-target').forEach(el => el.classList.remove('drop-target'));
         }
 
         // Panning
