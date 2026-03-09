@@ -195,3 +195,149 @@ function ensureParticipant($db, $sessionId, $user) {
         }
     }
 }
+
+/**
+ * Importer dans la base locale les sessions existantes dans les autres applications
+ * Permet de rattraper les sessions creees avant l'activation de la synchro
+ */
+function importMissingSessions($db) {
+    $currentDbPath = _getDbPath($db);
+    $otherDbs = _getAllAppDatabases($currentDbPath);
+
+    foreach ($otherDbs as $appDb) {
+        try {
+            $sessions = $appDb->query("SELECT code, nom, formateur_id, is_active, created_at FROM sessions")->fetchAll();
+            foreach ($sessions as $s) {
+                $stmt = $db->prepare("SELECT id FROM sessions WHERE code = ?");
+                $stmt->execute([$s['code']]);
+                if (!$stmt->fetch()) {
+                    $stmt = $db->prepare("INSERT INTO sessions (code, nom, formateur_id, is_active, created_at) VALUES (?, ?, ?, ?, ?)");
+                    $stmt->execute([$s['code'], $s['nom'], $s['formateur_id'], $s['is_active'], $s['created_at']]);
+                }
+            }
+        } catch (PDOException $e) {
+            continue;
+        }
+    }
+}
+
+/**
+ * Obtenir toutes les bases de donnees des applications
+ * Retourne un tableau de connexions PDO (sauf l'app exclue)
+ */
+function _getAllAppDatabases($excludeDbPath = null) {
+    $baseDir = dirname(__DIR__);
+    $appDirs = glob($baseDir . '/app-*', GLOB_ONLYDIR);
+    $databases = [];
+
+    foreach ($appDirs as $appDir) {
+        $dataDir = $appDir . '/data';
+        if (!is_dir($dataDir)) continue;
+
+        $dbFiles = array_merge(
+            glob($dataDir . '/*.db') ?: [],
+            glob($dataDir . '/*.sqlite') ?: []
+        );
+        if (empty($dbFiles)) continue;
+
+        $dbPath = $dbFiles[0];
+
+        // Exclure la base de l'app courante (deja traitee)
+        if ($excludeDbPath && realpath($dbPath) === realpath($excludeDbPath)) continue;
+
+        try {
+            $appDb = new PDO('sqlite:' . $dbPath);
+            $appDb->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+            // Verifier que la table sessions existe
+            $check = $appDb->query("SELECT name FROM sqlite_master WHERE type='table' AND name='sessions'");
+            if ($check->fetch()) {
+                $databases[] = $appDb;
+            }
+        } catch (PDOException $e) {
+            continue;
+        }
+    }
+
+    return $databases;
+}
+
+/**
+ * Determiner le chemin de la base de donnees d'une connexion PDO SQLite
+ */
+function _getDbPath($db) {
+    try {
+        $result = $db->query("PRAGMA database_list")->fetch();
+        return $result['file'] ?? null;
+    } catch (PDOException $e) {
+        return null;
+    }
+}
+
+/**
+ * Synchroniser la creation d'une session vers toutes les autres applications
+ */
+function syncCreateSession($db, $code, $nom, $formateurId) {
+    $currentDbPath = _getDbPath($db);
+    $otherDbs = _getAllAppDatabases($currentDbPath);
+
+    foreach ($otherDbs as $appDb) {
+        try {
+            $stmt = $appDb->prepare("SELECT id FROM sessions WHERE code = ?");
+            $stmt->execute([$code]);
+            if (!$stmt->fetch()) {
+                $stmt = $appDb->prepare("INSERT INTO sessions (code, nom, formateur_id, is_active, created_at) VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)");
+                $stmt->execute([$code, $nom, $formateurId]);
+            }
+        } catch (PDOException $e) {
+            continue;
+        }
+    }
+}
+
+/**
+ * Synchroniser le toggle d'une session vers toutes les autres applications
+ */
+function syncToggleSession($db, $sessionCode) {
+    $currentDbPath = _getDbPath($db);
+    $otherDbs = _getAllAppDatabases($currentDbPath);
+
+    // Determiner le nouvel etat dans l'app courante
+    $stmt = $db->prepare("SELECT is_active FROM sessions WHERE code = ?");
+    $stmt->execute([$sessionCode]);
+    $current = $stmt->fetch();
+    if (!$current) return;
+    $newState = $current['is_active'];
+
+    foreach ($otherDbs as $appDb) {
+        try {
+            $stmt = $appDb->prepare("UPDATE sessions SET is_active = ? WHERE code = ?");
+            $stmt->execute([$newState, $sessionCode]);
+        } catch (PDOException $e) {
+            continue;
+        }
+    }
+}
+
+/**
+ * Synchroniser la suppression d'une session vers toutes les autres applications
+ * Note: supprime la session et les participants, mais pas les donnees specifiques a chaque app
+ */
+function syncDeleteSession($db, $sessionCode) {
+    $currentDbPath = _getDbPath($db);
+    $otherDbs = _getAllAppDatabases($currentDbPath);
+
+    foreach ($otherDbs as $appDb) {
+        try {
+            $stmt = $appDb->prepare("SELECT id FROM sessions WHERE code = ?");
+            $stmt->execute([$sessionCode]);
+            $session = $stmt->fetch();
+            if ($session) {
+                $appDb->prepare("DELETE FROM participants WHERE session_id = ?")->execute([$session['id']]);
+                $appDb->prepare("DELETE FROM sessions WHERE id = ?")->execute([$session['id']]);
+            }
+        } catch (PDOException $e) {
+            continue;
+        }
+    }
+}

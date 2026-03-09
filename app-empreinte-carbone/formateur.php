@@ -87,6 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 $code = generateSessionCode();
                 $stmt = $db->prepare("INSERT INTO sessions (code, nom, formateur_id, is_active, created_at) VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)");
                 $stmt->execute([$code, $nom, $user['id']]);
+                syncCreateSession($db, $code, $nom, $user['id']);
                 $success = "Session créée avec le code: $code";
             }
             break;
@@ -136,6 +137,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             exit;
     }
 }
+
+// Importer les sessions des autres applications
+importMissingSessions($db);
 
 // Récupérer les sessions
 if ($allowedSessionIds === null) {

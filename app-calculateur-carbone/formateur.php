@@ -36,6 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!empty($nom)) {
                 $stmt = $db->prepare("INSERT INTO sessions (code, nom, formateur_id) VALUES (?, ?, ?)");
                 $stmt->execute([$code, $nom, $user['id']]);
+                syncCreateSession($db, $code, $nom, $user['id']);
                 $success = t('carbon.session_created_with_code') . ": $code";
             }
         } elseif ($action === 'toggle_session') {
@@ -55,8 +56,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $db->prepare("UPDATE sessions SET is_active = NOT is_active WHERE id = ? AND formateur_id = ?");
                 $stmt->execute([$sessionId, $user['id']]);
             }
+            $toggledSession = getSessionById($db, $sessionId);
+            if ($toggledSession) syncToggleSession($db, $toggledSession['code']);
         } elseif ($action === 'delete_session') {
             $sessionId = intval($_POST['session_id'] ?? 0);
+            $sessionToDelete = getSessionById($db, $sessionId);
             // Verifier les droits
             $canModify = $user['is_admin'] || $user['is_super_admin'];
             if (!$canModify && $user['is_formateur']) {
@@ -79,6 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $db->prepare("DELETE FROM sessions WHERE id = ? AND formateur_id = ?");
                 $stmt->execute([$sessionId, $user['id']]);
             }
+            if ($sessionToDelete) syncDeleteSession($db, $sessionToDelete['code']);
             $success = t('carbon.session_deleted');
         } elseif ($action === 'update_ecologits') {
             // Inclure et executer le script de mise a jour
@@ -165,6 +170,9 @@ if ($user['is_admin'] || $user['is_super_admin']) {
         $canSeeAllSessions = true; // Pas de restriction = acces a tout
     }
 }
+
+// Importer les sessions des autres applications
+importMissingSessions($db);
 
 // Charger les sessions
 if ($canSeeAllSessions) {

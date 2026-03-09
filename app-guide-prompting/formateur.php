@@ -118,12 +118,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $code = generateSessionCode();
             $stmt = $db->prepare("INSERT INTO sessions (code, nom, formateur_id, is_active, created_at) VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)");
             $stmt->execute([$code, $nom, $user['id']]);
+            syncCreateSession($db, $code, $nom, $user['id']);
             $success = t('trainer.session_created', ['code' => $code]);
         }
     } elseif ($action === 'toggle_session') {
         $sessionId = (int)($_POST['session_id'] ?? 0);
         if (canAccessSession($appKey, $sessionId)) {
             toggleSession($db, $sessionId);
+            $toggledSession = getSessionById($db, $sessionId);
+            if ($toggledSession) syncToggleSession($db, $toggledSession['code']);
             $success = t('trainer.session_status_changed');
         } else {
             $error = t('trainer.access_denied');
@@ -131,7 +134,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($action === 'delete_session') {
         $sessionId = (int)($_POST['session_id'] ?? 0);
         if (canAccessSession($appKey, $sessionId)) {
+            $sessionToDelete = getSessionById($db, $sessionId);
             deleteSession($db, $sessionId);
+            if ($sessionToDelete) syncDeleteSession($db, $sessionToDelete['code']);
             $success = t('trainer.session_deleted');
         } else {
             $error = t('trainer.access_denied');
@@ -142,6 +147,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 }
+
+// Importer les sessions des autres applications
+importMissingSessions($db);
 
 // Recuperer les sessions
 if ($allowedSessionIds === null) {
