@@ -62,7 +62,8 @@ $currentLang = getCurrentLanguage();
                         <?= t('trainer.title') ?>
                     </a>
                     <?php endif; ?>
-                    <a href="logout.php" class="bg-emerald-700 hover:bg-emerald-800 px-3 py-1 rounded text-sm">
+                    <?= renderHomeLink() ?>
+                <a href="logout.php" class="bg-emerald-700 hover:bg-emerald-800 px-3 py-1 rounded text-sm">
                         <?= t('carbon.logout') ?>
                     </a>
                 </div>

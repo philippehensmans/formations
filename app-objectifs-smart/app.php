@@ -84,6 +84,7 @@ $exemples = getExemplesParDomaine();
                 <?php if (isFormateur()): ?>
                 <a href="formateur.php" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded text-sm"><?= t('trainer.title') ?></a>
                 <?php endif; ?>
+                <?= renderHomeLink() ?>
                 <a href="logout.php" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm"><?= t('auth.logout') ?></a>
             </div>
         </div>

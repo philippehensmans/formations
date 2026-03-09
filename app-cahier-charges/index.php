@@ -40,6 +40,7 @@ $user = getCurrentUser();
                     <?= t('cahier.share') ?>
                 </label>
                 <span id="saveStatus" class="text-xs opacity-80">...</span>
+                <?= renderHomeLink() ?>
                 <a href="logout.php" class="bg-white/20 hover:bg-white/30 px-2 py-1 rounded text-xs"><?= t('app.logout') ?></a>
             </div>
         </div>

@@ -83,6 +83,7 @@ $session = $stmt->fetch();
             <div class="flex items-center gap-2">
                 <?= renderLanguageSelector('text-sm border rounded px-2 py-1') ?>
                 <span id="saveStatus" class="text-sm text-gray-500"></span>
+                <?= renderHomeLink('bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-3 py-1 rounded text-sm') ?>
                 <a href="login.php?logout=1" class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded text-sm">
                     <?= t('auth.logout') ?>
                 </a>

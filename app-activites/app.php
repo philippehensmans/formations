@@ -59,7 +59,8 @@ $stats = getStatistiques($sessionId);
                         <?= t('trainer.title') ?>
                     </a>
                     <?php endif; ?>
-                    <a href="logout.php" class="bg-teal-500 hover:bg-teal-400 px-3 py-1 rounded text-sm">
+                    <?= renderHomeLink() ?>
+                <a href="logout.php" class="bg-teal-500 hover:bg-teal-400 px-3 py-1 rounded text-sm">
                         <?= t('auth.logout') ?>
                     </a>
                 </div>

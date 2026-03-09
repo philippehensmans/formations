@@ -87,7 +87,8 @@ $scenario = getActiveScenario($db, $sessionId);
                     <?php if (isFormateur()): ?>
                     <a href="formateur.php" class="text-green-600 hover:text-green-800 text-sm font-medium"><?= t('trainer.title') ?></a>
                     <?php endif; ?>
-                    <a href="logout.php" class="text-gray-500 hover:text-red-500 text-sm"><?= t('auth.logout') ?></a>
+                    <?= renderHomeLink() ?>
+                <a href="logout.php" class="text-gray-500 hover:text-red-500 text-sm"><?= t('auth.logout') ?></a>
                 </div>
             </div>
         </div>

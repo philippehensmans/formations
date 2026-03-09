@@ -20,119 +20,107 @@ $appColor = $appColor ?? 'blue';
 $redirectAfterLogin = $redirectAfterLogin ?? 'index.php';
 $lang = getCurrentLanguage();
 
-// Si deja connecte avec participant_id, verifier la session dans CETTE app
-if (isLoggedIn() && isset($_SESSION['current_session_id']) && isset($_SESSION['participant_id'])) {
-    $localSession = getSessionById($db, $_SESSION['current_session_id']);
-
-    // Verifier que le code correspond (les IDs auto-increment peuvent collisionner entre apps)
-    if ($localSession && isset($_SESSION['current_session_code']) && $localSession['code'] !== $_SESSION['current_session_code']) {
-        $localSession = null;
-    }
-
-    // Si pas trouvee par ID, chercher par code dans cette app
-    if (!$localSession && isset($_SESSION['current_session_code'])) {
-        $localSession = getSessionByCode($db, $_SESSION['current_session_code']);
-        if ($localSession) {
-            $_SESSION['current_session_id'] = $localSession['id'];
-            $_SESSION['current_session_nom'] = $localSession['nom'];
-            $user = getLoggedUser();
-            if ($user) ensureParticipant($db, $localSession['id'], $user);
-        }
-    }
-
-    if ($localSession) {
-        header('Location: ' . $redirectAfterLogin);
-        exit;
-    }
-
-    // Session non trouvee dans cette app - nettoyer pour afficher le formulaire
-    unset($_SESSION['current_session_id'], $_SESSION['current_session_code'],
-          $_SESSION['current_session_nom'], $_SESSION['participant_id']);
+// Forcer la deconnexion si demande (lien "utiliser un autre compte")
+if (isset($_GET['force_login']) && isLoggedIn()) {
+    logout();
 }
 
-// Si connecte mais sans participant_id, deconnecter pour recommencer
-if (isLoggedIn() && !isset($_SESSION['participant_id'])) {
-    logout();
+// Detecter si l'utilisateur est deja authentifie (SSO)
+$alreadyLoggedIn = false;
+$loggedUser = null;
+
+if (isLoggedIn()) {
+    $loggedUser = getLoggedUser();
+    if ($loggedUser) {
+        $alreadyLoggedIn = true;
+
+        // Verifier si la session actuelle existe dans CETTE app
+        if (isset($_SESSION['current_session_id'])) {
+            $localSession = getSessionById($db, $_SESSION['current_session_id']);
+
+            // Verifier que le code correspond (les IDs auto-increment peuvent collisionner entre apps)
+            if ($localSession && isset($_SESSION['current_session_code']) && $localSession['code'] !== $_SESSION['current_session_code']) {
+                $localSession = null;
+            }
+
+            // Si pas trouvee par ID, chercher par code dans cette app
+            if (!$localSession && isset($_SESSION['current_session_code'])) {
+                $localSession = getSessionByCode($db, $_SESSION['current_session_code']);
+                if ($localSession) {
+                    $_SESSION['current_session_id'] = $localSession['id'];
+                    $_SESSION['current_session_nom'] = $localSession['nom'];
+                    ensureParticipant($db, $localSession['id'], $loggedUser);
+                }
+            }
+
+            if ($localSession && isset($_SESSION['participant_id'])) {
+                header('Location: ' . $redirectAfterLogin);
+                exit;
+            }
+        }
+
+        // Session non trouvee dans cette app - nettoyer les infos de session locale
+        unset($_SESSION['current_session_id'], $_SESSION['current_session_code'],
+              $_SESSION['current_session_nom'], $_SESSION['participant_id']);
+    } else {
+        // Utilisateur en session mais introuvable en base - deconnecter
+        logout();
+    }
+}
+
+// Fonction interne pour finaliser la connexion a une session
+function _joinSession($db, $session, $user, $redirectAfterLogin, $restrictedApp) {
+    // Verifier l'acces si l'app est restreinte
+    if (!empty($restrictedApp) && !hasAppAccess($restrictedApp, $user['id'])) {
+        return 'Acces restreint. Cette application necessite une autorisation du formateur ou de l\'administrateur.';
+    }
+
+    // S'assurer que la session utilisateur est bien initialisee
+    if (!isset($_SESSION['user_id'])) {
+        login($user);
+    }
+
+    $_SESSION['current_session_id'] = $session['id'];
+    $_SESSION['current_session_code'] = $session['code'];
+    $_SESSION['current_session_nom'] = $session['nom'];
+
+    // Enregistrer le participant dans la session
+    ensureParticipant($db, $session['id'], $user);
+
+    header('Location: ' . $redirectAfterLogin);
+    exit;
 }
 
 // Traitement du formulaire
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim($_POST['username'] ?? '');
-    $password = $_POST['password'] ?? '';
     $sessionCode = strtoupper(trim($_POST['session_code'] ?? ''));
 
-    if (empty($username) || empty($password)) {
-        $error = t('auth.fill_required');
-    } elseif (empty($sessionCode)) {
+    if (empty($sessionCode)) {
         $error = t('auth.session_error');
     } else {
-        // Verifier la session
         $session = getSessionByCode($db, $sessionCode);
         if (!$session) {
             $error = t('auth.session_error');
+        } elseif ($alreadyLoggedIn && !empty($_POST['sso_join'])) {
+            // Utilisateur deja connecte - rejoindre directement la session
+            $err = _joinSession($db, $session, $loggedUser, $redirectAfterLogin, $restrictedApp ?? null);
+            if ($err) $error = $err;
         } else {
-            // Authentifier l'utilisateur
-            $user = authenticateUser($username, $password);
-            if ($user) {
-                // Verifier l'acces si l'app est restreinte
-                if (!empty($restrictedApp) && !hasAppAccess($restrictedApp, $user['id'])) {
-                    $error = 'Acces restreint. Cette application necessite une autorisation du formateur ou de l\'administrateur.';
-                } else {
-                login($user);
-                $_SESSION['current_session_id'] = $session['id'];
-                $_SESSION['current_session_code'] = $session['code'];
-                $_SESSION['current_session_nom'] = $session['nom'];
+            // Connexion classique avec identifiants
+            $username = trim($_POST['username'] ?? '');
+            $password = $_POST['password'] ?? '';
 
-                // Enregistrer le participant dans la session si necessaire
-                $participant = null;
-                $prenom = $user['prenom'] ?? $user['username'] ?? '';
-                $nom = $user['nom'] ?? '';
-
-                // Chercher participant existant (essayer plusieurs methodes)
-                try {
-                    $stmt = $db->prepare("SELECT id FROM participants WHERE session_id = ? AND user_id = ?");
-                    $stmt->execute([$session['id'], $user['id']]);
-                    $participant = $stmt->fetch();
-                } catch (PDOException $e) {
-                    // user_id column n'existe pas
-                }
-
-                if (!$participant) {
-                    // Chercher par prenom/nom
-                    $stmt = $db->prepare("SELECT id FROM participants WHERE session_id = ? AND prenom = ? AND nom = ?");
-                    $stmt->execute([$session['id'], $prenom, $nom]);
-                    $participant = $stmt->fetch();
-                }
-
-                if (!$participant) {
-                    // Creer nouveau participant
-                    try {
-                        $stmt = $db->prepare("INSERT INTO participants (session_id, user_id, prenom, nom, created_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)");
-                        $stmt->execute([$session['id'], $user['id'], $prenom, $nom]);
-                        $_SESSION['participant_id'] = $db->lastInsertId();
-                    } catch (PDOException $e) {
-                        // INSERT echoue - soit user_id n'existe pas, soit UNIQUE constraint
-                        try {
-                            $stmt = $db->prepare("INSERT INTO participants (session_id, prenom, nom, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)");
-                            $stmt->execute([$session['id'], $prenom, $nom]);
-                            $_SESSION['participant_id'] = $db->lastInsertId();
-                        } catch (PDOException $e2) {
-                            // UNIQUE constraint - le participant existe, le recuperer
-                            $stmt = $db->prepare("SELECT id FROM participants WHERE session_id = ? AND prenom = ? AND nom = ?");
-                            $stmt->execute([$session['id'], $prenom, $nom]);
-                            $participant = $stmt->fetch();
-                            $_SESSION['participant_id'] = $participant['id'];
-                        }
-                    }
-                } else {
-                    $_SESSION['participant_id'] = $participant['id'];
-                }
-
-                header('Location: ' . $redirectAfterLogin);
-                exit;
-            } // end access check else
+            if (empty($username) || empty($password)) {
+                $error = t('auth.fill_required');
             } else {
-                $error = t('auth.login_error');
+                $user = authenticateUser($username, $password);
+                if ($user) {
+                    login($user);
+                    $err = _joinSession($db, $session, $user, $redirectAfterLogin, $restrictedApp ?? null);
+                    if ($err) $error = $err;
+                } else {
+                    $error = t('auth.login_error');
+                }
             }
         }
     }
@@ -164,8 +152,6 @@ $sessions = getActiveSessions($db);
                 <?= renderLanguageSelector('text-sm border rounded px-2 py-1') ?>
             </div>
 
-            <h2 class="text-xl font-semibold text-gray-800 mb-6 text-center"><?= t('auth.login') ?></h2>
-
             <?php if ($error): ?>
                 <div class="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
                     <?= h($error) ?>
@@ -182,56 +168,91 @@ $sessions = getActiveSessions($db);
                 </div>
             <?php endif; ?>
 
-            <form method="POST" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1"><?= t('auth.training_session') ?></label>
-                    <?= renderSessionDropdown($db, $_POST['session_code'] ?? '') ?>
+            <?php if ($alreadyLoggedIn): ?>
+                <!-- Utilisateur deja connecte - formulaire simplifie (SSO) -->
+                <div class="mb-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm text-center">
+                    <p class="font-semibold"><?= t('auth.already_connected') ?? 'Deja connecte' ?></p>
+                    <p class="mt-1"><?= h($loggedUser['prenom'] . ' ' . $loggedUser['nom']) ?> (<?= h($loggedUser['username']) ?>)</p>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1"><?= t('auth.username') ?></label>
-                    <input type="text" name="username" required
-                           class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-<?= $appColor ?>-500 focus:ring-2 focus:ring-<?= $appColor ?>-200"
-                           placeholder="<?= t('auth.your_username') ?>"
-                           value="<?= h($_POST['username'] ?? '') ?>">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1"><?= t('auth.password') ?></label>
-                    <input type="password" name="password" required
-                           class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-<?= $appColor ?>-500 focus:ring-2 focus:ring-<?= $appColor ?>-200"
-                           placeholder="<?= t('auth.your_password') ?>">
-                    <div class="text-right mt-1">
-                        <a href="../shared-auth/forgot-password.php" class="text-sm text-<?= $appColor ?>-600 hover:text-<?= $appColor ?>-800">
-                            <?= t('auth.forgot_password') ?>
-                        </a>
+                <form method="POST" class="space-y-4">
+                    <input type="hidden" name="sso_join" value="1">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1"><?= t('auth.training_session') ?></label>
+                        <?= renderSessionDropdown($db, $_POST['session_code'] ?? '') ?>
                     </div>
+
+                    <button type="submit" <?= empty($sessions) ? 'disabled' : '' ?>
+                            class="w-full py-3 px-4 bg-<?= $appColor ?>-600 hover:bg-<?= $appColor ?>-700 disabled:bg-gray-400 text-white font-semibold rounded-lg transition-colors">
+                        <?= t('auth.join_session') ?? 'Rejoindre la session' ?>
+                    </button>
+                </form>
+
+                <div class="mt-4 pt-4 border-t border-gray-200 text-center text-sm text-gray-600">
+                    <a href="login.php?force_login=1" class="text-<?= $appColor ?>-600 hover:text-<?= $appColor ?>-800 font-medium">
+                        <?= t('auth.use_other_account') ?? 'Utiliser un autre compte' ?>
+                    </a>
                 </div>
 
-                <button type="submit" <?= empty($sessions) ? 'disabled' : '' ?>
-                        class="w-full py-3 px-4 bg-<?= $appColor ?>-600 hover:bg-<?= $appColor ?>-700 disabled:bg-gray-400 text-white font-semibold rounded-lg transition-colors">
-                    <?= t('auth.connect') ?>
-                </button>
-            </form>
+            <?php else: ?>
+                <!-- Formulaire de connexion classique -->
+                <h2 class="text-xl font-semibold text-gray-800 mb-6 text-center"><?= t('auth.login') ?></h2>
 
-            <?php if ($showRegister): ?>
-            <div class="mt-6 text-center text-sm text-gray-600">
-                <?= t('auth.no_account') ?>
-                <a href="register.php" class="text-<?= $appColor ?>-600 hover:text-<?= $appColor ?>-800 font-medium">
-                    <?= t('auth.sign_up') ?>
-                </a>
-            </div>
+                <form method="POST" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1"><?= t('auth.training_session') ?></label>
+                        <?= renderSessionDropdown($db, $_POST['session_code'] ?? '') ?>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1"><?= t('auth.username') ?></label>
+                        <input type="text" name="username" required
+                               class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-<?= $appColor ?>-500 focus:ring-2 focus:ring-<?= $appColor ?>-200"
+                               placeholder="<?= t('auth.your_username') ?>"
+                               value="<?= h($_POST['username'] ?? '') ?>">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1"><?= t('auth.password') ?></label>
+                        <input type="password" name="password" required
+                               class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-<?= $appColor ?>-500 focus:ring-2 focus:ring-<?= $appColor ?>-200"
+                               placeholder="<?= t('auth.your_password') ?>">
+                        <div class="text-right mt-1">
+                            <a href="../shared-auth/forgot-password.php" class="text-sm text-<?= $appColor ?>-600 hover:text-<?= $appColor ?>-800">
+                                <?= t('auth.forgot_password') ?>
+                            </a>
+                        </div>
+                    </div>
+
+                    <button type="submit" <?= empty($sessions) ? 'disabled' : '' ?>
+                            class="w-full py-3 px-4 bg-<?= $appColor ?>-600 hover:bg-<?= $appColor ?>-700 disabled:bg-gray-400 text-white font-semibold rounded-lg transition-colors">
+                        <?= t('auth.connect') ?>
+                    </button>
+                </form>
+
+                <?php if ($showRegister): ?>
+                <div class="mt-6 text-center text-sm text-gray-600">
+                    <?= t('auth.no_account') ?>
+                    <a href="register.php" class="text-<?= $appColor ?>-600 hover:text-<?= $appColor ?>-800 font-medium">
+                        <?= t('auth.sign_up') ?>
+                    </a>
+                </div>
+                <?php endif; ?>
+
+                <div class="mt-4 pt-4 border-t border-gray-200 text-center text-sm text-gray-600">
+                    <?= t('auth.want_session') ?>
+                    <a href="https://k1m.be/contact/" target="_blank" class="text-<?= $appColor ?>-600 hover:text-<?= $appColor ?>-800 font-medium">
+                        <?= t('auth.contact_us') ?>
+                    </a>
+                </div>
             <?php endif; ?>
-
-            <div class="mt-4 pt-4 border-t border-gray-200 text-center text-sm text-gray-600">
-                <?= t('auth.want_session') ?>
-                <a href="https://k1m.be/contact/" target="_blank" class="text-<?= $appColor ?>-600 hover:text-<?= $appColor ?>-800 font-medium">
-                    <?= t('auth.contact_us') ?>
-                </a>
-            </div>
         </div>
 
-        <div class="mt-6 text-center">
+        <div class="mt-6 text-center flex justify-center gap-4">
+            <a href="../" class="text-<?= $appColor ?>-200 hover:text-white text-sm">
+                <?= t('auth.back_to_home') ?? 'Toutes les applications' ?>
+            </a>
+            <span class="text-<?= $appColor ?>-300">|</span>
             <a href="formateur.php" class="text-<?= $appColor ?>-200 hover:text-white text-sm">
                 <?= t('auth.trainer_access') ?>
             </a>

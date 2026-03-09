@@ -631,3 +631,14 @@ function getUserAppAccess($userId) {
     $stmt->execute([$userId]);
     return array_column($stmt->fetchAll(), 'app_name');
 }
+
+/**
+ * Generer un lien HTML vers la page d'accueil des formations
+ * A utiliser dans les barres de navigation des applications
+ */
+function renderHomeLink($class = '') {
+    $defaultClass = 'text-sm bg-white/20 hover:bg-white/30 px-3 py-1 rounded transition';
+    $class = $class ?: $defaultClass;
+    $label = function_exists('t') ? (t('common.all_apps') ?? 'Toutes les apps') : 'Toutes les apps';
+    return '<a href="../" class="' . h($class) . '" title="' . h($label) . '">' . h($label) . '</a>';
+}

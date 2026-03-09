@@ -104,6 +104,7 @@ $jsTranslations = [
                 <?php if (isFormateur()): ?>
                 <a href="formateur.php" class="text-sm bg-white/20 hover:bg-white/30 px-3 py-1 rounded"><?= t('trainer.title') ?></a>
                 <?php endif; ?>
+                <?= renderHomeLink() ?>
                 <a href="logout.php" class="text-sm bg-white/20 hover:bg-white/30 px-3 py-1 rounded"><?= t('auth.logout') ?></a>
             </div>
         </div>

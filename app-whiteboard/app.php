@@ -123,6 +123,7 @@ foreach ($participantIds as $pid) {
                     <?= t('trainer.title') ?>
                 </a>
                 <?php endif; ?>
+                <?= renderHomeLink() ?>
                 <a href="logout.php" class="bg-indigo-500 hover:bg-indigo-400 px-3 py-1 rounded text-sm">
                     <?= t('auth.logout') ?>
                 </a>

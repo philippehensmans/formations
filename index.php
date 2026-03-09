@@ -134,7 +134,13 @@ $restrictedApps = getRestrictedApps();
                         <a href="admin-categories.php" class="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm transition">Categories</a>
                         <a href="shared-auth/admin.php" class="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm transition">Admin</a>
                         <?php endif; ?>
+                        <a href="shared-auth/logout-global.php" class="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm transition">
+                            <?= t('auth.logout') ?? 'Deconnexion' ?>
+                        </a>
                     <?php else: ?>
+                        <a href="login.php" class="px-4 py-2 bg-white/20 hover:bg-white/30 text-white font-semibold rounded-lg text-sm transition">
+                            <?= t('auth.login') ?? 'Connexion' ?>
+                        </a>
                         <a href="register.php" class="px-4 py-2 bg-white text-indigo-700 hover:bg-indigo-50 font-semibold rounded-lg text-sm transition">
                             <?= t('auth.register') ?>
                         </a>
