@@ -2,957 +2,451 @@
 require_once 'config.php';
 requireLoginWithSession();
 
-$user = getCurrentUser();
+$db = getDB();
+$user = getLoggedUser();
+if (!$user) { session_destroy(); header('Location: login.php'); exit; }
+
+$sessionId = validateCurrentSession($db);
+if (!$sessionId) { header('Location: login.php'); exit; }
+$sessionNom = $_SESSION['current_session_nom'] ?? '';
+
+// Charger l'arbre existant
+$stmt = $db->prepare("SELECT * FROM arbres WHERE user_id = ? AND session_id = ?");
+$stmt->execute([$user['id'], $sessionId]);
+$arbre = $stmt->fetch();
+
+if (!$arbre) {
+    $stmt = $db->prepare("INSERT INTO arbres (user_id, session_id) VALUES (?, ?)");
+    $stmt->execute([$user['id'], $sessionId]);
+    $stmt = $db->prepare("SELECT * FROM arbres WHERE user_id = ? AND session_id = ?");
+    $stmt->execute([$user['id'], $sessionId]);
+    $arbre = $stmt->fetch();
+}
+
+$consequences = json_decode($arbre['consequences'] ?? '[]', true) ?: [];
+$causes = json_decode($arbre['causes'] ?? '[]', true) ?: [];
+$objectifs = json_decode($arbre['objectifs'] ?? '[]', true) ?: [];
+$moyens = json_decode($arbre['moyens'] ?? '[]', true) ?: [];
+$isShared = (bool)$arbre['is_shared'];
 ?>
 <!DOCTYPE html>
 <html lang="<?= getCurrentLanguage() ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= t('problemtree.title') ?> - <?= sanitize($user['username']) ?></title>
+    <title><?= t('problemtree.title') ?> - <?= h($user['prenom']) ?> <?= h($user['nom']) ?></title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='12' y='2' width='8' height='6' fill='%23dc2626'/><rect x='4' y='12' width='8' height='6' fill='%23f59e0b'/><rect x='20' y='12' width='8' height='6' fill='%23f59e0b'/><rect x='12' y='24' width='8' height='6' fill='%2322c55e'/><line x1='16' y1='8' x2='16' y2='24' stroke='%23374151' stroke-width='2'/><line x1='8' y1='12' x2='16' y2='16' stroke='%23374151' stroke-width='2'/><line x1='24' y1='12' x2='16' y2='16' stroke='%23374151' stroke-width='2'/></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        :root {
-            --primary: #000000;
-            --secondary: #666666;
-            --accent: #1e3a8a;
-            --bg-main: #f5f5f5;
-            --bg-card: #ffffff;
-            --border: #e5e5e5;
-            --red: #dc2626;
-            --orange: #ea580c;
-            --amber: #d97706;
-            --green: #16a34a;
-            --blue: #2563eb;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            background: var(--bg-main);
-            color: var(--primary);
-            line-height: 1.6;
-            padding: 16px;
-        }
-
-        .user-bar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px 8px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .user-info { font-weight: 600; }
-
-        .user-bar a {
-            color: white;
-            text-decoration: none;
-            padding: 6px 12px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 4px;
-            font-size: 0.9rem;
-        }
-
-        .user-bar a:hover { background: rgba(255,255,255,0.3); }
-
-        .share-toggle {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .share-toggle label {
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-
-        .save-status {
-            font-size: 0.85rem;
-            opacity: 0.9;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: var(--bg-card);
-            border-radius: 0 0 8px 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            padding: 32px;
-        }
-
-        header {
-            margin-bottom: 32px;
-            text-align: center;
-            border-bottom: 3px solid var(--accent);
-            padding-bottom: 24px;
-        }
-
-        header h1 { font-size: 2rem; font-weight: bold; color: var(--primary); margin-bottom: 8px; }
-        header p { color: var(--secondary); font-style: italic; }
-
-        .form-group {
-            margin-bottom: 24px;
-            padding: 20px;
-            background: #fafafa;
-            border-radius: 4px;
-            border: 1px solid var(--border);
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: 600;
-            color: var(--primary);
-            margin-bottom: 8px;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid var(--border);
-            border-radius: 4px;
-            font-size: 1rem;
-        }
-
-        .view-toggle {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 24px;
-            justify-content: center;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 0.9rem;
-        }
-
-        .btn:hover { opacity: 0.85; }
-        .btn-primary { background: var(--accent); color: white; }
-        .btn-outline { background: white; color: var(--primary); border: 2px solid var(--border); }
-        .btn-outline.active { background: var(--accent); color: white; border-color: var(--accent); }
-        .btn-red { background: var(--red); color: white; }
-        .btn-amber { background: var(--amber); color: white; }
-        .btn-green { background: var(--green); color: white; }
-        .btn-blue { background: var(--blue); color: white; }
-
-        .tree-view {
-            display: none;
-            margin: 40px 0;
-            padding: 40px 20px;
-            background: linear-gradient(to bottom, #f0f9ff 0%, #ffffff 30%, #ffffff 70%, #fffbeb 100%);
-            border-radius: 8px;
-            min-height: 800px;
-        }
-
-        .tree-view.active { display: block; }
-
-        .tree-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 60px;
-        }
-
-        .consequences-section, .causes-section {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .tree-node {
-            background: white;
-            border: 2px solid var(--border);
-            border-radius: 8px;
-            padding: 16px;
-            min-width: 200px;
-            max-width: 280px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s;
-            position: relative;
-        }
-
-        .tree-node:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .tree-node.consequence { border-color: #fecaca; background: #fef2f2; }
-        .tree-node.consequence::after {
-            content: '';
-            position: absolute;
-            bottom: -30px;
-            left: 50%;
-            width: 2px;
-            height: 30px;
-            background: #fecaca;
-        }
-
-        .tree-node.central {
-            border: 3px solid #fb923c;
-            background: #fff7ed;
-            min-width: 300px;
-            max-width: 400px;
-            padding: 24px;
-        }
-
-        .tree-node.cause { border-color: #fde68a; background: #fffbeb; }
-        .tree-node.cause::before {
-            content: '';
-            position: absolute;
-            top: -30px;
-            left: 50%;
-            width: 2px;
-            height: 30px;
-            background: #fde68a;
-        }
-
-        .tree-node.objectif { border-color: #bbf7d0; background: #f0fdf4; }
-        .tree-node.objectif::after {
-            content: '';
-            position: absolute;
-            bottom: -30px;
-            left: 50%;
-            width: 2px;
-            height: 30px;
-            background: #bbf7d0;
-        }
-
-        .tree-node.moyen { border-color: #bfdbfe; background: #eff6ff; }
-        .tree-node.moyen::before {
-            content: '';
-            position: absolute;
-            top: -30px;
-            left: 50%;
-            width: 2px;
-            height: 30px;
-            background: #bfdbfe;
-        }
-
-        .node-title {
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-            opacity: 0.7;
-        }
-
-        .node-content { font-size: 0.95rem; line-height: 1.5; }
-        .node-content.editable {
-            border: 1px dashed var(--border);
-            padding: 8px;
-            border-radius: 4px;
-            cursor: text;
-            min-height: 40px;
-        }
-        .node-content.editable:hover { border-color: var(--accent); background: rgba(30, 58, 138, 0.05); }
-        .node-content.empty { color: var(--secondary); font-style: italic; }
-        .central-node { text-align: center; font-size: 1.1rem; font-weight: 600; }
-
-        .add-node-btn {
-            background: white;
-            border: 2px dashed var(--border);
-            border-radius: 8px;
-            padding: 16px;
-            min-width: 200px;
-            color: var(--secondary);
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 0.9rem;
-        }
-
-        .add-node-btn:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-            background: rgba(30, 58, 138, 0.05);
-        }
-
-        .form-view { display: none; }
-        .form-view.active { display: block; }
-
-        .section {
-            margin-bottom: 32px;
-            padding: 24px;
-            border-radius: 4px;
-            border: 2px solid var(--border);
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .section-title { font-size: 1.25rem; font-weight: bold; }
-
-        .section-consequences { background: #fef2f2; border-color: #fecaca; }
-        .section-consequences .section-title { color: var(--red); }
-
-        .section-central { background: #fff7ed; border: 3px solid #fb923c; }
-        .section-central .section-title { color: var(--orange); text-align: center; font-size: 1.5rem; }
-
-        .section-causes { background: #fffbeb; border-color: #fde68a; }
-        .section-causes .section-title { color: var(--amber); }
-
-        .section-objectifs { background: #f0fdf4; border-color: #bbf7d0; }
-        .section-objectifs .section-title { color: var(--green); }
-
-        .section-moyens { background: #eff6ff; border-color: #bfdbfe; }
-        .section-moyens .section-title { color: var(--blue); }
-
-        .item-list { display: flex; flex-direction: column; gap: 12px; }
-        .item-row { display: flex; gap: 8px; align-items: center; }
-        .item-row input {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid var(--border);
-            border-radius: 4px;
-            font-size: 1rem;
-        }
-
-        .btn-remove {
-            background: none;
-            border: none;
-            color: var(--red);
-            cursor: pointer;
-            font-size: 1.2rem;
-            padding: 8px;
-        }
-
-        .info-text { font-size: 0.9rem; color: var(--secondary); font-style: italic; margin-top: 4px; }
-
-        textarea.central-input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid var(--border);
-            border-radius: 4px;
-            font-size: 1rem;
-            text-align: center;
-            font-weight: 600;
-        }
-
-        .tabs {
-            display: flex;
-            border-bottom: 2px solid var(--border);
-            margin-bottom: 32px;
-        }
-
-        .tab-button {
-            padding: 12px 24px;
-            font-weight: 600;
-            background: none;
-            border: none;
-            color: var(--secondary);
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            transition: all 0.2s;
-        }
-
-        .tab-button:hover { color: var(--primary); }
-        .tab-button.active { color: var(--accent); border-bottom-color: var(--accent); }
-
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        .actions {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-top: 32px;
-            padding-top: 32px;
-            border-top: 2px solid var(--border);
-        }
-
-        .section-label {
-            text-align: center;
-            font-weight: 600;
-            color: var(--secondary);
-            margin-bottom: 20px;
-            font-size: 1.1rem;
-        }
-
-        .legend {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-
-        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
-        .legend-color { width: 20px; height: 20px; border-radius: 4px; border: 2px solid currentColor; }
-
+        body { background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #92400e 100%); min-height: 100vh; }
         @media print {
             .no-print { display: none !important; }
-            .tree-view { background: white; }
-            .user-bar { display: none; }
+            body { background: white; }
         }
-
-        @media (max-width: 768px) {
-            .container { padding: 16px; }
-            header h1 { font-size: 1.5rem; }
-            .tree-node { min-width: 150px; }
-        }
+        .tree-box { transition: transform 0.2s, box-shadow 0.2s; }
+        .tree-box:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
     </style>
 </head>
-<body>
+<body class="p-4 md:p-8">
     <?= renderLanguageScript() ?>
-    <div style="max-width: 1400px; margin: 0 auto;">
-        <div class="user-bar no-print">
-            <div class="user-info">
-                <?= t('app.connected') ?> : <strong><?= sanitize($user['username']) ?></strong>
+
+    <!-- Header -->
+    <header class="no-print max-w-6xl mx-auto mb-4">
+        <div class="bg-amber-900 text-white rounded-lg p-4 flex flex-wrap justify-between items-center gap-4">
+            <div>
+                <h1 class="font-bold text-lg"><?= t('problemtree.title') ?></h1>
+                <p class="text-amber-200 text-sm">
+                    <?= h($user['prenom']) ?> <?= h($user['nom']) ?>
+                    | Session: <?= h($sessionNom) ?>
+                </p>
+            </div>
+            <div class="flex items-center gap-3 flex-wrap">
+                <?= renderLanguageSelector('lang-select') ?>
+                <label class="flex items-center gap-2 text-sm cursor-pointer bg-amber-800 px-3 py-2 rounded">
+                    <input type="checkbox" id="shareToggle" <?= $isShared ? 'checked' : '' ?> onchange="toggleShare()">
+                    <?= t('problemtree.share_trainer') ?>
+                </label>
+                <span id="saveStatus" class="text-sm text-amber-200"></span>
+                <button onclick="manualSave()" class="bg-amber-700 hover:bg-amber-600 px-4 py-2 rounded text-sm">
+                    <?= t('app.save') ?>
+                </button>
                 <?php if (isFormateur()): ?>
-                    <a href="formateur.php" style="margin-left: 10px;"><?= t('trainer.title') ?></a>
+                <a href="formateur.php" class="bg-amber-700 hover:bg-amber-600 px-4 py-2 rounded text-sm">
+                    <?= t('trainer.title') ?>
+                </a>
                 <?php endif; ?>
+                <?= renderHomeLink() ?>
+                <a href="logout.php" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm">
+                    <?= t('auth.logout') ?>
+                </a>
             </div>
-            <?= renderLanguageSelector('text-sm bg-white/20 text-white px-2 py-1 rounded border border-white/30') ?>
-            <div class="share-toggle">
-                <input type="checkbox" id="shareToggle" onchange="toggleShare()">
-                <label for="shareToggle"><?= t('problemtree.share_trainer') ?></label>
+        </div>
+    </header>
+
+    <div class="max-w-6xl mx-auto">
+        <!-- Infos projet -->
+        <div class="bg-white rounded-t-xl shadow-lg p-6 border-b-2 border-amber-200">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1"><?= t('problemtree.project_name') ?></label>
+                    <input type="text" id="nomProjet" value="<?= h($arbre['nom_projet'] ?? '') ?>"
+                           class="w-full px-4 py-2 border-2 border-amber-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                           placeholder="<?= t('problemtree.project_placeholder') ?>" oninput="scheduleSave()">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1"><?= t('problemtree.group_participants') ?></label>
+                    <input type="text" id="participants" value="<?= h($arbre['participants'] ?? '') ?>"
+                           class="w-full px-4 py-2 border-2 border-amber-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                           placeholder="<?= t('problemtree.participants_placeholder') ?>" oninput="scheduleSave()">
+                </div>
             </div>
-            <div class="save-status" id="saveStatus"><?= t('common.loading') ?></div>
-            <?= renderHomeLink() ?>
-                <a href="logout.php"><?= t('auth.logout') ?></a>
         </div>
 
-        <div class="container">
-            <header>
-                <h1><?= t('problemtree.app_title') ?></h1>
-                <p><?= t('problemtree.app_subtitle') ?></p>
-            </header>
-
-            <div class="form-group">
-                <label for="nomProjet"><?= t('problemtree.project_name') ?></label>
-                <input type="text" id="nomProjet" placeholder="<?= t('problemtree.project_placeholder') ?>" oninput="updateTree()">
+        <!-- Tabs -->
+        <div class="bg-white shadow-lg no-print">
+            <div class="flex border-b-2 border-gray-200">
+                <button id="tab-problemes" onclick="switchTab('problemes')"
+                        class="flex-1 py-3 px-6 font-semibold text-center transition border-b-3 border-transparent text-red-700 border-red-500" style="border-bottom: 3px solid #dc2626;">
+                    <?= t('problemtree.problems_tree') ?>
+                </button>
+                <button id="tab-solutions" onclick="switchTab('solutions')"
+                        class="flex-1 py-3 px-6 font-semibold text-center transition border-b-3 border-transparent text-gray-400 hover:text-green-700">
+                    <?= t('problemtree.solutions_tree') ?>
+                </button>
             </div>
+        </div>
 
-            <div class="form-group">
-                <label for="participants"><?= t('problemtree.group_participants') ?></label>
-                <input type="text" id="participants" placeholder="<?= t('problemtree.participants_placeholder') ?>" oninput="scheduleAutoSave()">
-            </div>
-
-            <div class="view-toggle no-print">
-                <button class="btn btn-outline active" onclick="switchView('tree')"><?= t('problemtree.tree_view') ?></button>
-                <button class="btn btn-outline" onclick="switchView('form')"><?= t('problemtree.form_view') ?></button>
-            </div>
-
-            <div class="tabs no-print">
-                <button id="tab-problemes" class="tab-button active" onclick="switchTab('problemes')"><?= t('problemtree.problems_tree') ?></button>
-                <button id="tab-solutions" class="tab-button" onclick="switchTab('solutions')"><?= t('problemtree.solutions_tree') ?></button>
-            </div>
-
-            <!-- VUE ARBRE - Problèmes -->
-            <div id="tree-problemes" class="tree-view active">
-                <div class="legend no-print">
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #fef2f2; color: #fecaca;"></div>
-                        <span><?= t('problemtree.consequences') ?></span>
+        <!-- Tab Problemes -->
+        <div id="panel-problemes" class="bg-white shadow-lg p-6 md:p-8">
+            <!-- Consequences -->
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-red-700"><?= t('problemtree.consequences') ?></h3>
+                        <p class="text-sm text-gray-500 italic"><?= t('problemtree.consequences_desc') ?></p>
                     </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #fff7ed; color: #fb923c;"></div>
-                        <span><?= t('problemtree.central_problem') ?></span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #fffbeb; color: #fde68a;"></div>
-                        <span><?= t('problemtree.causes') ?></span>
-                    </div>
+                    <button onclick="addItem('consequences')" class="no-print bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
+                        + <?= t('common.add') ?>
+                    </button>
                 </div>
-
-                <div class="tree-container">
-                    <div class="section-label"><?= t('problemtree.consequences_effects') ?></div>
-                    <div class="consequences-section" id="tree-consequences">
-                        <button class="add-node-btn" onclick="addConsequence()">+ <?= t('problemtree.add_consequence') ?></button>
-                    </div>
-
-                    <div class="tree-node central" onclick="editCentralNode('problemeCentral')">
-                        <div class="node-title"><?= t('problemtree.central_problem') ?></div>
-                        <div class="node-content central-node editable" id="tree-problemeCentral"><?= t('problemtree.click_define_problem') ?></div>
-                    </div>
-
-                    <div class="section-label"><?= t('problemtree.causes_roots') ?></div>
-                    <div class="causes-section" id="tree-causes">
-                        <button class="add-node-btn" onclick="addCause()">+ <?= t('problemtree.add_cause') ?></button>
-                    </div>
+                <div id="list-consequences" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <!-- Filled by JS -->
                 </div>
             </div>
 
-            <!-- VUE ARBRE - Solutions -->
-            <div id="tree-solutions" class="tree-view">
-                <div class="legend no-print">
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #f0fdf4; color: #bbf7d0;"></div>
-                        <span><?= t('problemtree.objectives') ?></span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #fff7ed; color: #fb923c;"></div>
-                        <span><?= t('problemtree.central_objective') ?></span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #eff6ff; color: #bfdbfe;"></div>
-                        <span><?= t('problemtree.means') ?></span>
-                    </div>
-                </div>
+            <!-- Fleches -->
+            <div class="text-center my-4 text-3xl text-gray-300 select-none">&#8595; &#8595; &#8595;</div>
 
-                <div class="tree-container">
-                    <div class="section-label"><?= t('problemtree.positive_impacts') ?></div>
-                    <div class="consequences-section" id="tree-objectifs">
-                        <button class="add-node-btn" onclick="addObjectif()">+ <?= t('problemtree.add_objective') ?></button>
-                    </div>
-
-                    <div class="tree-node central" onclick="editCentralNode('objectifCentral')">
-                        <div class="node-title"><?= t('problemtree.central_objective') ?></div>
-                        <div class="node-content central-node editable" id="tree-objectifCentral"><?= t('problemtree.click_define_objective') ?></div>
-                    </div>
-
-                    <div class="section-label"><?= t('problemtree.means_actions') ?></div>
-                    <div class="causes-section" id="tree-moyens">
-                        <button class="add-node-btn" onclick="addMoyen()">+ <?= t('problemtree.add_means') ?></button>
-                    </div>
+            <!-- Probleme central -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-orange-700 text-center mb-2"><?= t('problemtree.central_problem') ?></h3>
+                <p class="text-sm text-gray-500 italic text-center mb-3"><?= t('problemtree.central_problem_question') ?></p>
+                <div class="max-w-2xl mx-auto">
+                    <textarea id="problemeCentral" rows="3"
+                              class="w-full px-4 py-3 border-3 border-orange-400 rounded-xl text-center font-semibold text-lg focus:ring-2 focus:ring-orange-500 bg-orange-50"
+                              placeholder="<?= t('problemtree.click_define_problem') ?>"
+                              oninput="scheduleSave()"><?= h($arbre['probleme_central'] ?? '') ?></textarea>
                 </div>
             </div>
 
-            <!-- VUE FORMULAIRE - Problèmes -->
-            <div id="form-problemes" class="form-view">
-                <div class="section section-consequences">
-                    <div class="section-header">
-                        <div>
-                            <div class="section-title"><?= t('problemtree.consequences_effects') ?></div>
-                            <div class="info-text"><?= t('problemtree.consequences_desc') ?></div>
-                        </div>
-                        <button onclick="addConsequence()" class="btn btn-red">+ <?= t('common.add') ?></button>
-                    </div>
-                    <div id="consequencesList" class="item-list"></div>
-                </div>
+            <!-- Fleches -->
+            <div class="text-center my-4 text-3xl text-gray-300 select-none">&#8593; &#8593; &#8593;</div>
 
-                <div class="section section-central">
-                    <div class="section-title"><?= t('problemtree.central_problem') ?></div>
-                    <div class="info-text" style="text-align: center; margin-bottom: 16px;"><?= t('problemtree.central_problem_question') ?></div>
-                    <textarea id="problemeCentral" rows="3" class="central-input" placeholder="<?= t('problemtree.project_placeholder') ?>" oninput="updateTree()"></textarea>
-                </div>
-
-                <div class="section section-causes">
-                    <div class="section-header">
-                        <div>
-                            <div class="section-title"><?= t('problemtree.causes_roots') ?></div>
-                            <div class="info-text"><?= t('problemtree.causes_desc') ?></div>
-                        </div>
-                        <button onclick="addCause()" class="btn btn-amber">+ <?= t('common.add') ?></button>
+            <!-- Causes -->
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-amber-700"><?= t('problemtree.causes') ?></h3>
+                        <p class="text-sm text-gray-500 italic"><?= t('problemtree.causes_desc') ?></p>
                     </div>
-                    <div id="causesList" class="item-list"></div>
+                    <button onclick="addItem('causes')" class="no-print bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
+                        + <?= t('common.add') ?>
+                    </button>
+                </div>
+                <div id="list-causes" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Solutions (hidden by default) -->
+        <div id="panel-solutions" class="bg-white shadow-lg p-6 md:p-8" style="display:none;">
+            <!-- Objectifs -->
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-green-700"><?= t('problemtree.objectives') ?></h3>
+                        <p class="text-sm text-gray-500 italic"><?= t('problemtree.objectives_desc') ?></p>
+                    </div>
+                    <button onclick="addItem('objectifs')" class="no-print bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
+                        + <?= t('common.add') ?>
+                    </button>
+                </div>
+                <div id="list-objectifs" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <!-- Filled by JS -->
                 </div>
             </div>
 
-            <!-- VUE FORMULAIRE - Solutions -->
-            <div id="form-solutions" class="form-view">
-                <div class="section section-objectifs">
-                    <div class="section-header">
-                        <div>
-                            <div class="section-title"><?= t('problemtree.objectives') ?></div>
-                            <div class="info-text"><?= t('problemtree.objectives_desc') ?></div>
-                        </div>
-                        <button onclick="addObjectif()" class="btn btn-green">+ <?= t('common.add') ?></button>
-                    </div>
-                    <div id="objectifsList" class="item-list"></div>
-                </div>
+            <!-- Fleches -->
+            <div class="text-center my-4 text-3xl text-gray-300 select-none">&#8595; &#8595; &#8595;</div>
 
-                <div class="section section-central">
-                    <div class="section-title"><?= t('problemtree.central_objective') ?></div>
-                    <div class="info-text" style="text-align: center; margin-bottom: 16px;"><?= t('problemtree.central_objective_reformulation') ?></div>
-                    <textarea id="objectifCentral" rows="3" class="central-input" placeholder="<?= t('problemtree.project_placeholder') ?>" oninput="updateTree()"></textarea>
-                </div>
-
-                <div class="section section-moyens">
-                    <div class="section-header">
-                        <div>
-                            <div class="section-title"><?= t('problemtree.means') ?></div>
-                            <div class="info-text"><?= t('problemtree.means_desc') ?></div>
-                        </div>
-                        <button onclick="addMoyen()" class="btn btn-blue">+ <?= t('common.add') ?></button>
-                    </div>
-                    <div id="moyensList" class="item-list"></div>
+            <!-- Objectif central -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-teal-700 text-center mb-2"><?= t('problemtree.central_objective') ?></h3>
+                <p class="text-sm text-gray-500 italic text-center mb-3"><?= t('problemtree.central_objective_reformulation') ?></p>
+                <div class="max-w-2xl mx-auto">
+                    <textarea id="objectifCentral" rows="3"
+                              class="w-full px-4 py-3 border-3 border-teal-400 rounded-xl text-center font-semibold text-lg focus:ring-2 focus:ring-teal-500 bg-teal-50"
+                              placeholder="<?= t('problemtree.click_define_objective') ?>"
+                              oninput="scheduleSave()"><?= h($arbre['objectif_central'] ?? '') ?></textarea>
                 </div>
             </div>
 
-            <div class="actions no-print">
-                <button onclick="window.print()" class="btn btn-primary"><?= t('common.print') ?> / PDF</button>
-                <button onclick="exportJSON()" class="btn btn-outline"><?= t('common.export') ?> JSON</button>
-                <button onclick="exportToExcel()" class="btn btn-outline"><?= t('app.export_excel') ?></button>
-                <button onclick="resetForm()" class="btn btn-outline"><?= t('app.reset') ?></button>
+            <!-- Fleches -->
+            <div class="text-center my-4 text-3xl text-gray-300 select-none">&#8593; &#8593; &#8593;</div>
+
+            <!-- Moyens -->
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-blue-700"><?= t('problemtree.means') ?></h3>
+                        <p class="text-sm text-gray-500 italic"><?= t('problemtree.means_desc') ?></p>
+                    </div>
+                    <button onclick="addItem('moyens')" class="no-print bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
+                        + <?= t('common.add') ?>
+                    </button>
+                </div>
+                <div id="list-moyens" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="bg-white rounded-b-xl shadow-lg p-6 border-t-2 border-gray-100 no-print">
+            <div class="flex flex-wrap gap-3">
+                <button onclick="window.print()" class="bg-amber-600 text-white px-6 py-3 rounded-lg hover:bg-amber-700 font-semibold shadow">
+                    <?= t('common.print') ?> / PDF
+                </button>
+                <button onclick="exportToExcel()" class="bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 font-semibold shadow">
+                    Excel
+                </button>
+                <button onclick="exportJSON()" class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 font-semibold shadow">
+                    JSON
+                </button>
+                <button onclick="resetForm()" class="ml-auto bg-white text-red-600 border-2 border-red-300 px-6 py-3 rounded-lg hover:bg-red-50 font-semibold">
+                    <?= t('app.reset') ?>
+                </button>
             </div>
         </div>
     </div>
 
     <script>
-        // Traductions JavaScript
-        const jsTranslations = {
-            dataLoaded: '<?= t('app.data_loaded') ?>',
-            loadError: '<?= t('app.load_error') ?>',
-            pendingChanges: '<?= t('app.pending_changes') ?>',
-            saving: '<?= t('app.saving') ?>',
-            savedAt: '<?= t('app.saved_at') ?>',
-            connectionError: '<?= t('app.connection_error') ?>',
-            sharedWithTrainer: '<?= t('problemtree.shared_with_trainer') ?>',
-            notShared: '<?= t('problemtree.not_shared') ?>',
-            clickDefineProb: '<?= t('problemtree.click_define_problem') ?>',
-            clickDefineObj: '<?= t('problemtree.click_define_objective') ?>',
-            addConsequence: '<?= t('problemtree.add_consequence') ?>',
-            addCause: '<?= t('problemtree.add_cause') ?>',
-            addObjective: '<?= t('problemtree.add_objective') ?>',
-            addMeans: '<?= t('problemtree.add_means') ?>',
-            newConsequence: '<?= t('problemtree.new_consequence') ?>',
-            newCause: '<?= t('problemtree.new_cause') ?>',
-            newObjective: '<?= t('problemtree.new_objective') ?>',
-            newMeans: '<?= t('problemtree.new_means') ?>',
-            deleteConfirm: '<?= t('problemtree.delete_confirm') ?>',
-            resetConfirm: '<?= t('problemtree.reset_confirm') ?>'
+        let data = {
+            consequences: <?= json_encode($consequences) ?>,
+            causes: <?= json_encode($causes) ?>,
+            objectifs: <?= json_encode($objectifs) ?>,
+            moyens: <?= json_encode($moyens) ?>
+        };
+        let currentTab = 'problemes';
+        let saveTimeout = null;
+
+        const colors = {
+            consequences: { bg: 'bg-red-50', border: 'border-red-300', focus: 'focus:ring-red-400', text: 'text-red-600' },
+            causes: { bg: 'bg-amber-50', border: 'border-amber-300', focus: 'focus:ring-amber-400', text: 'text-amber-600' },
+            objectifs: { bg: 'bg-green-50', border: 'border-green-300', focus: 'focus:ring-green-400', text: 'text-green-600' },
+            moyens: { bg: 'bg-blue-50', border: 'border-blue-300', focus: 'focus:ring-blue-400', text: 'text-blue-600' }
         };
 
-        let currentView = 'tree';
-        let currentTab = 'problemes';
-        let data = { consequences: [], causes: [], objectifs: [], moyens: [] };
-        let autoSaveTimeout = null;
-        let isShared = false;
+        document.addEventListener('DOMContentLoaded', renderAll);
 
-        // Chargement initial
-        window.addEventListener('load', loadFromServer);
+        function renderAll() {
+            ['consequences', 'causes', 'objectifs', 'moyens'].forEach(renderList);
+        }
 
-        async function loadFromServer() {
-            try {
-                const response = await fetch('api.php?action=load');
-                const result = await response.json();
+        function renderList(key) {
+            const container = document.getElementById('list-' + key);
+            const c = colors[key];
 
-                if (result.success && result.data) {
-                    document.getElementById('nomProjet').value = result.data.nomProjet || '';
-                    document.getElementById('participants').value = result.data.participants || '';
-                    document.getElementById('problemeCentral').value = result.data.problemeCentral || '';
-                    document.getElementById('objectifCentral').value = result.data.objectifCentral || '';
-                    data.consequences = result.data.consequences || [];
-                    data.causes = result.data.causes || [];
-                    data.objectifs = result.data.objectifs || [];
-                    data.moyens = result.data.moyens || [];
-                    isShared = result.data.isShared || false;
-                    document.getElementById('shareToggle').checked = isShared;
-                    updateTree();
-                    updateFormLists();
-                }
-                updateSaveStatus(jsTranslations.dataLoaded);
-            } catch (error) {
-                console.error('Erreur de chargement:', error);
-                updateSaveStatus(jsTranslations.loadError);
+            if (data[key].length === 0) {
+                container.innerHTML = '<div class="col-span-full text-center text-gray-400 italic py-6">Cliquez sur "+ Ajouter" pour commencer</div>';
+                return;
             }
+
+            container.innerHTML = data[key].map((text, i) => `
+                <div class="tree-box ${c.bg} border-2 ${c.border} rounded-xl p-1 relative group">
+                    <textarea rows="2" class="w-full bg-transparent border-none resize-none focus:ring-2 ${c.focus} rounded-lg p-2 text-sm"
+                              placeholder="Saisir ici..."
+                              oninput="data['${key}'][${i}] = this.value; scheduleSave()">${escapeHtml(text)}</textarea>
+                    <button onclick="removeItem('${key}', ${i})"
+                            class="no-print absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs font-bold opacity-0 group-hover:opacity-100 transition shadow">
+                        x
+                    </button>
+                </div>
+            `).join('');
         }
 
-        function scheduleAutoSave() {
-            if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
-            autoSaveTimeout = setTimeout(saveToServer, 1500);
-            updateSaveStatus(jsTranslations.pendingChanges);
-        }
-
-        async function saveToServer() {
-            updateSaveStatus(jsTranslations.saving);
-            try {
-                const saveData = {
-                    nomProjet: document.getElementById('nomProjet').value,
-                    participants: document.getElementById('participants').value,
-                    problemeCentral: document.getElementById('problemeCentral').value,
-                    objectifCentral: document.getElementById('objectifCentral').value,
-                    consequences: data.consequences,
-                    causes: data.causes,
-                    objectifs: data.objectifs,
-                    moyens: data.moyens
-                };
-
-                const response = await fetch('api.php?action=save', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(saveData)
-                });
-
-                const result = await response.json();
-                if (result.success) {
-                    updateSaveStatus(jsTranslations.savedAt + ' ' + new Date().toLocaleTimeString());
-                } else {
-                    updateSaveStatus(jsTranslations.error + ': ' + result.error);
-                }
-            } catch (error) {
-                console.error('Erreur de sauvegarde:', error);
-                updateSaveStatus(jsTranslations.connectionError);
+        function addItem(key) {
+            data[key].push('');
+            renderList(key);
+            // Focus the new textarea
+            const container = document.getElementById('list-' + key);
+            const textareas = container.querySelectorAll('textarea');
+            if (textareas.length > 0) {
+                textareas[textareas.length - 1].focus();
             }
+            scheduleSave();
         }
 
-        async function toggleShare() {
-            isShared = document.getElementById('shareToggle').checked;
-            try {
-                await fetch('api.php?action=share', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ shared: isShared })
-                });
-                updateSaveStatus(isShared ? jsTranslations.sharedWithTrainer : jsTranslations.notShared);
-            } catch (error) {
-                console.error('Erreur:', error);
-            }
-        }
-
-        function updateSaveStatus(message) {
-            document.getElementById('saveStatus').textContent = message;
-        }
-
-        function switchView(view) {
-            currentView = view;
-            document.querySelectorAll('.view-toggle .btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-
-            if (view === 'tree') {
-                document.getElementById('tree-' + currentTab).style.display = 'block';
-                document.getElementById('form-' + currentTab).classList.remove('active');
-            } else {
-                document.getElementById('tree-' + currentTab).style.display = 'none';
-                document.getElementById('form-' + currentTab).classList.add('active');
-            }
+        function removeItem(key, index) {
+            data[key].splice(index, 1);
+            renderList(key);
+            scheduleSave();
         }
 
         function switchTab(tab) {
             currentTab = tab;
-            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-            document.getElementById('tab-' + tab).classList.add('active');
-            document.querySelectorAll('.tree-view, .form-view').forEach(view => {
-                view.style.display = 'none';
-                view.classList.remove('active');
-            });
+            document.getElementById('panel-problemes').style.display = tab === 'problemes' ? '' : 'none';
+            document.getElementById('panel-solutions').style.display = tab === 'solutions' ? '' : 'none';
 
-            if (currentView === 'tree') {
-                document.getElementById('tree-' + tab).style.display = 'block';
-                document.getElementById('tree-' + tab).classList.add('active');
+            const tabP = document.getElementById('tab-problemes');
+            const tabS = document.getElementById('tab-solutions');
+
+            if (tab === 'problemes') {
+                tabP.className = 'flex-1 py-3 px-6 font-semibold text-center transition text-red-700';
+                tabP.style.borderBottom = '3px solid #dc2626';
+                tabS.className = 'flex-1 py-3 px-6 font-semibold text-center transition text-gray-400 hover:text-green-700';
+                tabS.style.borderBottom = '3px solid transparent';
             } else {
-                document.getElementById('form-' + tab).classList.add('active');
+                tabS.className = 'flex-1 py-3 px-6 font-semibold text-center transition text-green-700';
+                tabS.style.borderBottom = '3px solid #16a34a';
+                tabP.className = 'flex-1 py-3 px-6 font-semibold text-center transition text-gray-400 hover:text-red-700';
+                tabP.style.borderBottom = '3px solid transparent';
             }
         }
 
-        function editCentralNode(id) {
-            const currentText = document.getElementById(id).value;
-            const newText = prompt('Modifier le texte:', currentText);
-            if (newText !== null) {
-                document.getElementById(id).value = newText;
-                updateTree();
-            }
+        function scheduleSave() {
+            if (saveTimeout) clearTimeout(saveTimeout);
+            document.getElementById('saveStatus').textContent = 'Modifications...';
+            saveTimeout = setTimeout(doSave, 1500);
         }
 
-        function updateTree() {
-            const problemeCentral = document.getElementById('problemeCentral').value;
-            const treeProblemeCentral = document.getElementById('tree-problemeCentral');
-            treeProblemeCentral.textContent = problemeCentral || jsTranslations.clickDefineProb;
-            treeProblemeCentral.classList.toggle('empty', !problemeCentral);
-
-            const objectifCentral = document.getElementById('objectifCentral').value;
-            const treeObjectifCentral = document.getElementById('tree-objectifCentral');
-            treeObjectifCentral.textContent = objectifCentral || jsTranslations.clickDefineObj;
-            treeObjectifCentral.classList.toggle('empty', !objectifCentral);
-
-            renderTreeNodes();
-            scheduleAutoSave();
+        function manualSave() {
+            if (saveTimeout) clearTimeout(saveTimeout);
+            doSave();
         }
 
-        function renderTreeNodes() {
-            const labels = {
-                consequences: jsTranslations.addConsequence,
-                causes: jsTranslations.addCause,
-                objectifs: jsTranslations.addObjective,
-                moyens: jsTranslations.addMeans
+        function getFormData() {
+            return {
+                nomProjet: document.getElementById('nomProjet').value,
+                participants: document.getElementById('participants').value,
+                problemeCentral: document.getElementById('problemeCentral').value,
+                objectifCentral: document.getElementById('objectifCentral').value,
+                consequences: data.consequences,
+                causes: data.causes,
+                objectifs: data.objectifs,
+                moyens: data.moyens
             };
-            ['consequences', 'causes', 'objectifs', 'moyens'].forEach(key => {
-                const container = document.getElementById('tree-' + key);
-                const type = key === 'consequences' ? 'consequence' :
-                            key === 'causes' ? 'cause' :
-                            key === 'objectifs' ? 'objectif' : 'moyen';
+        }
 
-                container.innerHTML = '';
-                data[key].forEach((text, index) => {
-                    if (text.trim()) {
-                        const node = createTreeNode(text, type, index, key);
-                        container.appendChild(node);
-                    }
+        async function doSave() {
+            document.getElementById('saveStatus').textContent = 'Sauvegarde...';
+            try {
+                const response = await fetch('api.php?action=save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(getFormData())
                 });
-
-                const addBtn = document.createElement('button');
-                addBtn.className = 'add-node-btn';
-                addBtn.textContent = '+ ' + labels[key];
-                addBtn.onclick = () => addItem(key);
-                container.appendChild(addBtn);
-            });
-        }
-
-        function createTreeNode(text, type, index, dataKey) {
-            const node = document.createElement('div');
-            node.className = 'tree-node ' + type;
-            node.style.position = 'relative';
-
-            const content = document.createElement('div');
-            content.className = 'node-content editable';
-            content.textContent = text;
-            content.onclick = () => editNode(dataKey, index);
-            node.appendChild(content);
-
-            const deleteBtn = document.createElement('button');
-            deleteBtn.textContent = 'x';
-            deleteBtn.className = 'btn-remove';
-            deleteBtn.style.cssText = 'position: absolute; top: 4px; right: 4px;';
-            deleteBtn.onclick = (e) => { e.stopPropagation(); deleteNode(dataKey, index); };
-            node.appendChild(deleteBtn);
-
-            return node;
-        }
-
-        function addItem(key) {
-            const labels = {
-                consequences: jsTranslations.newConsequence,
-                causes: jsTranslations.newCause,
-                objectifs: jsTranslations.newObjective,
-                moyens: jsTranslations.newMeans
-            };
-            const text = prompt(labels[key]);
-            if (text && text.trim()) {
-                data[key].push(text);
-                updateTree();
-                updateFormLists();
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('saveStatus').textContent = 'Sauvegarde OK';
+                    setTimeout(() => { document.getElementById('saveStatus').textContent = ''; }, 2000);
+                } else {
+                    document.getElementById('saveStatus').textContent = 'Erreur!';
+                }
+            } catch (e) {
+                document.getElementById('saveStatus').textContent = 'Erreur reseau';
             }
         }
 
-        function addConsequence() { addItem('consequences'); }
-        function addCause() { addItem('causes'); }
-        function addObjectif() { addItem('objectifs'); }
-        function addMoyen() { addItem('moyens'); }
-
-        function editNode(dataKey, index) {
-            const newText = prompt('Modifier le texte:', data[dataKey][index]);
-            if (newText !== null) {
-                data[dataKey][index] = newText;
-                updateTree();
-                updateFormLists();
-            }
-        }
-
-        function deleteNode(dataKey, index) {
-            if (confirm(jsTranslations.deleteConfirm)) {
-                data[dataKey].splice(index, 1);
-                updateTree();
-                updateFormLists();
-            }
-        }
-
-        function updateFormLists() {
-            ['consequences', 'causes', 'objectifs', 'moyens'].forEach(key => {
-                const list = document.getElementById(key + 'List');
-                list.innerHTML = '';
-                data[key].forEach((text, index) => {
-                    const div = document.createElement('div');
-                    div.className = 'item-row';
-                    div.innerHTML = `
-                        <input type="text" value="${text.replace(/"/g, '&quot;')}"
-                               onchange="data.${key}[${index}] = this.value; updateTree()">
-                        <button type="button" onclick="data.${key}.splice(${index}, 1); updateTree(); updateFormLists()" class="btn-remove">X</button>
-                    `;
-                    list.appendChild(div);
+        async function toggleShare() {
+            const shared = document.getElementById('shareToggle').checked;
+            try {
+                await fetch('api.php?action=share', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ shared: shared })
                 });
-            });
+            } catch (e) {
+                console.error('Erreur partage:', e);
+            }
         }
 
         function exportJSON() {
-            const formData = {
-                nomProjet: document.getElementById('nomProjet').value,
-                participants: document.getElementById('participants').value,
-                arbreProblemes: {
-                    problemeCentral: document.getElementById('problemeCentral').value,
-                    consequences: data.consequences,
-                    causes: data.causes
-                },
-                arbreSolutions: {
-                    objectifCentral: document.getElementById('objectifCentral').value,
-                    objectifs: data.objectifs,
-                    moyens: data.moyens
-                },
-                dateExport: new Date().toISOString()
-            };
-
-            const dataStr = JSON.stringify(formData, null, 2);
-            const blob = new Blob([dataStr], { type: 'application/json' });
+            const formData = getFormData();
+            formData.exported_at = new Date().toISOString();
+            const blob = new Blob([JSON.stringify(formData, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            const nomFichier = formData.nomProjet ?
-                formData.nomProjet.replace(/[^a-z0-9]/gi, '_').toLowerCase() :
-                'arbre_problemes';
-            link.download = nomFichier + '_' + new Date().toISOString().split('T')[0] + '.json';
-            link.click();
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'arbre_problemes_' + new Date().toISOString().split('T')[0] + '.json';
+            a.click();
             URL.revokeObjectURL(url);
         }
 
         function exportToExcel() {
+            const d = getFormData();
             const wb = XLSX.utils.book_new();
 
-            const infoData = [
-                ['ANALYSE DU CONTEXTE - ARBRE A PROBLEMES & SOLUTIONS'],
+            const info = [
+                ['ARBRE A PROBLEMES & SOLUTIONS'],
                 [''],
-                ['Projet', document.getElementById('nomProjet').value],
-                ['Participants', document.getElementById('participants').value],
+                ['Projet', d.nomProjet],
+                ['Participants', d.participants],
                 ["Date d'export", new Date().toLocaleDateString('fr-FR')]
             ];
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(info), 'Informations');
 
-            const problemesData = [
-                ['ARBRE A PROBLEMES'],
-                [''],
-                ['PROBLEME CENTRAL'],
-                [document.getElementById('problemeCentral').value],
-                [''],
-                ['CONSEQUENCES (Effets négatifs)']
+            const prob = [
+                ['ARBRE A PROBLEMES'], [''],
+                ['PROBLEME CENTRAL'], [d.problemeCentral], [''],
+                ['CONSEQUENCES']
             ];
-            data.consequences.forEach((c, i) => problemesData.push([(i + 1) + '.', c]));
-            problemesData.push([''], ['CAUSES (Racines du problème)']);
-            data.causes.forEach((c, i) => problemesData.push([(i + 1) + '.', c]));
+            d.consequences.forEach((c, i) => prob.push([(i+1)+'.', c]));
+            prob.push([''], ['CAUSES']);
+            d.causes.forEach((c, i) => prob.push([(i+1)+'.', c]));
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(prob), 'Arbre Problemes');
 
-            const solutionsData = [
-                ['ARBRE A SOLUTIONS'],
-                [''],
-                ['OBJECTIF CENTRAL'],
-                [document.getElementById('objectifCentral').value],
-                [''],
-                ['OBJECTIFS / IMPACTS POSITIFS']
+            const sol = [
+                ['ARBRE A SOLUTIONS'], [''],
+                ['OBJECTIF CENTRAL'], [d.objectifCentral], [''],
+                ['OBJECTIFS']
             ];
-            data.objectifs.forEach((o, i) => solutionsData.push([(i + 1) + '.', o]));
-            solutionsData.push([''], ['MOYENS / ACTIONS A METTRE EN OEUVRE']);
-            data.moyens.forEach((m, i) => solutionsData.push([(i + 1) + '.', m]));
+            d.objectifs.forEach((o, i) => sol.push([(i+1)+'.', o]));
+            sol.push([''], ['MOYENS']);
+            d.moyens.forEach((m, i) => sol.push([(i+1)+'.', m]));
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sol), 'Arbre Solutions');
 
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(infoData), 'Informations');
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(problemesData), 'Arbre a Problemes');
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(solutionsData), 'Arbre a Solutions');
-
-            const nomProjet = document.getElementById('nomProjet').value || 'projet';
-            XLSX.writeFile(wb, 'arbre_' + nomProjet.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '_' + new Date().toISOString().split('T')[0] + '.xlsx');
+            XLSX.writeFile(wb, 'arbre_' + (d.nomProjet || 'projet').replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.xlsx');
         }
 
         function resetForm() {
-            if (confirm(jsTranslations.resetConfirm)) {
-                document.getElementById('nomProjet').value = '';
-                document.getElementById('participants').value = '';
-                document.getElementById('problemeCentral').value = '';
-                document.getElementById('objectifCentral').value = '';
-                data = { consequences: [], causes: [], objectifs: [], moyens: [] };
-                updateTree();
-                updateFormLists();
-            }
+            if (!confirm('Reinitialiser toutes les donnees ?')) return;
+            document.getElementById('nomProjet').value = '';
+            document.getElementById('participants').value = '';
+            document.getElementById('problemeCentral').value = '';
+            document.getElementById('objectifCentral').value = '';
+            data = { consequences: [], causes: [], objectifs: [], moyens: [] };
+            renderAll();
+            scheduleSave();
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
         }
     </script>
 </body>
