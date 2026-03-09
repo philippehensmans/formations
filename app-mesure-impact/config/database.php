@@ -100,6 +100,12 @@ function initDB($db) {
     try {
         $db->exec("ALTER TABLE participants ADD COLUMN user_id INTEGER");
     } catch (Exception $e) {}
+    try {
+        $db->exec("ALTER TABLE participants ADD COLUMN prenom VARCHAR(100)");
+    } catch (Exception $e) {}
+    try {
+        $db->exec("ALTER TABLE participants ADD COLUMN nom VARCHAR(100)");
+    } catch (Exception $e) {}
 
     // Inserer les enonces par defaut s'ils n'existent pas
     $count = $db->query("SELECT COUNT(*) FROM enonces_classification WHERE session_id IS NULL")->fetchColumn();
