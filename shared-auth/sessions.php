@@ -167,13 +167,17 @@ function ensureParticipant($db, $sessionId, $user) {
         // Colonne user_id n'existe peut-etre pas
     }
 
-    // Chercher par prenom/nom
-    $stmt = $db->prepare("SELECT id FROM participants WHERE session_id = ? AND prenom = ? AND nom = ?");
-    $stmt->execute([$sessionId, $prenom, $nom]);
-    $participant = $stmt->fetch();
-    if ($participant) {
-        $_SESSION['participant_id'] = $participant['id'];
-        return $participant['id'];
+    // Chercher par prenom/nom (certaines apps n'ont pas ces colonnes)
+    try {
+        $stmt = $db->prepare("SELECT id FROM participants WHERE session_id = ? AND prenom = ? AND nom = ?");
+        $stmt->execute([$sessionId, $prenom, $nom]);
+        $participant = $stmt->fetch();
+        if ($participant) {
+            $_SESSION['participant_id'] = $participant['id'];
+            return $participant['id'];
+        }
+    } catch (PDOException $e) {
+        // Colonnes prenom/nom n'existent pas dans cette app
     }
 
     // Creer le participant

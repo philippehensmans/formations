@@ -55,21 +55,10 @@ function initDatabase($db) {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         session_id INTEGER NOT NULL,
         user_id INTEGER NOT NULL,
-        prenom VARCHAR(100),
-        nom VARCHAR(100),
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (session_id) REFERENCES sessions(id),
         UNIQUE(session_id, user_id)
     )");
-
-    // Migrations pour ajouter les colonnes manquantes aux participants
-    $participantMigrations = [
-        "ALTER TABLE participants ADD COLUMN prenom VARCHAR(100)",
-        "ALTER TABLE participants ADD COLUMN nom VARCHAR(100)"
-    ];
-    foreach ($participantMigrations as $sql) {
-        try { $db->exec($sql); } catch (Exception $e) { /* Colonne existe deja */ }
-    }
 
     // Table des analyses parties prenantes
     $db->exec("CREATE TABLE IF NOT EXISTS analyses (
@@ -129,39 +118,33 @@ function initDatabase($db) {
         // participant_id n'existe pas, c'est normal pour les nouvelles installations
     }
 
-    // Migration: recreer la table participants avec le nouveau schema
-    // L'ancienne table avait des colonnes prenom, nom NOT NULL
+    // Migration: si l'ancienne table participants (avec prenom/nom mais sans user_id) existe, la recreer
     try {
-        // Verifier si l'ancienne structure existe (avec prenom NOT NULL)
         $result = $db->query("PRAGMA table_info(participants)");
         $columns = $result->fetchAll();
+        $hasUserId = false;
         $hasPrenom = false;
         foreach ($columns as $col) {
-            if ($col['name'] === 'prenom') {
-                $hasPrenom = true;
-                break;
-            }
+            if ($col['name'] === 'user_id') $hasUserId = true;
+            if ($col['name'] === 'prenom') $hasPrenom = true;
         }
-        if ($hasPrenom) {
-            // Ancienne structure, la supprimer et recreer
+        if (!$hasUserId) {
+            // Ancienne structure sans user_id, la recreer
             $db->exec("DROP TABLE participants");
             $db->exec("CREATE TABLE participants (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 session_id INTEGER NOT NULL,
                 user_id INTEGER NOT NULL,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (session_id) REFERENCES sessions(id),
                 UNIQUE(session_id, user_id)
             )");
+        } elseif ($hasPrenom) {
+            // Nouvelle structure mais avec colonnes prenom/nom residuelles - les ignorer
+            // SQLite ne supporte pas DROP COLUMN, on laisse les colonnes inutilisees
         }
     } catch (Exception $e) {
         // Ignorer les erreurs
-    }
-
-    // Migration: ajouter user_id a participants si elle n'existe pas
-    try {
-        $db->exec("ALTER TABLE participants ADD COLUMN user_id INTEGER");
-    } catch (Exception $e) {
-        // Colonne existe deja
     }
 }
 
