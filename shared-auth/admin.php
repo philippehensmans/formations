@@ -5,6 +5,7 @@
  * Accessible uniquement par les super-admins
  */
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/sessions.php';
 
 // Verifier super-admin (ou admin pour login initial)
 if (!isLoggedIn() || !isAdmin()) {
@@ -133,6 +134,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             break;
 
+        case 'create_global_session':
+            if ($isSuperAdmin) {
+                $nom = trim($_POST['nom'] ?? '');
+                if (!empty($nom)) {
+                    $code = generateSessionCode();
+                    $db->prepare("INSERT INTO sessions (code, nom, formateur_id, is_active, created_at) VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)")
+                        ->execute([$code, $nom, $currentUser['id']]);
+                    $success = "Session creee : $code - $nom";
+                } else {
+                    $error = "Le nom de la session est requis.";
+                }
+            }
+            break;
+
+        case 'toggle_global_session':
+            if ($isSuperAdmin) {
+                $sessionId = (int)($_POST['session_id'] ?? 0);
+                if ($sessionId) {
+                    $db->prepare("UPDATE sessions SET is_active = NOT is_active WHERE id = ?")
+                        ->execute([$sessionId]);
+                    $success = "Statut de la session modifie.";
+                }
+            }
+            break;
+
+        case 'rename_global_session':
+            if ($isSuperAdmin) {
+                $sessionId = (int)($_POST['session_id'] ?? 0);
+                $nom = trim($_POST['nom'] ?? '');
+                if ($sessionId && !empty($nom)) {
+                    $db->prepare("UPDATE sessions SET nom = ? WHERE id = ?")
+                        ->execute([$nom, $sessionId]);
+                    $success = "Session renommee.";
+                }
+            }
+            break;
+
+        case 'delete_global_session':
+            if ($isSuperAdmin) {
+                $sessionId = (int)($_POST['session_id'] ?? 0);
+                if ($sessionId) {
+                    // Supprimer les affectations formateurs liees
+                    $db->prepare("DELETE FROM formateur_sessions WHERE session_id = ?")
+                        ->execute([$sessionId]);
+                    $db->prepare("DELETE FROM sessions WHERE id = ?")
+                        ->execute([$sessionId]);
+                    $success = "Session supprimee.";
+                }
+            }
+            break;
+
         case 'assign_session':
             if ($isSuperAdmin) {
                 $formateurId = (int)($_POST['formateur_id'] ?? 0);
@@ -230,6 +282,11 @@ $apps = [
     'app-comm-plan' => 'Mini-Plan de Communication',
     'app-pilotage-projet' => 'Pilotage de Projet'
 ];
+
+// Recuperer toutes les sessions de la shared DB
+$allSessions = $db->query("SELECT s.*, u.username as formateur_username, u.prenom as formateur_prenom, u.nom as formateur_nom
+    FROM sessions s LEFT JOIN users u ON s.formateur_id = u.id
+    ORDER BY s.created_at DESC")->fetchAll();
 
 // Recuperer les affectations de sessions pour l'affichage
 $formateurAssignments = [];
@@ -385,6 +442,97 @@ if ($isSuperAdmin) {
         </div>
 
         <?php if ($isSuperAdmin): ?>
+        <!-- Gestion globale des sessions -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <h2 class="font-semibold text-gray-800 mb-2">Gestion des sessions de formation</h2>
+            <p class="text-sm text-gray-600 mb-4">
+                Sessions centralisees, partagees par toutes les applications.
+            </p>
+
+            <!-- Creer une session -->
+            <form method="POST" class="flex gap-3 mb-4">
+                <input type="hidden" name="action" value="create_global_session">
+                <input type="text" name="nom" placeholder="Nom de la nouvelle session (ex: CESEP 2026)" required
+                       class="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+                    Creer
+                </button>
+            </form>
+
+            <!-- Liste des sessions -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 border-b">
+                        <tr>
+                            <th class="text-left p-3">ID</th>
+                            <th class="text-left p-3">Code</th>
+                            <th class="text-left p-3">Nom</th>
+                            <th class="text-left p-3">Formateur</th>
+                            <th class="text-center p-3">Statut</th>
+                            <th class="text-left p-3">Creee le</th>
+                            <th class="text-center p-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                        <?php foreach ($allSessions as $session): ?>
+                        <tr class="hover:bg-gray-50 <?= $session['is_active'] ? '' : 'opacity-50' ?>">
+                            <td class="p-3 text-gray-500"><?= $session['id'] ?></td>
+                            <td class="p-3 font-mono font-bold text-blue-600"><?= h($session['code']) ?></td>
+                            <td class="p-3">
+                                <form method="POST" class="flex gap-1 items-center">
+                                    <input type="hidden" name="action" value="rename_global_session">
+                                    <input type="hidden" name="session_id" value="<?= $session['id'] ?>">
+                                    <input type="text" name="nom" value="<?= h($session['nom']) ?>"
+                                           class="px-2 py-1 border rounded text-sm w-48 focus:ring-2 focus:ring-blue-300">
+                                    <button type="submit" class="px-2 py-1 text-blue-600 hover:text-blue-800 text-xs" title="Renommer">OK</button>
+                                </form>
+                            </td>
+                            <td class="p-3 text-gray-600 text-xs">
+                                <?php if ($session['formateur_username']): ?>
+                                    <?= h($session['formateur_prenom'] . ' ' . $session['formateur_nom']) ?>
+                                    <span class="text-gray-400">(<?= h($session['formateur_username']) ?>)</span>
+                                <?php else: ?>
+                                    <span class="text-gray-400">-</span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="p-3 text-center">
+                                <?php if ($session['is_active']): ?>
+                                    <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-medium">Active</span>
+                                <?php else: ?>
+                                    <span class="px-2 py-0.5 bg-gray-200 text-gray-600 rounded text-xs font-medium">Inactive</span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="p-3 text-gray-500 text-xs"><?= date('d/m/Y H:i', strtotime($session['created_at'])) ?></td>
+                            <td class="p-3 text-center">
+                                <div class="flex gap-1 justify-center">
+                                    <form method="POST" class="inline">
+                                        <input type="hidden" name="action" value="toggle_global_session">
+                                        <input type="hidden" name="session_id" value="<?= $session['id'] ?>">
+                                        <button type="submit" class="px-2 py-1 rounded text-xs <?= $session['is_active'] ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' : 'bg-green-100 text-green-800 hover:bg-green-200' ?>"
+                                                title="<?= $session['is_active'] ? 'Desactiver' : 'Activer' ?>">
+                                            <?= $session['is_active'] ? 'Desactiver' : 'Activer' ?>
+                                        </button>
+                                    </form>
+                                    <form method="POST" class="inline" onsubmit="return confirm('Supprimer la session <?= h($session['code']) ?> ? Les donnees des participants dans chaque app ne seront pas supprimees.')">
+                                        <input type="hidden" name="action" value="delete_global_session">
+                                        <input type="hidden" name="session_id" value="<?= $session['id'] ?>">
+                                        <button type="submit" class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs hover:bg-red-200">Supprimer</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                        <?php if (empty($allSessions)): ?>
+                        <tr><td colspan="7" class="p-8 text-center text-gray-500">Aucune session.</td></tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+            <p class="text-xs text-gray-400 mt-3"><?= count($allSessions) ?> session(s) au total</p>
+        </div>
+        <?php endif; ?>
+
+        <?php if ($isSuperAdmin): ?>
         <!-- Affectation des formateurs aux sessions -->
         <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
             <h2 class="font-semibold text-gray-800 mb-4">Affectation Formateurs aux Sessions</h2>
@@ -417,8 +565,14 @@ if ($isSuperAdmin) {
                                 <input type="hidden" name="formateur_id" value="<?= $formateur['id'] ?>">
                                 <input type="hidden" name="app_name" value="<?= h($assignment['app_name']) ?>">
                                 <input type="hidden" name="session_id" value="<?= $assignment['session_id'] ?>">
+                                <?php
+                                    $assignSessionName = '';
+                                    foreach ($allSessions as $as) {
+                                        if ($as['id'] == $assignment['session_id']) { $assignSessionName = $as['code'] . ' - ' . $as['nom']; break; }
+                                    }
+                                ?>
                                 <button type="submit" class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs hover:bg-red-100 hover:text-red-800" title="Cliquer pour retirer">
-                                    <?= h($apps[$assignment['app_name']] ?? $assignment['app_name']) ?> #<?= $assignment['session_id'] ?>
+                                    <?= h($apps[$assignment['app_name']] ?? $assignment['app_name']) ?>: <?= h($assignSessionName ?: '#' . $assignment['session_id']) ?>
                                     <span class="ml-1">x</span>
                                 </button>
                             </form>
@@ -440,7 +594,12 @@ if ($isSuperAdmin) {
                                 <?php endforeach; ?>
                             </select>
                             <div class="flex flex-col gap-1">
-                                <input type="number" name="session_id" placeholder="ID Session" required class="w-24 px-2 py-1 border rounded text-sm">
+                                <select name="session_id" required class="px-2 py-1 border rounded text-sm">
+                                    <option value="">-- Session --</option>
+                                    <?php foreach ($allSessions as $sess): ?>
+                                    <option value="<?= $sess['id'] ?>"><?= h($sess['code']) ?> - <?= h($sess['nom']) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
                                 <button type="submit" class="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">Affecter</button>
                             </div>
                         </div>
