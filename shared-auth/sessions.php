@@ -34,15 +34,25 @@ function syncLocalSessions($db) {
         return; // pas de table sessions locale
     }
 
+    // Detecter les colonnes de la table sessions locale
+    $localCols = array_column($db->query("PRAGMA table_info(sessions)")->fetchAll(), 'name');
+    $hasFormateurId = in_array('formateur_id', $localCols);
+
     $sessions = $sdb->query("SELECT id, code, nom, formateur_id, is_active, created_at FROM sessions")->fetchAll();
     foreach ($sessions as $s) {
         try {
             // INSERT OR IGNORE pour ne pas ecraser les colonnes app-specifiques (sujet, etc.)
-            $stmt = $db->prepare("INSERT OR IGNORE INTO sessions (id, code, nom, formateur_id, is_active, created_at) VALUES (?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$s['id'], $s['code'], $s['nom'], $s['formateur_id'], $s['is_active'], $s['created_at']]);
-            // UPDATE les colonnes partagees (sans toucher aux colonnes app-specifiques)
-            $stmt = $db->prepare("UPDATE sessions SET code = ?, nom = ?, formateur_id = ?, is_active = ? WHERE id = ?");
-            $stmt->execute([$s['code'], $s['nom'], $s['formateur_id'], $s['is_active'], $s['id']]);
+            if ($hasFormateurId) {
+                $stmt = $db->prepare("INSERT OR IGNORE INTO sessions (id, code, nom, formateur_id, is_active, created_at) VALUES (?, ?, ?, ?, ?, ?)");
+                $stmt->execute([$s['id'], $s['code'], $s['nom'], $s['formateur_id'], $s['is_active'], $s['created_at']]);
+                $stmt = $db->prepare("UPDATE sessions SET code = ?, nom = ?, formateur_id = ?, is_active = ? WHERE id = ?");
+                $stmt->execute([$s['code'], $s['nom'], $s['formateur_id'], $s['is_active'], $s['id']]);
+            } else {
+                $stmt = $db->prepare("INSERT OR IGNORE INTO sessions (id, code, nom, is_active, created_at) VALUES (?, ?, ?, ?, ?)");
+                $stmt->execute([$s['id'], $s['code'], $s['nom'], $s['is_active'], $s['created_at']]);
+                $stmt = $db->prepare("UPDATE sessions SET code = ?, nom = ?, is_active = ? WHERE id = ?");
+                $stmt->execute([$s['code'], $s['nom'], $s['is_active'], $s['id']]);
+            }
         } catch (Exception $e) { continue; }
     }
 
@@ -72,8 +82,14 @@ function createSession($db, $code, $nom, $formateurId = null) {
 
     // Miroir local (INSERT OR IGNORE pour preserver les colonnes app-specifiques)
     try {
-        $stmt = $db->prepare("INSERT OR IGNORE INTO sessions (id, code, nom, formateur_id, is_active, created_at) VALUES (?, ?, ?, ?, 1, CURRENT_TIMESTAMP)");
-        $stmt->execute([$id, $code, $nom, $formateurId]);
+        $localCols = array_column($db->query("PRAGMA table_info(sessions)")->fetchAll(), 'name');
+        if (in_array('formateur_id', $localCols)) {
+            $stmt = $db->prepare("INSERT OR IGNORE INTO sessions (id, code, nom, formateur_id, is_active, created_at) VALUES (?, ?, ?, ?, 1, CURRENT_TIMESTAMP)");
+            $stmt->execute([$id, $code, $nom, $formateurId]);
+        } else {
+            $stmt = $db->prepare("INSERT OR IGNORE INTO sessions (id, code, nom, is_active, created_at) VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)");
+            $stmt->execute([$id, $code, $nom]);
+        }
     } catch (Exception $e) { /* miroir best-effort */ }
 
     return $id;

@@ -156,8 +156,14 @@ foreach ($appDatabases as $appInfo) {
         // Mettre a jour la session elle-meme
         try {
             $appDb->prepare("DELETE FROM sessions WHERE id = ?")->execute([$localId]);
-            $appDb->prepare("INSERT OR REPLACE INTO sessions (id, code, nom, formateur_id, is_active, created_at) VALUES (?, ?, ?, ?, ?, ?)")
-                ->execute([$sharedId, $code, $local['nom'] ?? $local['name'] ?? '', $local['formateur_id'] ?? null, $local['is_active'] ?? $local['active'] ?? 1, $local['created_at'] ?? date('Y-m-d H:i:s')]);
+            $sessionCols = array_column($appDb->query("PRAGMA table_info(sessions)")->fetchAll(), 'name');
+            if (in_array('formateur_id', $sessionCols)) {
+                $appDb->prepare("INSERT OR REPLACE INTO sessions (id, code, nom, formateur_id, is_active, created_at) VALUES (?, ?, ?, ?, ?, ?)")
+                    ->execute([$sharedId, $code, $local['nom'] ?? $local['name'] ?? '', $local['formateur_id'] ?? null, $local['is_active'] ?? $local['active'] ?? 1, $local['created_at'] ?? date('Y-m-d H:i:s')]);
+            } else {
+                $appDb->prepare("INSERT OR REPLACE INTO sessions (id, code, nom, is_active, created_at) VALUES (?, ?, ?, ?, ?)")
+                    ->execute([$sharedId, $code, $local['nom'] ?? $local['name'] ?? '', $local['is_active'] ?? $local['active'] ?? 1, $local['created_at'] ?? date('Y-m-d H:i:s')]);
+            }
         } catch (PDOException $e) {
             echo "    sessions : Erreur - " . $e->getMessage() . "\n";
         }
