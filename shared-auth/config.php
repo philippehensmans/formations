@@ -68,6 +68,16 @@ function initSharedDB($db) {
         last_login DATETIME
     )");
 
+    // Table des sessions de formation (centralisee)
+    $db->exec("CREATE TABLE IF NOT EXISTS sessions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        code VARCHAR(10) UNIQUE NOT NULL,
+        nom VARCHAR(255) NOT NULL,
+        formateur_id INTEGER,
+        is_active INTEGER DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )");
+
     // Table d'affectation formateurs aux sessions
     $db->exec("CREATE TABLE IF NOT EXISTS formateur_sessions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,

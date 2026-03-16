@@ -34,32 +34,22 @@ if (isLoggedIn()) {
     if ($loggedUser) {
         $alreadyLoggedIn = true;
 
-        // Verifier si la session actuelle existe dans CETTE app
+        // Verifier si la session actuelle existe (IDs globaux depuis la shared DB)
         if (isset($_SESSION['current_session_id'])) {
-            $localSession = getSessionById($db, $_SESSION['current_session_id']);
+            $currentSession = getSessionById($db, $_SESSION['current_session_id']);
 
-            // Verifier que le code correspond (les IDs auto-increment peuvent collisionner entre apps)
-            if ($localSession && isset($_SESSION['current_session_code']) && $localSession['code'] !== $_SESSION['current_session_code']) {
-                $localSession = null;
-            }
+            if ($currentSession) {
+                // S'assurer que le participant existe dans la base locale de cette app
+                ensureParticipant($db, $currentSession['id'], $loggedUser);
 
-            // Si pas trouvee par ID, chercher par code dans cette app
-            if (!$localSession && isset($_SESSION['current_session_code'])) {
-                $localSession = getSessionByCode($db, $_SESSION['current_session_code']);
-                if ($localSession) {
-                    $_SESSION['current_session_id'] = $localSession['id'];
-                    $_SESSION['current_session_nom'] = $localSession['nom'];
-                    ensureParticipant($db, $localSession['id'], $loggedUser);
+                if (isset($_SESSION['participant_id'])) {
+                    header('Location: ' . $redirectAfterLogin);
+                    exit;
                 }
-            }
-
-            if ($localSession && isset($_SESSION['participant_id'])) {
-                header('Location: ' . $redirectAfterLogin);
-                exit;
             }
         }
 
-        // Session non trouvee dans cette app - nettoyer les infos de session locale
+        // Session non trouvee ou pas de participant - nettoyer
         unset($_SESSION['current_session_id'], $_SESSION['current_session_code'],
               $_SESSION['current_session_nom'], $_SESSION['participant_id']);
     } else {
@@ -126,8 +116,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Importer les sessions des autres applications si elles n'existent pas encore ici
-importMissingSessions($db);
+// Synchroniser les sessions de la shared DB vers la base locale (pour les JOINs)
+syncLocalSessions($db);
 
 $sessions = getActiveSessions($db);
 ?>
