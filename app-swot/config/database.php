@@ -58,11 +58,17 @@ class Database {
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 session_id INTEGER NOT NULL,
                 user_id INTEGER NOT NULL,
+                prenom VARCHAR(100),
+                nom VARCHAR(100),
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (session_id) REFERENCES sessions(id),
                 UNIQUE(session_id, user_id)
             )
         ");
+
+        // Migration: ajouter prenom/nom si absents (bases existantes)
+        try { $this->pdo->exec("ALTER TABLE participants ADD COLUMN prenom VARCHAR(100)"); } catch (PDOException $e) {}
+        try { $this->pdo->exec("ALTER TABLE participants ADD COLUMN nom VARCHAR(100)"); } catch (PDOException $e) {}
 
         // Table des analyses SWOT/TOWS
         $this->pdo->exec("
