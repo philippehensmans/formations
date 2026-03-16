@@ -4,6 +4,7 @@
  * Redirige vers login ou l'application
  */
 require_once __DIR__ . '/../shared-auth/config.php';
+require_once __DIR__ . '/../shared-auth/sessions.php';
 require_once __DIR__ . '/config/database.php';
 
 // Si connecte avec une session, valider et aller a l'application
