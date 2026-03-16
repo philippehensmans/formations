@@ -322,6 +322,7 @@ if ($isSuperAdmin) {
                 </div>
             </div>
             <div class="flex items-center gap-3">
+                <a href="admin-sessions.php" class="px-4 py-2 bg-blue-600 rounded hover:bg-blue-500 text-sm">Gestion Sessions</a>
                 <a href="../admin-categories.php" class="px-4 py-2 bg-indigo-600 rounded hover:bg-indigo-500 text-sm">Gestion Categories</a>
                 <form method="POST" class="inline">
                     <input type="hidden" name="action" value="logout">
