@@ -5,6 +5,7 @@
 
 // Configuration et système de traduction (inclut session_start)
 require_once __DIR__ . '/../shared-auth/config.php';
+require_once __DIR__ . '/../shared-auth/sessions.php';
 require_once __DIR__ . '/../shared-auth/lang.php';
 require_once __DIR__ . '/config/database.php';
 

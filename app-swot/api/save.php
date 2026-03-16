@@ -3,6 +3,7 @@
  * API pour sauvegarder l'analyse SWOT/TOWS
  */
 require_once __DIR__ . '/../../shared-auth/config.php';
+require_once __DIR__ . '/../../shared-auth/sessions.php';
 header('Content-Type: application/json');
 
 require_once __DIR__ . '/../config/database.php';
