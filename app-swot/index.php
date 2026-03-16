@@ -6,10 +6,16 @@
 require_once __DIR__ . '/../shared-auth/config.php';
 require_once __DIR__ . '/config/database.php';
 
-// Si connecte avec une session, aller a l'application
+// Si connecte avec une session, valider et aller a l'application
 if (isLoggedIn() && isset($_SESSION['current_session_id'])) {
-    header('Location: swot_app.php');
-    exit;
+    $db = getDB();
+    $sessionId = validateCurrentSession($db);
+    if ($sessionId) {
+        ensureParticipant($db, $sessionId, getLoggedUser());
+        header('Location: swot_app.php');
+        exit;
+    }
+    // Session invalide dans cette app, renvoyer au login
 }
 
 // Sinon, rediriger vers login

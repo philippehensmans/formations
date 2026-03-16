@@ -2,12 +2,25 @@
 /**
  * API pour sauvegarder l'analyse SWOT/TOWS
  */
-session_start();
+require_once __DIR__ . '/../../shared-auth/config.php';
 header('Content-Type: application/json');
 
 require_once __DIR__ . '/../config/database.php';
 
-// Vérifier l'authentification
+// Vérifier l'authentification via shared-auth
+if (!isLoggedIn() || !isset($_SESSION['current_session_id'])) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'error' => 'Non authentifie']);
+    exit;
+}
+
+// S'assurer que le participant existe dans la base locale
+$db_check = getDB();
+$sessionId = validateCurrentSession($db_check);
+if ($sessionId) {
+    ensureParticipant($db_check, $sessionId, getLoggedUser());
+}
+
 if (!isset($_SESSION['participant_id'])) {
     http_response_code(401);
     echo json_encode(['success' => false, 'error' => 'Non authentifie']);
