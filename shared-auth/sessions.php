@@ -1,20 +1,82 @@
 <?php
 /**
- * Gestion des sessions de formation par application
+ * Gestion centralisee des sessions de formation
  *
- * Chaque application a ses propres sessions stockees dans sa base locale
- * Ce fichier fournit des fonctions communes pour gerer les sessions
+ * Les sessions sont stockees dans la base partagee (shared DB) comme source de verite.
+ * Une copie miroir est maintenue dans la base locale de chaque app pour permettre
+ * les JOINs SQL avec les tables locales (participants, analyses, etc.).
+ *
+ * Le parametre $db (base locale) est conserve dans les signatures pour :
+ * - la compatibilite avec le code existant
+ * - les operations sur les participants (qui restent locaux)
+ * - le miroir local des sessions
  */
 
 require_once __DIR__ . '/config.php';
 
 /**
+ * Synchroniser les sessions de la base partagee vers la base locale
+ * Remplace importMissingSessions() et les sync* functions
+ * Appelee une fois par page pour garder le miroir local a jour
+ */
+function syncLocalSessions($db) {
+    static $synced = [];
+    $dbPath = _getDbPath($db);
+    if (isset($synced[$dbPath])) return;
+    $synced[$dbPath] = true;
+
+    $sdb = getSharedDB();
+
+    // Verifier que la table sessions existe localement
+    try {
+        $db->query("SELECT 1 FROM sessions LIMIT 0");
+    } catch (Exception $e) {
+        return; // pas de table sessions locale
+    }
+
+    $sessions = $sdb->query("SELECT id, code, nom, formateur_id, is_active, created_at FROM sessions")->fetchAll();
+    foreach ($sessions as $s) {
+        try {
+            // INSERT OR IGNORE pour ne pas ecraser les colonnes app-specifiques (sujet, etc.)
+            $stmt = $db->prepare("INSERT OR IGNORE INTO sessions (id, code, nom, formateur_id, is_active, created_at) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$s['id'], $s['code'], $s['nom'], $s['formateur_id'], $s['is_active'], $s['created_at']]);
+            // UPDATE les colonnes partagees (sans toucher aux colonnes app-specifiques)
+            $stmt = $db->prepare("UPDATE sessions SET code = ?, nom = ?, formateur_id = ?, is_active = ? WHERE id = ?");
+            $stmt->execute([$s['code'], $s['nom'], $s['formateur_id'], $s['is_active'], $s['id']]);
+        } catch (Exception $e) { continue; }
+    }
+
+    // Supprimer les sessions locales qui n'existent plus dans la shared DB
+    $sharedIds = array_column($sessions, 'id');
+    if (!empty($sharedIds)) {
+        $placeholders = implode(',', array_fill(0, count($sharedIds), '?'));
+        try {
+            $db->prepare("DELETE FROM sessions WHERE id NOT IN ($placeholders)")->execute($sharedIds);
+        } catch (Exception $e) { /* ignore */ }
+    } elseif (empty($sessions)) {
+        try {
+            $db->exec("DELETE FROM sessions");
+        } catch (Exception $e) { /* ignore */ }
+    }
+}
+
+/**
  * Creer une nouvelle session de formation
+ * Cree dans la shared DB puis miroir local
  */
 function createSession($db, $code, $nom, $formateurId = null) {
-    $stmt = $db->prepare("INSERT INTO sessions (code, nom, formateur_id, is_active, created_at) VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)");
+    $sdb = getSharedDB();
+    $stmt = $sdb->prepare("INSERT INTO sessions (code, nom, formateur_id, is_active, created_at) VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)");
     $stmt->execute([$code, $nom, $formateurId]);
-    return $db->lastInsertId();
+    $id = $sdb->lastInsertId();
+
+    // Miroir local (INSERT OR IGNORE pour preserver les colonnes app-specifiques)
+    try {
+        $stmt = $db->prepare("INSERT OR IGNORE INTO sessions (id, code, nom, formateur_id, is_active, created_at) VALUES (?, ?, ?, ?, 1, CURRENT_TIMESTAMP)");
+        $stmt->execute([$id, $code, $nom, $formateurId]);
+    } catch (Exception $e) { /* miroir best-effort */ }
+
+    return $id;
 }
 
 /**
@@ -32,26 +94,29 @@ if (!function_exists('generateSessionCode')) {
 }
 
 /**
- * Recuperer toutes les sessions actives
+ * Recuperer toutes les sessions actives (depuis la shared DB)
  */
-function getActiveSessions($db) {
-    return $db->query("SELECT * FROM sessions WHERE is_active = 1 ORDER BY created_at DESC")->fetchAll();
+function getActiveSessions($db = null) {
+    $sdb = getSharedDB();
+    return $sdb->query("SELECT * FROM sessions WHERE is_active = 1 ORDER BY created_at DESC")->fetchAll();
 }
 
 /**
- * Recuperer une session par son code
+ * Recuperer une session par son code (depuis la shared DB)
  */
 function getSessionByCode($db, $code) {
-    $stmt = $db->prepare("SELECT * FROM sessions WHERE code = ? AND is_active = 1");
+    $sdb = getSharedDB();
+    $stmt = $sdb->prepare("SELECT * FROM sessions WHERE code = ? AND is_active = 1");
     $stmt->execute([strtoupper($code)]);
     return $stmt->fetch();
 }
 
 /**
- * Recuperer une session par son ID
+ * Recuperer une session par son ID (depuis la shared DB)
  */
 function getSessionById($db, $id) {
-    $stmt = $db->prepare("SELECT * FROM sessions WHERE id = ?");
+    $sdb = getSharedDB();
+    $stmt = $sdb->prepare("SELECT * FROM sessions WHERE id = ?");
     $stmt->execute([$id]);
     return $stmt->fetch();
 }
@@ -78,7 +143,7 @@ function renderSessionDropdown($db, $selectedCode = '', $fieldName = 'session_co
 }
 
 /**
- * Compter les participants d'une session
+ * Compter les participants d'une session (depuis la base locale)
  */
 function countSessionParticipants($db, $sessionId) {
     $stmt = $db->prepare("SELECT COUNT(*) FROM participants WHERE session_id = ?");
@@ -88,30 +153,51 @@ function countSessionParticipants($db, $sessionId) {
 
 /**
  * Activer/Desactiver une session
+ * Modifie la shared DB puis miroir local
  */
 function toggleSession($db, $sessionId) {
-    $stmt = $db->prepare("UPDATE sessions SET is_active = NOT is_active WHERE id = ?");
-    return $stmt->execute([$sessionId]);
-}
-
-/**
- * Supprimer une session et ses donnees
- */
-function deleteSession($db, $sessionId) {
-    // Supprimer d'abord les participants
-    $stmt = $db->prepare("DELETE FROM participants WHERE session_id = ?");
+    $sdb = getSharedDB();
+    $stmt = $sdb->prepare("UPDATE sessions SET is_active = NOT is_active WHERE id = ?");
     $stmt->execute([$sessionId]);
 
-    // Puis la session
-    $stmt = $db->prepare("DELETE FROM sessions WHERE id = ?");
+    // Miroir local
+    $session = getSessionById($db, $sessionId);
+    if ($session) {
+        try {
+            $stmt = $db->prepare("UPDATE sessions SET is_active = ? WHERE id = ?");
+            $stmt->execute([$session['is_active'], $sessionId]);
+        } catch (Exception $e) { /* miroir best-effort */ }
+    }
+
+    return true;
+}
+
+/**
+ * Supprimer une session et ses participants locaux
+ * Supprime de la shared DB puis du miroir local
+ */
+function deleteSession($db, $sessionId) {
+    // Supprimer les participants locaux
+    try {
+        $stmt = $db->prepare("DELETE FROM participants WHERE session_id = ?");
+        $stmt->execute([$sessionId]);
+    } catch (Exception $e) { /* pas de table participants ou autre */ }
+
+    // Supprimer le miroir local
+    try {
+        $stmt = $db->prepare("DELETE FROM sessions WHERE id = ?");
+        $stmt->execute([$sessionId]);
+    } catch (Exception $e) { /* miroir best-effort */ }
+
+    // Supprimer de la shared DB (source de verite)
+    $sdb = getSharedDB();
+    $stmt = $sdb->prepare("DELETE FROM sessions WHERE id = ?");
     return $stmt->execute([$sessionId]);
 }
 
 /**
- * Valider que la session courante existe dans la base locale de CETTE app
- * Corrige le cas ou $_SESSION['current_session_id'] vient d'une autre app
- * (chaque app a sa propre base SQLite avec des IDs independants)
- * Retourne le session_id corrige, ou false si non trouvee
+ * Valider que la session courante existe
+ * Simplifie car les IDs sont maintenant globaux (shared DB)
  */
 function validateCurrentSession($db) {
     $sessionId = $_SESSION['current_session_id'] ?? null;
@@ -119,35 +205,21 @@ function validateCurrentSession($db) {
 
     $session = getSessionById($db, $sessionId);
 
-    // Verifier que le code correspond (les IDs auto-increment peuvent collisionner entre apps)
-    if ($session && isset($_SESSION['current_session_code']) && $session['code'] !== $_SESSION['current_session_code']) {
-        $session = null;
-    }
-
-    // Si pas trouvee par ID, chercher par code
-    if (!$session && isset($_SESSION['current_session_code'])) {
-        $session = getSessionByCode($db, $_SESSION['current_session_code']);
-        if ($session) {
-            $_SESSION['current_session_id'] = $session['id'];
-            $_SESSION['current_session_nom'] = $session['nom'];
-        }
-    }
-
     if (!$session) {
-        // Session non trouvee dans cette app - nettoyer
         unset($_SESSION['current_session_id'], $_SESSION['current_session_code'],
               $_SESSION['current_session_nom'], $_SESSION['participant_id']);
         return false;
     }
+
+    // Mettre a jour les infos en session PHP si necessaire
+    $_SESSION['current_session_code'] = $session['code'];
+    $_SESSION['current_session_nom'] = $session['nom'];
 
     return $session['id'];
 }
 
 /**
  * S'assurer qu'un participant existe dans la base locale de l'app
- * Corrige le cas ou un utilisateur navigue entre apps :
- * la session PHP a deja un participant_id (d'une autre app)
- * donc le login-template saute la creation du participant local
  */
 function ensureParticipant($db, $sessionId, $user) {
     $userId = $user['id'];
@@ -200,70 +272,36 @@ function ensureParticipant($db, $sessionId, $user) {
     }
 }
 
+// =========================================
+// FONCTIONS LEGACY (compatibilite)
+// =========================================
+
 /**
- * Importer dans la base locale les sessions existantes dans les autres applications
- * Permet de rattraper les sessions creees avant l'activation de la synchro
+ * @deprecated Remplace par syncLocalSessions()
  */
 function importMissingSessions($db) {
-    $currentDbPath = _getDbPath($db);
-    $otherDbs = _getAllAppDatabases($currentDbPath);
-
-    foreach ($otherDbs as $appDb) {
-        try {
-            $sessions = $appDb->query("SELECT code, nom, formateur_id, is_active, created_at FROM sessions")->fetchAll();
-            foreach ($sessions as $s) {
-                $stmt = $db->prepare("SELECT id FROM sessions WHERE code = ?");
-                $stmt->execute([$s['code']]);
-                if (!$stmt->fetch()) {
-                    $stmt = $db->prepare("INSERT INTO sessions (code, nom, formateur_id, is_active, created_at) VALUES (?, ?, ?, ?, ?)");
-                    $stmt->execute([$s['code'], $s['nom'], $s['formateur_id'], $s['is_active'], $s['created_at']]);
-                }
-            }
-        } catch (PDOException $e) {
-            continue;
-        }
-    }
+    syncLocalSessions($db);
 }
 
 /**
- * Obtenir toutes les bases de donnees des applications
- * Retourne un tableau de connexions PDO (sauf l'app exclue)
+ * @deprecated Plus necessaire avec sessions centralisees
  */
-function _getAllAppDatabases($excludeDbPath = null) {
-    $baseDir = dirname(__DIR__);
-    $appDirs = glob($baseDir . '/app-*', GLOB_ONLYDIR);
-    $databases = [];
+function syncCreateSession($db, $code, $nom, $formateurId) {
+    // No-op: la creation passe deja par la shared DB
+}
 
-    foreach ($appDirs as $appDir) {
-        $dataDir = $appDir . '/data';
-        if (!is_dir($dataDir)) continue;
+/**
+ * @deprecated Plus necessaire avec sessions centralisees
+ */
+function syncToggleSession($db, $sessionCode) {
+    // No-op: le toggle passe deja par la shared DB
+}
 
-        $dbFiles = array_merge(
-            glob($dataDir . '/*.db') ?: [],
-            glob($dataDir . '/*.sqlite') ?: []
-        );
-        if (empty($dbFiles)) continue;
-
-        $dbPath = $dbFiles[0];
-
-        // Exclure la base de l'app courante (deja traitee)
-        if ($excludeDbPath && realpath($dbPath) === realpath($excludeDbPath)) continue;
-
-        try {
-            $appDb = new PDO('sqlite:' . $dbPath);
-            $appDb->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-            // Verifier que la table sessions existe
-            $check = $appDb->query("SELECT name FROM sqlite_master WHERE type='table' AND name='sessions'");
-            if ($check->fetch()) {
-                $databases[] = $appDb;
-            }
-        } catch (PDOException $e) {
-            continue;
-        }
-    }
-
-    return $databases;
+/**
+ * @deprecated Plus necessaire avec sessions centralisees
+ */
+function syncDeleteSession($db, $sessionCode) {
+    // No-op: la suppression passe deja par la shared DB
 }
 
 /**
@@ -275,73 +313,5 @@ function _getDbPath($db) {
         return $result['file'] ?? null;
     } catch (PDOException $e) {
         return null;
-    }
-}
-
-/**
- * Synchroniser la creation d'une session vers toutes les autres applications
- */
-function syncCreateSession($db, $code, $nom, $formateurId) {
-    $currentDbPath = _getDbPath($db);
-    $otherDbs = _getAllAppDatabases($currentDbPath);
-
-    foreach ($otherDbs as $appDb) {
-        try {
-            $stmt = $appDb->prepare("SELECT id FROM sessions WHERE code = ?");
-            $stmt->execute([$code]);
-            if (!$stmt->fetch()) {
-                $stmt = $appDb->prepare("INSERT INTO sessions (code, nom, formateur_id, is_active, created_at) VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)");
-                $stmt->execute([$code, $nom, $formateurId]);
-            }
-        } catch (PDOException $e) {
-            continue;
-        }
-    }
-}
-
-/**
- * Synchroniser le toggle d'une session vers toutes les autres applications
- */
-function syncToggleSession($db, $sessionCode) {
-    $currentDbPath = _getDbPath($db);
-    $otherDbs = _getAllAppDatabases($currentDbPath);
-
-    // Determiner le nouvel etat dans l'app courante
-    $stmt = $db->prepare("SELECT is_active FROM sessions WHERE code = ?");
-    $stmt->execute([$sessionCode]);
-    $current = $stmt->fetch();
-    if (!$current) return;
-    $newState = $current['is_active'];
-
-    foreach ($otherDbs as $appDb) {
-        try {
-            $stmt = $appDb->prepare("UPDATE sessions SET is_active = ? WHERE code = ?");
-            $stmt->execute([$newState, $sessionCode]);
-        } catch (PDOException $e) {
-            continue;
-        }
-    }
-}
-
-/**
- * Synchroniser la suppression d'une session vers toutes les autres applications
- * Note: supprime la session et les participants, mais pas les donnees specifiques a chaque app
- */
-function syncDeleteSession($db, $sessionCode) {
-    $currentDbPath = _getDbPath($db);
-    $otherDbs = _getAllAppDatabases($currentDbPath);
-
-    foreach ($otherDbs as $appDb) {
-        try {
-            $stmt = $appDb->prepare("SELECT id FROM sessions WHERE code = ?");
-            $stmt->execute([$sessionCode]);
-            $session = $stmt->fetch();
-            if ($session) {
-                $appDb->prepare("DELETE FROM participants WHERE session_id = ?")->execute([$session['id']]);
-                $appDb->prepare("DELETE FROM sessions WHERE id = ?")->execute([$session['id']]);
-            }
-        } catch (PDOException $e) {
-            continue;
-        }
     }
 }
