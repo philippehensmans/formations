@@ -2,22 +2,43 @@
 /**
  * Application SWOT/TOWS - Version multi-utilisateurs
  */
-session_start();
 
-// Vérifier l'authentification
-if (!isset($_SESSION['participant_id'])) {
-    header('Location: index.php');
+// Configuration et système de traduction (inclut session_start)
+require_once __DIR__ . '/../shared-auth/config.php';
+require_once __DIR__ . '/../shared-auth/lang.php';
+require_once __DIR__ . '/config/database.php';
+
+// Vérifier l'authentification via shared-auth
+if (!isLoggedIn()) {
+    header('Location: login.php');
     exit;
 }
 
-// Configuration et système de traduction
-require_once __DIR__ . '/../shared-auth/config.php';
-require_once __DIR__ . '/../shared-auth/lang.php';
+if (!isset($_SESSION['current_session_id'])) {
+    header('Location: login.php');
+    exit;
+}
+
+// Valider la session dans la base locale et assurer le participant
+$db = getDB();
+$sessionId = validateCurrentSession($db);
+if (!$sessionId) {
+    header('Location: login.php');
+    exit;
+}
+
+$user = getLoggedUser();
+ensureParticipant($db, $sessionId, $user);
+
+if (!isset($_SESSION['participant_id'])) {
+    header('Location: login.php');
+    exit;
+}
 
 $participantId = $_SESSION['participant_id'];
-$participantNom = $_SESSION['participant_nom'];
-$participantPrenom = $_SESSION['participant_prenom'];
-$sessionName = $_SESSION['session_name'];
+$participantNom = $user['nom'] ?? '';
+$participantPrenom = $user['prenom'] ?? $user['username'] ?? '';
+$sessionName = $_SESSION['current_session_nom'] ?? '';
 
 // Obtenir la langue actuelle
 $currentLang = getCurrentLanguage();
