@@ -2,8 +2,6 @@
 /**
  * Interface de travail - Cartographie des Parties Prenantes
  */
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 require_once __DIR__ . '/config.php';
 
 // Verifier l'authentification
@@ -26,6 +24,45 @@ if (!$sessionId) { header('Location: login.php'); exit; }
 $sessionCode = $_SESSION['current_session_code'] ?? '';
 $sessionNom = $_SESSION['current_session_nom'] ?? '';
 $categories = getCategories();
+
+// Migration: si la table cartographie a l'ancien schema (participant_id NOT NULL), la recreer
+try {
+    $cols = $db->query("PRAGMA table_info(cartographie)")->fetchAll();
+    foreach ($cols as $col) {
+        if ($col['name'] === 'participant_id' && $col['notnull']) {
+            // Sauvegarder les donnees existantes
+            $hasCols = array_column($cols, 'name');
+            $hasUserId = in_array('user_id', $hasCols);
+            if ($hasUserId) {
+                $rows = $db->query("SELECT user_id, session_id, titre_projet, contexte, stakeholders_data, notes, completion_percent, is_submitted, submitted_at, created_at, updated_at FROM cartographie WHERE user_id IS NOT NULL")->fetchAll();
+            } else {
+                $rows = $db->query("SELECT participant_id as user_id, session_id, titre_projet, contexte, stakeholders_data, notes, completion_percent, is_submitted, submitted_at, created_at, updated_at FROM cartographie")->fetchAll();
+            }
+            $db->exec("DROP TABLE cartographie");
+            $db->exec("CREATE TABLE cartographie (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                session_id INTEGER NOT NULL,
+                titre_projet TEXT DEFAULT '',
+                contexte TEXT DEFAULT '',
+                stakeholders_data TEXT DEFAULT '[]',
+                notes TEXT DEFAULT '',
+                completion_percent INTEGER DEFAULT 0,
+                is_submitted INTEGER DEFAULT 0,
+                submitted_at DATETIME,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )");
+            $stmt = $db->prepare("INSERT INTO cartographie (user_id, session_id, titre_projet, contexte, stakeholders_data, notes, completion_percent, is_submitted, submitted_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            foreach ($rows as $row) {
+                $stmt->execute(array_values($row));
+            }
+            break;
+        }
+    }
+} catch (Exception $e) {
+    // Si la migration echoue, on continue quand meme
+}
 
 // Charger la cartographie
 $stmt = $db->prepare("SELECT * FROM cartographie WHERE user_id = ? AND session_id = ?");
