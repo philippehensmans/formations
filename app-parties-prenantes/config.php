@@ -118,6 +118,43 @@ function initDatabase($db) {
         // participant_id n'existe pas, c'est normal pour les nouvelles installations
     }
 
+    // Migration: si cartographie a un participant_id NOT NULL, recreer la table
+    // (l'ancien config/database.php creait participant_id NOT NULL UNIQUE)
+    try {
+        $cols = $db->query("PRAGMA table_info(cartographie)")->fetchAll();
+        foreach ($cols as $col) {
+            if ($col['name'] === 'participant_id' && $col['notnull']) {
+                // Sauvegarder les donnees existantes
+                $rows = $db->query("SELECT user_id, session_id, titre_projet, contexte, stakeholders_data, notes, completion_percent, is_submitted, submitted_at, created_at, updated_at FROM cartographie")->fetchAll();
+                $db->exec("DROP TABLE cartographie");
+                $db->exec("CREATE TABLE cartographie (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    session_id INTEGER NOT NULL,
+                    titre_projet TEXT DEFAULT '',
+                    contexte TEXT DEFAULT '',
+                    stakeholders_data TEXT DEFAULT '[]',
+                    notes TEXT DEFAULT '',
+                    completion_percent INTEGER DEFAULT 0,
+                    is_submitted INTEGER DEFAULT 0,
+                    submitted_at DATETIME,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )");
+                // Restaurer les donnees
+                $stmt = $db->prepare("INSERT INTO cartographie (user_id, session_id, titre_projet, contexte, stakeholders_data, notes, completion_percent, is_submitted, submitted_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                foreach ($rows as $row) {
+                    if ($row['user_id']) {
+                        $stmt->execute(array_values($row));
+                    }
+                }
+                break;
+            }
+        }
+    } catch (Exception $e) {
+        // Ignorer les erreurs de migration
+    }
+
     // Migration: si l'ancienne table participants (avec prenom/nom mais sans user_id) existe, la recreer
     try {
         $result = $db->query("PRAGMA table_info(participants)");
