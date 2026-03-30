@@ -192,37 +192,45 @@ $avgCompletion = $totalCartos > 0 ? round(array_sum(array_column($allCartos, 'co
                     <?php endif; ?>
 
                     <?php if (!empty($c['stakeholders'])): ?>
+                    <?php
+                        $categories = getCategories();
+                    ?>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="bg-teal-50">
                                     <th class="text-left px-3 py-2 font-semibold text-teal-700">Nom</th>
-                                    <th class="text-left px-3 py-2 font-semibold text-teal-700">Type</th>
+                                    <th class="text-left px-3 py-2 font-semibold text-teal-700">Categorie</th>
+                                    <th class="text-center px-3 py-2 font-semibold text-teal-700">Influence</th>
                                     <th class="text-center px-3 py-2 font-semibold text-teal-700">Interet</th>
-                                    <th class="text-center px-3 py-2 font-semibold text-teal-700">Pouvoir</th>
-                                    <th class="text-left px-3 py-2 font-semibold text-teal-700">Strategie</th>
+                                    <th class="text-left px-3 py-2 font-semibold text-teal-700">Quadrant</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach ($c['stakeholders'] as $s): ?>
+                                <?php foreach ($c['stakeholders'] as $s):
+                                    $catKey = $s['category'] ?? '';
+                                    $catLabel = $categories[$catKey]['label'] ?? $catKey;
+                                    $catColor = $categories[$catKey]['color'] ?? '#999';
+                                    $influence = $s['influence'] ?? 0;
+                                    $interest = $s['interest'] ?? 0;
+                                    if ($influence > 5 && $interest > 5) $quadrant = 'Gerer etroitement';
+                                    elseif ($influence > 5) $quadrant = 'Maintenir satisfait';
+                                    elseif ($interest <= 5) $quadrant = 'Surveiller';
+                                    else $quadrant = 'Tenir informe';
+                                ?>
                                 <tr class="border-b border-gray-100 hover:bg-gray-50">
-                                    <td class="px-3 py-2 font-medium text-gray-800"><?= h($s['nom'] ?? '') ?></td>
-                                    <td class="px-3 py-2 text-gray-600"><?= h($s['type'] ?? '') ?></td>
+                                    <td class="px-3 py-2 font-medium text-gray-800">
+                                        <span class="inline-block w-3 h-3 rounded-full mr-1" style="background:<?= $catColor ?>"></span>
+                                        <?= h($s['name'] ?? '') ?>
+                                    </td>
+                                    <td class="px-3 py-2 text-gray-600"><?= h($catLabel) ?></td>
                                     <td class="px-3 py-2 text-center">
-                                        <?php
-                                        $interet = $s['interet'] ?? 0;
-                                        $interetColor = $interet >= 4 ? 'bg-green-100 text-green-700' : ($interet >= 2 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700');
-                                        ?>
-                                        <span class="px-2 py-0.5 rounded text-xs font-medium <?= $interetColor ?>"><?= $interet ?>/5</span>
+                                        <span class="px-2 py-0.5 rounded text-xs font-medium <?= $influence >= 6 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700' ?>"><?= $influence ?>/10</span>
                                     </td>
                                     <td class="px-3 py-2 text-center">
-                                        <?php
-                                        $pouvoir = $s['pouvoir'] ?? 0;
-                                        $pouvoirColor = $pouvoir >= 4 ? 'bg-purple-100 text-purple-700' : ($pouvoir >= 2 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700');
-                                        ?>
-                                        <span class="px-2 py-0.5 rounded text-xs font-medium <?= $pouvoirColor ?>"><?= $pouvoir ?>/5</span>
+                                        <span class="px-2 py-0.5 rounded text-xs font-medium <?= $interest >= 6 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700' ?>"><?= $interest ?>/10</span>
                                     </td>
-                                    <td class="px-3 py-2 text-gray-600 text-xs"><?= h($s['strategie'] ?? '') ?></td>
+                                    <td class="px-3 py-2 text-gray-600 text-xs"><?= $quadrant ?></td>
                                 </tr>
                                 <?php endforeach; ?>
                             </tbody>
