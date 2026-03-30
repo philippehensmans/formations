@@ -55,7 +55,7 @@ if (!isset($_SESSION['admin_logged_in']) || !$_SESSION['admin_logged_in']) {
     exit;
 }
 
-require_once 'config/database.php';
+require_once __DIR__ . '/config.php';
 $db = getDB();
 
 $message = '';
@@ -66,14 +66,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         switch ($_POST['action']) {
             case 'create_session':
                 $nom = trim($_POST['nom'] ?? '');
-                $formateurPassword = trim($_POST['formateur_password'] ?? '');
-                if ($nom && $formateurPassword) {
+                if ($nom) {
                     $code = generateSessionCode();
-                    $stmt = $db->prepare("INSERT INTO sessions (code, nom, formateur_password) VALUES (?, ?, ?)");
-                    $stmt->execute([$code, $nom, $formateurPassword]);
+                    $userId = $_SESSION['user_id'] ?? null;
+                    $sessionId = createSession($db, $code, $nom, $userId);
                     $message = "Session creee avec le code: $code";
                 } else {
-                    $error = "Nom et mot de passe requis";
+                    $error = "Nom requis";
                 }
                 break;
 
@@ -148,10 +147,6 @@ foreach ($sessions as &$session) {
                     <input type="text" name="nom" placeholder="Nom de la session" required
                            class="w-full p-3 border rounded">
                 </div>
-                <div class="flex-1 min-w-[200px]">
-                    <input type="text" name="formateur_password" placeholder="Mot de passe formateur" required
-                           class="w-full p-3 border rounded">
-                </div>
                 <button type="submit" class="bg-blue-900 text-white px-6 py-3 rounded hover:bg-blue-800">
                     Creer
                 </button>
@@ -172,7 +167,6 @@ foreach ($sessions as &$session) {
                             <tr>
                                 <th class="text-left p-4">Code</th>
                                 <th class="text-left p-4">Nom</th>
-                                <th class="text-left p-4">Mot de passe</th>
                                 <th class="text-center p-4">Participants</th>
                                 <th class="text-center p-4">Soumis</th>
                                 <th class="text-left p-4">Creee le</th>
@@ -186,7 +180,6 @@ foreach ($sessions as &$session) {
                                         <span class="font-mono font-bold text-blue-900"><?= sanitize($session['code']) ?></span>
                                     </td>
                                     <td class="p-4"><?= sanitize($session['nom']) ?></td>
-                                    <td class="p-4 text-gray-500"><?= sanitize($session['formateur_password']) ?></td>
                                     <td class="p-4 text-center"><?= $session['participant_count'] ?></td>
                                     <td class="p-4 text-center">
                                         <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">
