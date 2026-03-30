@@ -25,6 +25,24 @@ $sessionCode = $_SESSION['current_session_code'] ?? '';
 $sessionNom = $_SESSION['current_session_nom'] ?? '';
 $categories = getCategories();
 
+// Migration: si la table participants a l'ancien schema (sans user_id), la recreer
+try {
+    $pCols = array_column($db->query("PRAGMA table_info(participants)")->fetchAll(), 'name');
+    if (!in_array('user_id', $pCols)) {
+        $db->exec("DROP TABLE participants");
+        $db->exec("CREATE TABLE participants (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (session_id) REFERENCES sessions(id),
+            UNIQUE(session_id, user_id)
+        )");
+    }
+} catch (Exception $e) {
+    // Ignorer
+}
+
 // Migration: si la table cartographie a l'ancien schema (participant_id NOT NULL), la recreer
 try {
     $cols = $db->query("PRAGMA table_info(cartographie)")->fetchAll();
@@ -63,6 +81,9 @@ try {
 } catch (Exception $e) {
     // Si la migration echoue, on continue quand meme
 }
+
+// Enregistrer l'utilisateur comme participant (pour qu'il apparaisse dans la vue formateur)
+ensureParticipant($db, $sessionId, $user);
 
 // Charger la cartographie
 $stmt = $db->prepare("SELECT * FROM cartographie WHERE user_id = ? AND session_id = ?");
