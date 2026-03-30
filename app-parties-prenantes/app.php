@@ -34,10 +34,24 @@ try {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             session_id INTEGER NOT NULL,
             user_id INTEGER NOT NULL,
+            prenom VARCHAR(100),
+            nom VARCHAR(100),
+            organisation VARCHAR(255),
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (session_id) REFERENCES sessions(id),
             UNIQUE(session_id, user_id)
         )");
+    } else {
+        // Ajouter les colonnes manquantes si besoin
+        if (!in_array('prenom', $pCols)) {
+            $db->exec("ALTER TABLE participants ADD COLUMN prenom VARCHAR(100)");
+        }
+        if (!in_array('nom', $pCols)) {
+            $db->exec("ALTER TABLE participants ADD COLUMN nom VARCHAR(100)");
+        }
+        if (!in_array('organisation', $pCols)) {
+            $db->exec("ALTER TABLE participants ADD COLUMN organisation VARCHAR(255)");
+        }
     }
 } catch (Exception $e) {
     // Ignorer
