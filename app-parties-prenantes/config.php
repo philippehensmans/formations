@@ -172,6 +172,9 @@ function initDatabase($db) {
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 session_id INTEGER NOT NULL,
                 user_id INTEGER NOT NULL,
+                prenom VARCHAR(100),
+                nom VARCHAR(100),
+                organisation VARCHAR(255),
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (session_id) REFERENCES sessions(id),
                 UNIQUE(session_id, user_id)
