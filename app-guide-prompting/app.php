@@ -422,7 +422,7 @@ if (!$guide) {
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">${trans.resultAnalysis}</label>
-                            <textarea id="exp_result1_${task.id}" rows="2" class="w-full px-3 py-2 border rounded-lg" onchange="updateExperimentation('${task.id}')">${escapeHtml(exp.result1 || '')}</textarea>
+                            <textarea id="exp_result1_${task.id}" rows="6" class="w-full px-3 py-2 border rounded-lg" style="resize: vertical; min-height: 150px;" onchange="updateExperimentation('${task.id}')">${escapeHtml(exp.result1 || '')}</textarea>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">${trans.promptV2}</label>
