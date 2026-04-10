@@ -68,6 +68,7 @@
         "app-comm-plan": ["communication", "gestion_projet"],
         "app-pilotage-projet": ["gestion_projet", "collaboration"],
         "app-craintes-attentes": ["evaluation", "collaboration"],
-        "app-questionnaire-ia": ["intelligence_artificielle", "evaluation"]
+        "app-questionnaire-ia": ["intelligence_artificielle", "evaluation"],
+        "app-comm-diagnostic": ["communication", "evaluation"]
     }
 }
