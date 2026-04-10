@@ -365,8 +365,6 @@ $restrictedApps = getRestrictedApps();
                 activeBtn.style.color = '#4338ca';
             }
         }
-            });
-        }
     </script>
 </body>
 </html>
