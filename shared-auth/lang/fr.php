@@ -1488,6 +1488,11 @@ return [
             'description' => 'Construisez un plan de communication concret autour d\'une action précise : objectif SMART, public, message, canaux, calendrier et ressources.',
             'color' => 'indigo',
         ],
+        'comm-diagnostic' => [
+            'title' => 'Auto-Diagnostic Communication',
+            'description' => 'Evaluez la validité de la communication de votre organisation : valeurs et mission, contraintes et ressources, mobilisation et engagement.',
+            'color' => 'cyan',
+        ],
         'pilotage-projet' => [
             'title' => 'Pilotage de Projet',
             'description' => 'Structurez votre projet des objectifs aux tâches concrètes, avec phases, points de contrôle et leçons apprises.',

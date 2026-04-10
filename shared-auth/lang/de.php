@@ -1488,6 +1488,11 @@ return [
             'description' => 'Erstellen Sie einen konkreten Kommunikationsplan rund um eine bestimmte Aktion: SMART-Ziel, Zielgruppe, Botschaft, Kanäle, Zeitplan und Ressourcen.',
             'color' => 'indigo',
         ],
+        'comm-diagnostic' => [
+            'title' => 'Kommunikations-Selbstdiagnose',
+            'description' => 'Bewerten Sie die Kommunikation Ihrer Organisation: Werte und Mission, Einschränkungen und Ressourcen, Mobilisierung und Engagement.',
+            'color' => 'cyan',
+        ],
         'pilotage-projet' => [
             'title' => 'Projektsteuerung',
             'description' => 'Strukturieren Sie Ihr Projekt von den Zielen bis zu konkreten Aufgaben, mit Phasen, Kontrollpunkten und Lessons Learned.',
