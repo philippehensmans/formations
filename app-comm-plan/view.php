@@ -13,7 +13,7 @@ $stmt->execute([$participantId]);
 $participant = $stmt->fetch();
 if (!$participant) { die("Participant non trouve"); }
 
-if (!canAccessSession($appKey, $participant['session_id'])) { die("Acces refuse."); }
+if (!canAccessSession($appKey, $participant['session_id'])) { die("Accès refusé."); }
 
 $sharedDb = getSharedDB();
 $userStmt = $sharedDb->prepare("SELECT prenom, nom, organisation FROM users WHERE id = ?");
@@ -33,6 +33,7 @@ $availableCanaux = getCanaux();
 $isSubmitted = ($analyse['is_shared'] ?? 0) == 1;
 
 $typeLabels = [
+    'lancement' => 'Lancement',
     'teasing' => 'Teasing',
     'annonce' => 'Annonce',
     'rappel' => 'Rappel',
@@ -72,16 +73,16 @@ $typeLabels = [
     <div class="max-w-5xl mx-auto p-4">
         <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
             <h1 class="text-2xl font-bold text-gray-800 mb-2">Mini-Plan de Communication</h1>
-            <div class="text-gray-600">Organisation : <strong><?= sanitize($analyse['nom_organisation'] ?? '') ?: '<em class="text-gray-400">Non renseigne</em>' ?></strong></div>
+            <div class="text-gray-600">Organisation : <strong><?= sanitize($analyse['nom_organisation'] ?? '') ?: '<em class="text-gray-400">Non renseigné</em>' ?></strong></div>
         </div>
 
         <!-- 1. Action -->
         <div class="bg-white rounded-xl shadow-lg p-6 mb-4">
             <div class="flex items-center gap-3 mb-3">
                 <div class="section-number">1</div>
-                <h2 class="text-lg font-bold text-gray-800">L'action a communiquer</h2>
+                <h2 class="text-lg font-bold text-gray-800">L'action à communiquer</h2>
             </div>
-            <p class="text-gray-700 whitespace-pre-wrap bg-indigo-50 p-4 rounded-lg border border-indigo-200"><?= sanitize($analyse['action_communiquer'] ?? '') ?: '<em class="text-gray-400">Non renseigne</em>' ?></p>
+            <p class="text-gray-700 whitespace-pre-wrap bg-indigo-50 p-4 rounded-lg border border-indigo-200"><?= sanitize($analyse['action_communiquer'] ?? '') ?: '<em class="text-gray-400">Non renseigné</em>' ?></p>
         </div>
 
         <!-- 2. Objectif SMART -->
@@ -90,7 +91,7 @@ $typeLabels = [
                 <div class="section-number">2</div>
                 <h2 class="text-lg font-bold text-gray-800">Objectif SMART</h2>
             </div>
-            <p class="text-gray-700 whitespace-pre-wrap bg-blue-50 p-4 rounded-lg border border-blue-200"><?= sanitize($analyse['objectif_smart'] ?? '') ?: '<em class="text-gray-400">Non renseigne</em>' ?></p>
+            <p class="text-gray-700 whitespace-pre-wrap bg-blue-50 p-4 rounded-lg border border-blue-200"><?= sanitize($analyse['objectif_smart'] ?? '') ?: '<em class="text-gray-400">Non renseigné</em>' ?></p>
         </div>
 
         <!-- 3. Public prioritaire -->
@@ -99,17 +100,17 @@ $typeLabels = [
                 <div class="section-number">3</div>
                 <h2 class="text-lg font-bold text-gray-800">Public prioritaire</h2>
             </div>
-            <p class="text-gray-700 whitespace-pre-wrap bg-purple-50 p-4 rounded-lg border border-purple-200"><?= sanitize($analyse['public_prioritaire'] ?? '') ?: '<em class="text-gray-400">Non renseigne</em>' ?></p>
+            <p class="text-gray-700 whitespace-pre-wrap bg-purple-50 p-4 rounded-lg border border-purple-200"><?= sanitize($analyse['public_prioritaire'] ?? '') ?: '<em class="text-gray-400">Non renseigné</em>' ?></p>
         </div>
 
         <!-- 4. Message cle -->
         <div class="bg-white rounded-xl shadow-lg p-6 mb-4">
             <div class="flex items-center gap-3 mb-3">
                 <div class="section-number">4</div>
-                <h2 class="text-lg font-bold text-gray-800">Message cle</h2>
+                <h2 class="text-lg font-bold text-gray-800">Message clé</h2>
             </div>
             <div class="bg-gradient-to-r from-indigo-50 to-violet-50 p-4 rounded-lg border-2 border-indigo-300">
-                <p class="text-lg font-medium text-indigo-900 italic">&laquo; <?= sanitize($analyse['message_cle'] ?? '') ?: '<em class="text-gray-400">Non renseigne</em>' ?> &raquo;</p>
+                <p class="text-lg font-medium text-indigo-900 italic">&laquo; <?= sanitize($analyse['message_cle'] ?? '') ?: '<em class="text-gray-400">Non renseigné</em>' ?> &raquo;</p>
             </div>
         </div>
 
@@ -120,7 +121,7 @@ $typeLabels = [
                 <h2 class="text-lg font-bold text-gray-800">Canaux (<?= count(array_filter($canaux, fn($c) => !empty($c['canal']))) ?>)</h2>
             </div>
             <?php if (empty($canaux)): ?>
-                <p class="text-gray-400 text-center py-4">Aucun canal selectionne</p>
+                <p class="text-gray-400 text-center py-4">Aucun canal sélectionné</p>
             <?php else: ?>
                 <div class="space-y-3">
                     <?php foreach ($canaux as $c):
@@ -152,15 +153,16 @@ $typeLabels = [
         <div class="bg-white rounded-xl shadow-lg p-6 mb-4">
             <div class="flex items-center gap-3 mb-3">
                 <div class="section-number">6</div>
-                <h2 class="text-lg font-bold text-gray-800">Calendrier (<?= count(array_filter($calendrier, fn($e) => !empty($e['etape']))) ?> etapes)</h2>
+                <h2 class="text-lg font-bold text-gray-800">Calendrier (<?= count(array_filter($calendrier, fn($e) => !empty($e['etape']))) ?> étapes)</h2>
             </div>
             <?php if (empty($calendrier)): ?>
-                <p class="text-gray-400 text-center py-4">Aucune etape definie</p>
+                <p class="text-gray-400 text-center py-4">Aucune étape définie</p>
             <?php else: ?>
                 <div class="space-y-3">
                     <?php foreach ($calendrier as $i => $e):
                         if (empty($e['etape']) && empty($e['date'])) continue;
                         $typeColors = [
+                            'lancement' => 'border-indigo-400 bg-indigo-50',
                             'teasing' => 'border-purple-400 bg-purple-50',
                             'annonce' => 'border-blue-400 bg-blue-50',
                             'rappel' => 'border-amber-400 bg-amber-50',
@@ -199,7 +201,7 @@ $typeLabels = [
                 <h2 class="text-lg font-bold text-gray-800">Ressources</h2>
             </div>
             <?php if (empty($ressources)): ?>
-                <p class="text-gray-400 text-center py-4">Aucune ressource definie</p>
+                <p class="text-gray-400 text-center py-4">Aucune ressource définie</p>
             <?php else: ?>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">

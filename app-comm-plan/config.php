@@ -1,7 +1,7 @@
 <?php
 /**
  * Configuration Mini-Plan de Communication
- * Utilise le systeme d'authentification partage
+ * Utilise le système d'authentification partagé
  */
 
 require_once __DIR__ . '/../shared-auth/config.php';
@@ -25,7 +25,7 @@ function getDB() {
             $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
             initDatabase($db);
         } catch (PDOException $e) {
-            die("Erreur de connexion a la base de donnees: " . $e->getMessage());
+            die("Erreur de connexion à la base de données : " . $e->getMessage());
         }
     }
     return $db;
@@ -105,8 +105,8 @@ function getCanaux() {
         'affichage' => ['label' => 'Affichage / Flyers', 'icon' => "\xF0\x9F\x93\x8C", 'color' => 'amber'],
         'presse' => ['label' => 'Presse locale', 'icon' => "\xF0\x9F\x93\xB0", 'color' => 'gray'],
         'radio' => ['label' => 'Radio', 'icon' => "\xF0\x9F\x93\xBB", 'color' => 'purple'],
-        'bouche_a_oreille' => ['label' => 'Bouche-a-oreille / Relais', 'icon' => "\xF0\x9F\x97\xA3\xEF\xB8\x8F", 'color' => 'orange'],
-        'evenement' => ['label' => 'Evenement / Stand', 'icon' => "\xF0\x9F\x8E\xAA", 'color' => 'red'],
+        'bouche_a_oreille' => ['label' => 'Bouche-à-oreille / Relais', 'icon' => "\xF0\x9F\x97\xA3\xEF\xB8\x8F", 'color' => 'orange'],
+        'evenement' => ['label' => 'Événement / Stand', 'icon' => "\xF0\x9F\x8E\xAA", 'color' => 'red'],
         'whatsapp' => ['label' => 'WhatsApp / Signal', 'icon' => "\xF0\x9F\x92\xAC", 'color' => 'emerald'],
         'autre' => ['label' => 'Autre', 'icon' => "\xE2\x9E\x95", 'color' => 'gray']
     ];

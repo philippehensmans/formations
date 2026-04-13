@@ -4,7 +4,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 if (!isLoggedIn() || !isset($_SESSION['current_session_id'])) {
     http_response_code(401);
-    echo json_encode(['error' => 'Non authentifie']);
+    echo json_encode(['error' => 'Non authentifié']);
     exit;
 }
 
@@ -19,12 +19,12 @@ $analyse = $stmt->fetch();
 
 if (!$analyse) {
     http_response_code(400);
-    echo json_encode(['error' => 'Aucune analyse trouvee']);
+    echo json_encode(['error' => 'Aucune analyse trouvée']);
     exit;
 }
 
 $stmt = $db->prepare("UPDATE analyses SET is_shared = 1, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND session_id = ?");
 $stmt->execute([$userId, $sessionId]);
 
-echo json_encode(['success' => true, 'message' => 'Plan soumis avec succes']);
+echo json_encode(['success' => true, 'message' => 'Plan soumis avec succès']);
 ?>

@@ -64,12 +64,12 @@ $availableCanaux = getCanaux();
                 <?= renderLanguageSelector('text-sm bg-white/20 text-gray-800 px-2 py-1 rounded border border-gray-300') ?>
                 <button onclick="manualSave()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition">Sauvegarder</button>
                 <span id="saveStatus" class="text-sm px-3 py-1 rounded-full bg-gray-200"><?= $isSubmitted ? 'Soumis' : 'Brouillon' ?></span>
-                <span id="completion" class="text-sm text-gray-600">Completion: <strong>0%</strong></span>
+                <span id="completion" class="text-sm text-gray-600">Complétion : <strong>0%</strong></span>
                 <?php if (isFormateur()): ?>
                 <a href="formateur.php" class="text-sm bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1 rounded transition">Formateur</a>
                 <?php endif; ?>
                 <?= renderHomeLink() ?>
-                <a href="logout.php" class="text-sm bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded transition">Deconnexion</a>
+                <a href="logout.php" class="text-sm bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded transition">Déconnexion</a>
             </div>
         </div>
     </div>
@@ -79,13 +79,13 @@ $availableCanaux = getCanaux();
         <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8 mb-6">
             <div class="text-center mb-6">
                 <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Mini-Plan de Communication</h1>
-                <p class="text-gray-600 italic">Construisez un plan de communication concret autour d'une action precise</p>
+                <p class="text-gray-600 italic">Construisez un plan de communication concret autour d'une action précise</p>
             </div>
 
             <div class="bg-gradient-to-r from-indigo-50 via-blue-50 to-violet-50 p-6 rounded-lg border-2 border-indigo-200 shadow-md mb-6">
                 <p class="text-gray-700 leading-relaxed">
-                    Travaillez a partir d'un <strong>cas concret</strong> — idealement votre propre association — pour elaborer un mini-plan de communication autour d'une action precise :
-                    un evenement a venir, une campagne de recrutement de benevoles, le lancement d'un nouveau service, une journee portes ouvertes...
+                    Travaillez à partir d'un <strong>cas concret</strong> — idéalement votre propre association — pour élaborer un mini-plan de communication autour d'une action précise :
+                    un événement à venir, une campagne de recrutement de bénévoles, le lancement d'un nouveau service, une journée portes ouvertes...
                 </p>
             </div>
 
@@ -106,14 +106,14 @@ $availableCanaux = getCanaux();
             <div class="flex items-center gap-4 mb-4">
                 <div class="section-number">1</div>
                 <div>
-                    <h2 class="text-xl font-bold text-gray-800">L'action a communiquer</h2>
-                    <p class="text-gray-500 text-sm">Decrivez en une phrase claire ce que vous voulez promouvoir</p>
+                    <h2 class="text-xl font-bold text-gray-800">L'action à communiquer</h2>
+                    <p class="text-gray-500 text-sm">Décrivez en une phrase claire ce que vous voulez promouvoir</p>
                 </div>
             </div>
             <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
                 <textarea id="actionCommuniquer" rows="3"
                     class="w-full px-4 py-2 border-2 border-indigo-300 rounded-md focus:ring-2 focus:ring-indigo-500 text-lg"
-                    placeholder="Ex: Organiser une journee portes ouvertes le 15 mars pour faire decouvrir nos activites aux habitants du quartier..."
+                    placeholder="Ex : Organiser une journée portes ouvertes le 15 mars pour faire découvrir nos activités aux habitants du quartier..."
                     oninput="scheduleAutoSave()"><?= h($analyse['action_communiquer'] ?? '') ?></textarea>
             </div>
         </div>
@@ -126,13 +126,13 @@ $availableCanaux = getCanaux();
                 <div class="section-number">2</div>
                 <div>
                     <h2 class="text-xl font-bold text-gray-800">L'objectif SMART</h2>
-                    <p class="text-gray-500 text-sm">Specifique, Mesurable, Atteignable, Realiste, Temporellement defini</p>
+                    <p class="text-gray-500 text-sm">Spécifique, Mesurable, Atteignable, Réaliste, Temporellement défini</p>
                 </div>
             </div>
             <div class="grid grid-cols-5 gap-2 mb-4">
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
                     <div class="text-lg font-bold text-blue-700">S</div>
-                    <div class="text-xs text-blue-600">Specifique</div>
+                    <div class="text-xs text-blue-600">Spécifique</div>
                 </div>
                 <div class="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
                     <div class="text-lg font-bold text-green-700">M</div>
@@ -144,7 +144,7 @@ $availableCanaux = getCanaux();
                 </div>
                 <div class="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center">
                     <div class="text-lg font-bold text-orange-700">R</div>
-                    <div class="text-xs text-orange-600">Realiste</div>
+                    <div class="text-xs text-orange-600">Réaliste</div>
                 </div>
                 <div class="bg-purple-50 border border-purple-200 rounded-lg p-3 text-center">
                     <div class="text-lg font-bold text-purple-700">T</div>
@@ -154,7 +154,7 @@ $availableCanaux = getCanaux();
             <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
                 <textarea id="objectifSmart" rows="3"
                     class="w-full px-4 py-2 border-2 border-indigo-300 rounded-md focus:ring-2 focus:ring-indigo-500"
-                    placeholder="Ex: Attirer 50 visiteurs lors de la journee portes ouvertes du 15 mars, dont au moins 10 nouvelles personnes qui ne connaissaient pas l'association..."
+                    placeholder="Ex : Attirer 50 visiteurs lors de la journée portes ouvertes du 15 mars, dont au moins 10 nouvelles personnes qui ne connaissaient pas l'association..."
                     oninput="scheduleAutoSave()"><?= h($analyse['objectif_smart'] ?? '') ?></textarea>
             </div>
         </div>
@@ -167,13 +167,13 @@ $availableCanaux = getCanaux();
                 <div class="section-number">3</div>
                 <div>
                     <h2 class="text-xl font-bold text-gray-800">Le public prioritaire</h2>
-                    <p class="text-gray-500 text-sm">Quel persona ciblez-vous en priorite ? Pourquoi lui/elle ?</p>
+                    <p class="text-gray-500 text-sm">Quel persona ciblez-vous en priorité ? Pourquoi lui/elle ?</p>
                 </div>
             </div>
             <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
                 <textarea id="publicPrioritaire" rows="4"
                     class="w-full px-4 py-2 border-2 border-indigo-300 rounded-md focus:ring-2 focus:ring-indigo-500"
-                    placeholder="Decrivez votre public cible : qui est-il ? Pourquoi le ciblez-vous en priorite pour cette action ? Quel lien a-t-il avec votre organisation ?"
+                    placeholder="Décrivez votre public cible : qui est-il ? Pourquoi le ciblez-vous en priorité pour cette action ? Quel lien a-t-il avec votre organisation ?"
                     oninput="scheduleAutoSave()"><?= h($analyse['public_prioritaire'] ?? '') ?></textarea>
             </div>
         </div>
@@ -185,7 +185,7 @@ $availableCanaux = getCanaux();
             <div class="flex items-center gap-4 mb-4">
                 <div class="section-number">4</div>
                 <div>
-                    <h2 class="text-xl font-bold text-gray-800">Le message cle</h2>
+                    <h2 class="text-xl font-bold text-gray-800">Le message clé</h2>
                     <p class="text-gray-500 text-sm">En une phrase : que voulez-vous que votre public retienne ?</p>
                 </div>
             </div>
@@ -207,12 +207,12 @@ $availableCanaux = getCanaux();
                 <div class="section-number">5</div>
                 <div>
                     <h2 class="text-xl font-bold text-gray-800">Les canaux</h2>
-                    <p class="text-gray-500 text-sm">Quels canaux utiliserez-vous ? Pourquoi ceux-la plutot que d'autres ?</p>
+                    <p class="text-gray-500 text-sm">Quels canaux utiliserez-vous ? Pourquoi ceux-là plutôt que d'autres ?</p>
                 </div>
             </div>
 
             <div class="flex flex-wrap justify-between items-center mb-4">
-                <span id="canalCount" class="text-sm text-gray-500">0 canal/canaux selectionne(s)</span>
+                <span id="canalCount" class="text-sm text-gray-500">0 canal/canaux sélectionné(s)</span>
                 <button onclick="addCanal()" class="no-print bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition shadow-md">
                     &#x2795; Ajouter un canal
                 </button>
@@ -221,7 +221,7 @@ $availableCanaux = getCanaux();
             <div id="canauxContainer" class="space-y-3"></div>
             <div id="canalEmpty" class="text-center py-8 text-gray-400">
                 <p class="text-3xl mb-2">&#x1F4E2;</p>
-                <p>Cliquez sur "Ajouter un canal" pour selectionner vos canaux de communication</p>
+                <p>Cliquez sur "Ajouter un canal" pour sélectionner vos canaux de communication</p>
             </div>
         </div>
 
@@ -233,25 +233,25 @@ $availableCanaux = getCanaux();
                 <div class="section-number">6</div>
                 <div>
                     <h2 class="text-xl font-bold text-gray-800">Le calendrier</h2>
-                    <p class="text-gray-500 text-sm">Quand commence la communication ? Quelles etapes ? (annonce, rappel, relance, remerciement)</p>
+                    <p class="text-gray-500 text-sm">Quand commence la communication ? Quelles étapes ? (lancement, annonce, rappel, relance, remerciement)</p>
                 </div>
             </div>
 
             <div class="flex flex-wrap justify-between items-center mb-4">
-                <span id="etapeCount" class="text-sm text-gray-500">0 etape(s)</span>
+                <span id="etapeCount" class="text-sm text-gray-500">0 étape(s)</span>
                 <button onclick="addEtape()" class="no-print bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition shadow-md">
-                    &#x2795; Ajouter une etape
+                    &#x2795; Ajouter une étape
                 </button>
             </div>
 
             <div id="calendrierContainer" class="space-y-3"></div>
             <div id="etapeEmpty" class="text-center py-8 text-gray-400">
                 <p class="text-3xl mb-2">&#x1F4C5;</p>
-                <p>Cliquez sur "Ajouter une etape" pour planifier votre calendrier de communication</p>
+                <p>Cliquez sur "Ajouter une étape" pour planifier votre calendrier de communication</p>
             </div>
 
             <div class="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
-                <strong>Conseil :</strong> Pensez aux grandes etapes : annonce / teasing, rappel, jour J, relance post-evenement, remerciement / bilan.
+                <strong>Conseil :</strong> Pensez aux grandes étapes : lancement / teasing, annonce, rappel, jour J, relance post-événement, remerciement / bilan.
             </div>
         </div>
 
@@ -262,8 +262,8 @@ $availableCanaux = getCanaux();
             <div class="flex items-center gap-4 mb-4">
                 <div class="section-number">7</div>
                 <div>
-                    <h2 class="text-xl font-bold text-gray-800">Les ressources necessaires</h2>
-                    <p class="text-gray-500 text-sm">Qui fait quoi ? Combien de temps ? Quel budget eventuel ?</p>
+                    <h2 class="text-xl font-bold text-gray-800">Les ressources nécessaires</h2>
+                    <p class="text-gray-500 text-sm">Qui fait quoi ? Combien de temps ? Quel budget éventuel ?</p>
                 </div>
             </div>
 
@@ -277,7 +277,7 @@ $availableCanaux = getCanaux();
             <div id="ressourcesContainer" class="space-y-3"></div>
             <div id="ressourceEmpty" class="text-center py-8 text-gray-400">
                 <p class="text-3xl mb-2">&#x1F465;</p>
-                <p>Cliquez sur "Ajouter une ressource" pour definir qui fait quoi</p>
+                <p>Cliquez sur "Ajouter une ressource" pour définir qui fait quoi</p>
             </div>
         </div>
 
@@ -341,16 +341,16 @@ $availableCanaux = getCanaux();
                             <select class="w-full px-3 py-2 border rounded-md text-sm bg-white" onchange="updateCanal(${index}, 'canal', this.value)">${options}</select>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-gray-500 mb-1">Frequence / Format</label>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Fréquence / Format</label>
                             <input type="text" value="${esc(canal.frequence || '')}" class="w-full px-3 py-2 border rounded-md text-sm"
-                                placeholder="Ex: 3 posts, 1 newsletter, 200 flyers..."
+                                placeholder="Ex : 3 posts, 1 newsletter, 200 flyers..."
                                 oninput="updateCanal(${index}, 'frequence', this.value)">
                         </div>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 mb-1">Pourquoi ce canal ? Quel avantage pour toucher votre public ?</label>
                         <textarea rows="2" class="w-full px-3 py-2 border rounded-md text-sm resize-none"
-                            placeholder="Justifiez votre choix : pertinence, cout, accessibilite pour le public cible..."
+                            placeholder="Justifiez votre choix : pertinence, coût, accessibilité pour le public cible..."
                             oninput="updateCanal(${index}, 'justification', this.value)">${esc(canal.justification || '')}</textarea>
                     </div>
                 </div>
@@ -393,6 +393,7 @@ $availableCanaux = getCanaux();
     function createEtapeCard(etape, index) {
         const div = document.createElement('div');
         const typeColors = {
+            'lancement': 'bg-indigo-50 border-indigo-300',
             'teasing': 'bg-purple-50 border-purple-300',
             'annonce': 'bg-blue-50 border-blue-300',
             'rappel': 'bg-amber-50 border-amber-300',
@@ -406,13 +407,14 @@ $availableCanaux = getCanaux();
 
         let typeOptions = '<option value="">-- Type --</option>';
         const types = [
+            ['lancement', 'Lancement'],
             ['teasing', 'Teasing / Anticipation'],
             ['annonce', 'Annonce principale'],
             ['rappel', 'Rappel'],
             ['jour_j', 'Jour J'],
             ['relance', 'Relance / Suivi'],
             ['remerciement', 'Remerciement'],
-            ['bilan', 'Bilan / Resultats']
+            ['bilan', 'Bilan / Résultats']
         ];
         types.forEach(([val, label]) => {
             typeOptions += `<option value="${val}"${etape.type === val ? ' selected' : ''}>${label}</option>`;
@@ -423,26 +425,26 @@ $availableCanaux = getCanaux();
                 <div class="flex-1">
                     <div class="grid md:grid-cols-3 gap-3 mb-3">
                         <div>
-                            <label class="block text-xs font-semibold text-gray-500 mb-1">Date / Periode</label>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Date / Période</label>
                             <input type="text" value="${esc(etape.date || '')}" class="w-full px-3 py-2 border rounded-md text-sm"
-                                placeholder="Ex: J-21, 22 fevrier, Semaine du 10..."
+                                placeholder="Ex : J-21, 22 février, Semaine du 10..."
                                 oninput="updateEtape(${index}, 'date', this.value)">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-gray-500 mb-1">Type d'etape</label>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Type d'étape</label>
                             <select class="w-full px-3 py-2 border rounded-md text-sm bg-white" onchange="updateEtapeType(${index}, this.value)">${typeOptions}</select>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-gray-500 mb-1">Canal(aux) utilise(s)</label>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Canal(aux) utilisé(s)</label>
                             <input type="text" value="${esc(etape.canaux_utilises || '')}" class="w-full px-3 py-2 border rounded-md text-sm"
-                                placeholder="Ex: Facebook + Flyers"
+                                placeholder="Ex : Facebook + Flyers"
                                 oninput="updateEtape(${index}, 'canaux_utilises', this.value)">
                         </div>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-gray-500 mb-1">Description de l'etape</label>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Description de l'étape</label>
                         <input type="text" value="${esc(etape.etape || '')}" class="w-full px-3 py-2 border rounded-md text-sm"
-                            placeholder="Que faites-vous a cette etape ? Quel contenu ?"
+                            placeholder="Que faites-vous à cette étape ? Quel contenu ?"
                             oninput="updateEtape(${index}, 'etape', this.value)">
                     </div>
                 </div>
@@ -460,7 +462,7 @@ $availableCanaux = getCanaux();
     }
 
     function removeEtape(i) {
-        if (!confirm('Supprimer cette etape ?')) return;
+        if (!confirm('Supprimer cette étape ?')) return;
         calendrier.splice(i, 1);
         renderCalendrier();
         scheduleAutoSave();
@@ -473,7 +475,7 @@ $availableCanaux = getCanaux();
         renderCalendrier();
         scheduleAutoSave();
     }
-    function updateEtapeCount() { document.getElementById('etapeCount').textContent = calendrier.length + ' etape(s)'; }
+    function updateEtapeCount() { document.getElementById('etapeCount').textContent = calendrier.length + ' étape(s)'; }
 
     // ========================
     // RESSOURCES
@@ -499,19 +501,19 @@ $availableCanaux = getCanaux();
                         <div>
                             <label class="block text-xs font-semibold text-gray-500 mb-1">Qui ?</label>
                             <input type="text" value="${esc(r.qui || '')}" class="w-full px-3 py-2 border rounded-md text-sm"
-                                placeholder="Ex: Marie (stagiaire), le CA..."
+                                placeholder="Ex : Marie (stagiaire), le CA..."
                                 oninput="updateRessource(${index}, 'qui', this.value)">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-500 mb-1">Fait quoi ?</label>
                             <input type="text" value="${esc(r.quoi || '')}" class="w-full px-3 py-2 border rounded-md text-sm"
-                                placeholder="Ex: Cree les visuels, redige les posts..."
+                                placeholder="Ex : Crée les visuels, rédige les posts..."
                                 oninput="updateRessource(${index}, 'quoi', this.value)">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-500 mb-1">Temps / Budget</label>
                             <input type="text" value="${esc(r.temps_budget || '')}" class="w-full px-3 py-2 border rounded-md text-sm"
-                                placeholder="Ex: 2h/semaine, 50 EUR flyers..."
+                                placeholder="Ex : 2h/semaine, 50 € flyers..."
                                 oninput="updateRessource(${index}, 'temps_budget', this.value)">
                         </div>
                     </div>
@@ -567,13 +569,13 @@ $availableCanaux = getCanaux();
             if (res.success) {
                 document.getElementById('saveStatus').textContent = 'Sauvegarde';
                 document.getElementById('saveStatus').className = 'text-sm px-3 py-1 rounded-full bg-green-500 text-white';
-                document.getElementById('completion').innerHTML = 'Completion: <strong>' + res.completion + '%</strong>';
+                document.getElementById('completion').innerHTML = 'Complétion : <strong>' + res.completion + '%</strong>';
             } else {
                 document.getElementById('saveStatus').textContent = 'Erreur';
                 document.getElementById('saveStatus').className = 'text-sm px-3 py-1 rounded-full bg-red-500 text-white';
             }
         } catch (e) {
-            document.getElementById('saveStatus').textContent = 'Erreur reseau';
+            document.getElementById('saveStatus').textContent = 'Erreur réseau';
             document.getElementById('saveStatus').className = 'text-sm px-3 py-1 rounded-full bg-red-500 text-white';
         }
     }
@@ -625,17 +627,17 @@ $availableCanaux = getCanaux();
             ['MINI-PLAN DE COMMUNICATION — ' + nomOrg],
             [],
             ['SECTION', 'CONTENU'],
-            ['Action a communiquer', document.getElementById('actionCommuniquer').value],
+            ['Action à communiquer', document.getElementById('actionCommuniquer').value],
             ['Objectif SMART', document.getElementById('objectifSmart').value],
             ['Public prioritaire', document.getElementById('publicPrioritaire').value],
-            ['Message cle', document.getElementById('messageCle').value],
+            ['Message clé', document.getElementById('messageCle').value],
             ['Notes', document.getElementById('notes').value]
         ];
         const ws1 = XLSX.utils.aoa_to_sheet(planData);
         ws1['!cols'] = [{wch: 25}, {wch: 80}];
 
         // Canaux
-        const cData = [['CANAUX DE COMMUNICATION'], [], ['#', 'Canal', 'Frequence / Format', 'Justification']];
+        const cData = [['CANAUX DE COMMUNICATION'], [], ['#', 'Canal', 'Fréquence / Format', 'Justification']];
         canaux.forEach((c, i) => {
             const label = availableCanaux[c.canal]?.label || c.canal || '';
             cData.push([(i+1).toString(), label, c.frequence || '', c.justification || '']);
@@ -644,7 +646,7 @@ $availableCanaux = getCanaux();
         ws2['!cols'] = [{wch: 4}, {wch: 25}, {wch: 30}, {wch: 50}];
 
         // Calendrier
-        const calData = [['CALENDRIER'], [], ['#', 'Date / Periode', 'Type', 'Description', 'Canaux']];
+        const calData = [['CALENDRIER'], [], ['#', 'Date / Période', 'Type', 'Description', 'Canaux']];
         calendrier.forEach((e, i) => {
             calData.push([(i+1).toString(), e.date || '', e.type || '', e.etape || '', e.canaux_utilises || '']);
         });
