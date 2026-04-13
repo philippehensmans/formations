@@ -196,8 +196,27 @@ $avgCompletion = $totalObjectifs > 0 ? round(array_sum(array_column($allObjectif
                             <?php if (!empty($o['etape1'])): ?>
                             <div class="space-y-2">
                                 <?php foreach ($o['etape1'] as $item): ?>
+                                <?php
+                                    $evaluations = is_array($item) ? ($item['evaluations'] ?? []) : [];
+                                    $score = 0;
+                                    foreach (['S','M','A','R','T'] as $L) {
+                                        if (($evaluations[$L]['reponse'] ?? '') === 'oui') $score++;
+                                    }
+                                    $texte = is_array($item) ? ($item['texte'] ?? '') : (string)$item;
+                                ?>
                                 <div class="bg-blue-50 rounded p-2 text-xs text-gray-700">
-                                    <?= h(is_array($item) ? ($item['objectif'] ?? $item['texte'] ?? $item['description'] ?? json_encode($item)) : $item) ?>
+                                    <?php if ($texte !== ''): ?>
+                                    <p class="italic mb-1">"<?= h($texte) ?>"</p>
+                                    <?php endif; ?>
+                                    <div class="flex flex-wrap gap-1 mb-1">
+                                        <?php foreach (['S','M','A','R','T'] as $L):
+                                            $rep = $evaluations[$L]['reponse'] ?? '';
+                                            $color = $rep === 'oui' ? 'bg-green-200 text-green-800' : ($rep === 'non' ? 'bg-red-200 text-red-800' : 'bg-gray-200 text-gray-600');
+                                        ?>
+                                        <span class="<?= $color ?> px-1.5 py-0.5 rounded font-bold"><?= $L ?><?= $rep !== '' ? ':' . h($rep) : '' ?></span>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    <div class="text-right font-bold text-blue-700">Score: <?= $score ?>/5</div>
                                 </div>
                                 <?php endforeach; ?>
                             </div>
@@ -215,8 +234,27 @@ $avgCompletion = $totalObjectifs > 0 ? round(array_sum(array_column($allObjectif
                             <?php if (!empty($o['etape2'])): ?>
                             <div class="space-y-2">
                                 <?php foreach ($o['etape2'] as $item): ?>
+                                <?php
+                                    $composantes = is_array($item) ? ($item['composantes'] ?? []) : [];
+                                    $final = is_array($item) ? ($item['objectif_final'] ?? ($item['reformulation'] ?? '')) : (string)$item;
+                                    $texteOrig = is_array($item) ? ($item['texte'] ?? '') : '';
+                                ?>
                                 <div class="bg-indigo-50 rounded p-2 text-xs text-gray-700">
-                                    <?= h(is_array($item) ? ($item['objectif'] ?? $item['texte'] ?? $item['description'] ?? json_encode($item)) : $item) ?>
+                                    <?php if ($texteOrig !== ''): ?>
+                                    <p class="italic text-gray-500 mb-1">Depart : "<?= h($texteOrig) ?>"</p>
+                                    <?php endif; ?>
+                                    <?php if (!empty($composantes)): ?>
+                                    <div class="space-y-0.5 mb-1">
+                                        <?php foreach (['S','M','A','R','T'] as $L): if (!empty($composantes[$L])): ?>
+                                        <div><span class="font-bold text-indigo-700"><?= $L ?>:</span> <?= h($composantes[$L]) ?></div>
+                                        <?php endif; endforeach; ?>
+                                    </div>
+                                    <?php endif; ?>
+                                    <?php if ($final !== ''): ?>
+                                    <div class="bg-white border border-indigo-200 rounded p-1.5 mt-1">
+                                        <span class="font-bold text-indigo-700">SMART :</span> <?= h($final) ?>
+                                    </div>
+                                    <?php endif; ?>
                                 </div>
                                 <?php endforeach; ?>
                             </div>
@@ -234,8 +272,30 @@ $avgCompletion = $totalObjectifs > 0 ? round(array_sum(array_column($allObjectif
                             <?php if (!empty($o['etape3'])): ?>
                             <div class="space-y-2">
                                 <?php foreach ($o['etape3'] as $item): ?>
+                                <?php
+                                    $composantes = is_array($item) ? ($item['composantes'] ?? []) : [];
+                                    $final = is_array($item) ? ($item['objectif_final'] ?? ($item['objectif'] ?? '')) : (string)$item;
+                                    $contexte = is_array($item) ? ($item['contexte'] ?? '') : '';
+                                    $thematique = is_array($item) ? ($item['thematique'] ?? '') : '';
+                                ?>
                                 <div class="bg-purple-50 rounded p-2 text-xs text-gray-700">
-                                    <?= h(is_array($item) ? ($item['objectif'] ?? $item['texte'] ?? $item['description'] ?? json_encode($item)) : $item) ?>
+                                    <?php if ($contexte !== '' || $thematique !== ''): ?>
+                                    <div class="text-[10px] uppercase tracking-wide text-purple-600 font-semibold mb-1">
+                                        <?= h($contexte) ?><?= ($contexte !== '' && $thematique !== '') ? ' - ' : '' ?><?= h($thematique) ?>
+                                    </div>
+                                    <?php endif; ?>
+                                    <?php if (!empty($composantes)): ?>
+                                    <div class="space-y-0.5 mb-1">
+                                        <?php foreach (['S','M','A','R','T'] as $L): if (!empty($composantes[$L])): ?>
+                                        <div><span class="font-bold text-purple-700"><?= $L ?>:</span> <?= h($composantes[$L]) ?></div>
+                                        <?php endif; endforeach; ?>
+                                    </div>
+                                    <?php endif; ?>
+                                    <?php if ($final !== ''): ?>
+                                    <div class="bg-white border border-purple-200 rounded p-1.5 mt-1">
+                                        <span class="font-bold text-purple-700">SMART :</span> <?= h($final) ?>
+                                    </div>
+                                    <?php endif; ?>
                                 </div>
                                 <?php endforeach; ?>
                             </div>
