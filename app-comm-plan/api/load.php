@@ -4,7 +4,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 if (!isLoggedIn() || !isset($_SESSION['current_session_id'])) {
     http_response_code(401);
-    echo json_encode(['error' => 'Non authentifie']);
+    echo json_encode(['error' => 'Non authentifié']);
     exit;
 }
 

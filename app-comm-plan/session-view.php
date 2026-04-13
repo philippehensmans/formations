@@ -23,7 +23,7 @@ $db = getDB();
 $sharedDb = getSharedDB();
 
 if (!canAccessSession($appKey, $sessionId)) {
-    die("Acces refuse a cette session.");
+    die("Accès refusé à cette session.");
 }
 
 $stmt = $db->prepare("SELECT * FROM sessions WHERE id = ?");
@@ -37,6 +37,7 @@ if (!$session) {
 
 $availableCanaux = getCanaux();
 $typeLabels = [
+    'lancement' => 'Lancement',
     'teasing' => 'Teasing',
     'annonce' => 'Annonce',
     'rappel' => 'Rappel',
@@ -138,7 +139,7 @@ $lang = getCurrentLanguage();
                 <div class="flex items-center gap-4">
                     <?php if ($showAll): ?>
                     <a href="?id=<?= $sessionId ?>" class="bg-green-500 hover:bg-green-400 px-3 py-1 rounded text-sm">
-                        Partages seulement (<?= $totalShared ?>)
+                        Partagés seulement (<?= $totalShared ?>)
                     </a>
                     <?php else: ?>
                     <a href="?id=<?= $sessionId ?>&all=1" class="bg-orange-500 hover:bg-orange-400 px-3 py-1 rounded text-sm">
@@ -161,7 +162,7 @@ $lang = getCurrentLanguage();
         <?php if ($showAll): ?>
         <div class="bg-orange-100 border border-orange-300 rounded-xl p-4 mb-6">
             <p class="text-orange-800 text-sm">
-                <strong>Mode: Toutes les analyses</strong> - Vous voyez toutes les analyses (<?= $totalAll ?>), y compris celles non partagees.
+                <strong>Mode : Toutes les analyses</strong> - Vous voyez toutes les analyses (<?= $totalAll ?>), y compris celles non partagées.
             </p>
         </div>
         <?php endif; ?>
@@ -174,15 +175,15 @@ $lang = getCurrentLanguage();
             </div>
             <div class="bg-white rounded-xl shadow p-4 text-center">
                 <div class="text-3xl font-bold text-blue-600"><?= count($canalCounts) ?></div>
-                <div class="text-gray-500 text-sm">Canaux differents</div>
+                <div class="text-gray-500 text-sm">Canaux différents</div>
             </div>
             <div class="bg-white rounded-xl shadow p-4 text-center">
                 <div class="text-3xl font-bold text-cyan-600"><?= $totalCanaux ?></div>
-                <div class="text-gray-500 text-sm">Selections canaux</div>
+                <div class="text-gray-500 text-sm">Sélections canaux</div>
             </div>
             <div class="bg-white rounded-xl shadow p-4 text-center">
                 <div class="text-3xl font-bold text-amber-600"><?= $totalEtapes ?></div>
-                <div class="text-gray-500 text-sm">Etapes calendrier</div>
+                <div class="text-gray-500 text-sm">Étapes calendrier</div>
             </div>
             <div class="bg-white rounded-xl shadow p-4 text-center">
                 <div class="text-3xl font-bold text-green-600"><?= $totalRessources ?></div>
@@ -190,7 +191,7 @@ $lang = getCurrentLanguage();
             </div>
         </div>
 
-        <!-- Canaux les plus utilises -->
+        <!-- Canaux les plus utilisés -->
         <?php if (!empty($canalCounts)): ?>
         <div class="bg-white rounded-xl shadow-lg p-5 mb-8">
             <h3 class="font-bold text-gray-800 mb-3">Canaux les plus choisis par les participants</h3>
@@ -218,28 +219,28 @@ $lang = getCurrentLanguage();
         <!-- Filtres d'affichage -->
         <div class="bg-white rounded-xl shadow p-4 mb-6 no-print">
             <div class="flex flex-wrap gap-4 items-center">
-                <div class="font-medium text-gray-700">Affichage:</div>
+                <div class="font-medium text-gray-700">Affichage :</div>
                 <label class="flex items-center gap-2 cursor-pointer">
                     <input type="radio" name="display" value="summary" checked onchange="setDisplayMode('summary')">
-                    <span class="text-sm">Synthese comparative</span>
+                    <span class="text-sm">Synthèse comparative</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
                     <input type="radio" name="display" value="messages" onchange="setDisplayMode('messages')">
-                    <span class="text-sm">Messages cles</span>
+                    <span class="text-sm">Messages clés</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
                     <input type="radio" name="display" value="participant" onchange="setDisplayMode('participant')">
-                    <span class="text-sm">Par participant (detail)</span>
+                    <span class="text-sm">Par participant (détail)</span>
                 </label>
             </div>
         </div>
 
         <!-- Vue Synthese comparative -->
         <div id="summaryView">
-            <h2 class="text-xl font-bold text-gray-800 mb-4">Synthese comparative des plans</h2>
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Synthèse comparative des plans</h2>
             <?php if (empty($participantsData)): ?>
             <div class="bg-white rounded-xl shadow-lg p-8 text-center text-gray-500">
-                Aucune analyse trouvee pour cette session.
+                Aucune analyse trouvée pour cette session.
             </div>
             <?php else: ?>
             <div class="space-y-4">
@@ -255,7 +256,7 @@ $lang = getCurrentLanguage();
                             </div>
                             <div class="flex gap-2">
                                 <span class="bg-white/20 px-2 py-1 rounded text-xs"><?= count(array_filter($data['canaux'], fn($c) => !empty($c['canal']))) ?> canaux</span>
-                                <span class="bg-white/20 px-2 py-1 rounded text-xs"><?= count(array_filter($data['calendrier'], fn($e) => !empty($e['etape']))) ?> etapes</span>
+                                <span class="bg-white/20 px-2 py-1 rounded text-xs"><?= count(array_filter($data['calendrier'], fn($e) => !empty($e['etape']))) ?> étapes</span>
                                 <span class="px-2 py-1 rounded text-xs <?= $data['is_shared'] ? 'bg-green-500/50' : 'bg-yellow-500/50' ?>"><?= $data['is_shared'] ? 'Soumis' : 'Brouillon' ?></span>
                             </div>
                         </div>
@@ -288,7 +289,7 @@ $lang = getCurrentLanguage();
                             <div>
                                 <div class="flex items-center gap-2 mb-1">
                                     <div class="section-number">4</div>
-                                    <span class="text-xs font-semibold text-gray-500">Message cle</span>
+                                    <span class="text-xs font-semibold text-gray-500">Message clé</span>
                                 </div>
                                 <?php if (!empty(trim($data['message_cle']))): ?>
                                 <p class="text-sm font-medium text-indigo-800 italic bg-indigo-50 px-3 py-1 rounded">&laquo; <?= h($data['message_cle']) ?> &raquo;</p>
@@ -321,9 +322,9 @@ $lang = getCurrentLanguage();
 
         <!-- Vue Messages cles -->
         <div id="messagesView" class="hidden">
-            <h2 class="text-xl font-bold text-gray-800 mb-4">Tous les messages cles</h2>
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Tous les messages clés</h2>
             <?php if (empty($participantsData)): ?>
-            <div class="bg-white rounded-xl shadow-lg p-8 text-center text-gray-500">Aucune analyse trouvee.</div>
+            <div class="bg-white rounded-xl shadow-lg p-8 text-center text-gray-500">Aucune analyse trouvée.</div>
             <?php else: ?>
             <div class="grid md:grid-cols-2 gap-4">
                 <?php foreach ($participantsData as $userId => $data):
@@ -375,7 +376,7 @@ $lang = getCurrentLanguage();
                     <div>
                         <div class="flex items-center gap-2 mb-1">
                             <div class="section-number">1</div>
-                            <span class="font-bold text-gray-700 text-sm">Action a communiquer</span>
+                            <span class="font-bold text-gray-700 text-sm">Action à communiquer</span>
                         </div>
                         <p class="text-sm text-gray-700 bg-indigo-50 p-3 rounded-lg border border-indigo-200"><?= nl2br(h($data['action_communiquer'])) ?></p>
                     </div>
@@ -408,7 +409,7 @@ $lang = getCurrentLanguage();
                     <div>
                         <div class="flex items-center gap-2 mb-1">
                             <div class="section-number">4</div>
-                            <span class="font-bold text-gray-700 text-sm">Message cle</span>
+                            <span class="font-bold text-gray-700 text-sm">Message clé</span>
                         </div>
                         <div class="bg-gradient-to-r from-indigo-50 to-violet-50 p-3 rounded-lg border-2 border-indigo-300">
                             <p class="text-sm font-medium text-indigo-900 italic">&laquo; <?= h($data['message_cle']) ?> &raquo;</p>
@@ -448,11 +449,12 @@ $lang = getCurrentLanguage();
                     <div>
                         <div class="flex items-center gap-2 mb-2">
                             <div class="section-number">6</div>
-                            <span class="font-bold text-gray-700 text-sm">Calendrier (<?= count($validEtapes) ?> etapes)</span>
+                            <span class="font-bold text-gray-700 text-sm">Calendrier (<?= count($validEtapes) ?> étapes)</span>
                         </div>
                         <div class="space-y-2">
                             <?php foreach ($validEtapes as $e):
                                 $typeColors = [
+                                    'lancement' => 'border-indigo-400 bg-indigo-50',
                                     'teasing' => 'border-purple-400 bg-purple-50',
                                     'annonce' => 'border-blue-400 bg-blue-50',
                                     'rappel' => 'border-amber-400 bg-amber-50',
@@ -505,7 +507,7 @@ $lang = getCurrentLanguage();
 
             <?php if (empty($participantsData)): ?>
             <div class="bg-white rounded-xl shadow-lg p-8 text-center text-gray-500">
-                Aucune analyse trouvee pour cette session.
+                Aucune analyse trouvée pour cette session.
             </div>
             <?php endif; ?>
         </div>
