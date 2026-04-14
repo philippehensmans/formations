@@ -262,14 +262,9 @@ $stats = getStatistiques($sessionId);
                     </div>
                 </div>
 
-                <div class="bg-green-50 rounded-lg p-4">
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" id="activity-ia" class="rounded text-green-600">
-                        <span class="font-medium text-green-800">🤖 <?= t('act.ai_potential_label') ?></span>
-                    </label>
-                    <!-- Le champ "Comment l'IA peut aider" est genere par le formateur via IA -->
-                    <input type="hidden" id="activity-notes-ia" value="">
-                </div>
+                <!-- Le potentiel IA et la description "Comment l'IA peut aider" sont geres par le formateur -->
+                <input type="hidden" id="activity-ia" value="0">
+                <input type="hidden" id="activity-notes-ia" value="">
             </form>
             <div class="p-6 border-t bg-gray-50 flex justify-end gap-3">
                 <button onclick="closeModal()" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">
@@ -305,7 +300,7 @@ $stats = getStatistiques($sessionId);
                     document.getElementById('activity-frequence').value = activite.frequence;
                     document.getElementById('activity-temps').value = activite.temps_estime || '';
                     document.getElementById('activity-priorite').value = activite.priorite;
-                    document.getElementById('activity-ia').checked = activite.potentiel_ia == 1;
+                    document.getElementById('activity-ia').value = activite.potentiel_ia == 1 ? '1' : '0';
                     // Preserver la valeur notes_ia (generee par le formateur) en hidden input
                     document.getElementById('activity-notes-ia').value = activite.notes_ia || '';
                 }
@@ -342,7 +337,7 @@ $stats = getStatistiques($sessionId);
                 frequence: document.getElementById('activity-frequence').value,
                 temps_estime: document.getElementById('activity-temps').value,
                 priorite: document.getElementById('activity-priorite').value,
-                potentiel_ia: document.getElementById('activity-ia').checked ? 1 : 0,
+                potentiel_ia: document.getElementById('activity-ia').value == '1' ? 1 : 0,
                 notes_ia: document.getElementById('activity-notes-ia').value
             };
 
