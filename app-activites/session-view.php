@@ -348,7 +348,7 @@ foreach ($activites as $a) {
                         ${hasNotes ? `<div class="whitespace-pre-wrap">${escapeHtml(a.notes_ia)}</div>` : '<span class="text-gray-400 italic">Non genere</span>'}
                     </td>
                     <td class="p-3 text-center no-print whitespace-nowrap">
-                        <button onclick="generateSingle(${a.id})" title="${hasNotes ? 'Regenerer avec l\\'IA' : 'Generer avec l\\'IA'}"
+                        <button onclick="generateSingle(${a.id})" title="${hasNotes ? 'Regenerer avec IA' : 'Generer avec IA'}"
                             class="text-purple-600 hover:text-purple-800 px-2">
                             ${hasNotes ? '🔄' : '✨'}
                         </button>
