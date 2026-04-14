@@ -108,6 +108,35 @@ foreach ($activites as $a) {
         </div>
     </header>
 
+    <!-- Modal edition notes_ia -->
+    <div id="edit-notes-modal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center no-print">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-xl mx-4">
+            <div class="p-6 border-b">
+                <h2 class="text-xl font-bold text-gray-800">💡 Comment l'IA peut aider</h2>
+                <p id="edit-notes-activity" class="text-sm text-gray-500 mt-1"></p>
+            </div>
+            <div class="p-6">
+                <textarea id="edit-notes-text" rows="8"
+                    class="w-full border rounded-lg px-3 py-2 text-sm"
+                    placeholder="Description du soutien que l'IA peut apporter..."></textarea>
+                <p class="text-xs text-gray-500 mt-2">Vous pouvez modifier le texte genere par l'IA avant de le sauvegarder.</p>
+            </div>
+            <div class="p-6 border-t bg-gray-50 flex justify-between gap-3">
+                <button onclick="regenerateNotes()" class="px-4 py-2 text-teal-700 hover:bg-teal-50 rounded-lg text-sm flex items-center gap-2">
+                    🔄 Regenerer avec l'IA
+                </button>
+                <div class="flex gap-3">
+                    <button onclick="closeEditModal()" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm">
+                        <?= t('common.cancel') ?>
+                    </button>
+                    <button onclick="saveNotes()" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm">
+                        <?= t('common.save') ?>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <main class="max-w-7xl mx-auto px-4 py-8">
         <!-- Statistics -->
         <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
@@ -204,6 +233,40 @@ foreach ($activites as $a) {
             </div>
         </div>
 
+        <!-- Banniere generation IA -->
+        <div class="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-4 mb-6 no-print">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-start gap-3">
+                    <div class="text-3xl">🤖</div>
+                    <div>
+                        <h3 class="font-bold text-purple-900">Generation automatique "Comment l'IA peut aider"</h3>
+                        <p class="text-sm text-purple-700">Laissez l'IA decrire les types de soutien qu'elle peut apporter aux participants pour chaque activite. Vous pourrez ensuite editer chaque texte genere.</p>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="generateBatch(true)" id="btn-batch-empty"
+                        class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2">
+                        ✨ Generer pour les activites sans description
+                    </button>
+                    <button onclick="generateBatch(false)" id="btn-batch-all"
+                        class="bg-white border border-purple-300 hover:bg-purple-50 text-purple-700 px-4 py-2 rounded-lg text-sm flex items-center gap-2">
+                        🔄 Regenerer toutes
+                    </button>
+                </div>
+            </div>
+            <div id="batch-progress" class="mt-3 hidden">
+                <div class="bg-white rounded-lg p-3 border border-purple-200">
+                    <div class="flex items-center justify-between text-sm text-purple-800">
+                        <span id="batch-status">Generation en cours...</span>
+                        <span id="batch-counter"></span>
+                    </div>
+                    <div class="mt-2 bg-purple-100 rounded-full h-2 overflow-hidden">
+                        <div id="batch-bar" class="bg-purple-600 h-full transition-all" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Table View -->
         <div class="bg-white rounded-xl shadow overflow-hidden">
             <div class="overflow-x-auto">
@@ -216,6 +279,7 @@ foreach ($activites as $a) {
                             <th class="text-left p-3 sortable" data-sort="priorite"><?= t('act.priority') ?></th>
                             <th class="text-center p-3 sortable" data-sort="potentiel_ia"><?= t('act.ai_potential') ?></th>
                             <th class="text-left p-3"><?= t('act.ai_notes') ?></th>
+                            <th class="text-center p-3 no-print">Actions IA</th>
                         </tr>
                     </thead>
                     <tbody id="activities-tbody">
@@ -259,6 +323,8 @@ foreach ($activites as $a) {
             filteredActivites.forEach(a => {
                 const row = document.createElement('tr');
                 row.className = 'border-b hover:bg-gray-50';
+                row.dataset.id = a.id;
+                const hasNotes = !!(a.notes_ia && a.notes_ia.trim());
                 row.innerHTML = `
                     <td class="p-3">
                         <div class="font-medium text-gray-800">${escapeHtml(a.nom)}</div>
@@ -278,8 +344,18 @@ foreach ($activites as $a) {
                     <td class="p-3 text-center">
                         ${a.potentiel_ia ? '<span class="text-green-600 text-lg">✓</span>' : '<span class="text-gray-300">—</span>'}
                     </td>
-                    <td class="p-3 text-gray-600 text-xs max-w-xs truncate" title="${escapeHtml(a.notes_ia || '')}">
-                        ${a.notes_ia ? escapeHtml(a.notes_ia) : ''}
+                    <td class="p-3 text-gray-700 text-xs max-w-md" data-notes-cell="${a.id}">
+                        ${hasNotes ? `<div class="whitespace-pre-wrap">${escapeHtml(a.notes_ia)}</div>` : '<span class="text-gray-400 italic">Non genere</span>'}
+                    </td>
+                    <td class="p-3 text-center no-print whitespace-nowrap">
+                        <button onclick="generateSingle(${a.id})" title="${hasNotes ? 'Regenerer avec l\\'IA' : 'Generer avec l\\'IA'}"
+                            class="text-purple-600 hover:text-purple-800 px-2">
+                            ${hasNotes ? '🔄' : '✨'}
+                        </button>
+                        <button onclick="openEditModal(${a.id})" title="Editer"
+                            class="text-gray-500 hover:text-teal-600 px-2" ${hasNotes ? '' : 'disabled style="opacity:0.3;cursor:not-allowed;"'}>
+                            ✏️
+                        </button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -365,6 +441,160 @@ foreach ($activites as $a) {
 
         // Initial render
         renderTable();
+
+        // ============================================================
+        // Generation IA de notes_ia
+        // ============================================================
+        const sessionId = <?= $sessionId ?>;
+        let currentEditId = null;
+
+        function updateActivityNotes(id, notes) {
+            const a = activites.find(x => x.id == id);
+            if (a) a.notes_ia = notes;
+            const fa = filteredActivites.find(x => x.id == id);
+            if (fa) fa.notes_ia = notes;
+            renderTable();
+        }
+
+        async function generateSingle(activityId) {
+            const row = document.querySelector(`tr[data-id="${activityId}"]`);
+            const cell = document.querySelector(`[data-notes-cell="${activityId}"]`);
+            if (cell) cell.innerHTML = '<span class="text-purple-600 italic">⏳ Generation en cours...</span>';
+
+            try {
+                const res = await fetch('api/ai-notes.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'generate', activity_id: activityId })
+                });
+                const data = await res.json();
+                if (!res.ok || data.error) throw new Error(data.error || 'Erreur HTTP ' + res.status);
+                updateActivityNotes(activityId, data.notes_ia);
+            } catch (err) {
+                alert('Erreur lors de la generation : ' + err.message);
+                renderTable();
+            }
+        }
+
+        async function generateBatch(onlyEmpty) {
+            const confirmMsg = onlyEmpty
+                ? 'Generer "Comment l\'IA peut aider" pour toutes les activites qui n\'en ont pas encore ? Cela appelle l\'API pour chaque activite concernee.'
+                : 'Regenerer le texte pour TOUTES les activites (y compris celles qui en ont deja) ? Les textes existants seront remplaces.';
+            if (!confirm(confirmMsg)) return;
+
+            const btnEmpty = document.getElementById('btn-batch-empty');
+            const btnAll = document.getElementById('btn-batch-all');
+            btnEmpty.disabled = true;
+            btnAll.disabled = true;
+            btnEmpty.style.opacity = '0.5';
+            btnAll.style.opacity = '0.5';
+
+            const progress = document.getElementById('batch-progress');
+            const status = document.getElementById('batch-status');
+            const counter = document.getElementById('batch-counter');
+            const bar = document.getElementById('batch-bar');
+            progress.classList.remove('hidden');
+            status.textContent = 'Generation en cours (cela peut prendre plusieurs secondes par activite)...';
+            counter.textContent = '';
+            bar.style.width = '10%';
+
+            try {
+                const res = await fetch('api/ai-notes.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'generate_batch', session_id: sessionId, only_empty: onlyEmpty })
+                });
+                const data = await res.json();
+                if (!res.ok || data.error) throw new Error(data.error || 'Erreur HTTP ' + res.status);
+
+                bar.style.width = '100%';
+                (data.results || []).forEach(r => updateActivityNotes(r.id, r.notes_ia));
+
+                let msg = `${data.count} activite(s) generee(s) avec succes.`;
+                if (data.errors && data.errors.length) {
+                    msg += `\n\n${data.errors.length} erreur(s) :\n` + data.errors.map(e => `- ${e.nom} : ${e.error}`).join('\n');
+                }
+                status.textContent = msg;
+                counter.textContent = `${data.count} / ${data.count + (data.errors?.length || 0)}`;
+                setTimeout(() => progress.classList.add('hidden'), 4000);
+            } catch (err) {
+                status.textContent = 'Erreur : ' + err.message;
+                bar.style.width = '100%';
+                bar.classList.add('bg-red-600');
+            } finally {
+                btnEmpty.disabled = false;
+                btnAll.disabled = false;
+                btnEmpty.style.opacity = '1';
+                btnAll.style.opacity = '1';
+            }
+        }
+
+        // Modal edition
+        function openEditModal(activityId) {
+            const a = activites.find(x => x.id == activityId);
+            if (!a || !a.notes_ia) return;
+            currentEditId = activityId;
+            document.getElementById('edit-notes-activity').textContent = a.nom;
+            document.getElementById('edit-notes-text').value = a.notes_ia || '';
+            const modal = document.getElementById('edit-notes-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeEditModal() {
+            const modal = document.getElementById('edit-notes-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            currentEditId = null;
+        }
+
+        async function saveNotes() {
+            if (!currentEditId) return;
+            const notes = document.getElementById('edit-notes-text').value;
+            try {
+                const res = await fetch('api.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'update_notes_ia', id: currentEditId, notes_ia: notes })
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.error || 'Erreur');
+                updateActivityNotes(currentEditId, notes);
+                closeEditModal();
+            } catch (err) {
+                alert('Erreur lors de la sauvegarde : ' + err.message);
+            }
+        }
+
+        async function regenerateNotes() {
+            if (!currentEditId) return;
+            if (!confirm('Regenerer le texte avec l\'IA ? Les modifications non sauvegardees seront perdues.')) return;
+            const textarea = document.getElementById('edit-notes-text');
+            const original = textarea.value;
+            textarea.value = 'Generation en cours...';
+            textarea.disabled = true;
+            try {
+                const res = await fetch('api/ai-notes.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'generate', activity_id: currentEditId })
+                });
+                const data = await res.json();
+                if (!res.ok || data.error) throw new Error(data.error || 'Erreur');
+                textarea.value = data.notes_ia;
+                updateActivityNotes(currentEditId, data.notes_ia);
+            } catch (err) {
+                textarea.value = original;
+                alert('Erreur : ' + err.message);
+            } finally {
+                textarea.disabled = false;
+            }
+        }
+
+        // Close modal on backdrop click
+        document.getElementById('edit-notes-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'edit-notes-modal') closeEditModal();
+        });
     </script>
 </body>
 </html>

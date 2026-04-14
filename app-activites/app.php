@@ -267,12 +267,8 @@ $stats = getStatistiques($sessionId);
                         <input type="checkbox" id="activity-ia" class="rounded text-green-600">
                         <span class="font-medium text-green-800">🤖 <?= t('act.ai_potential_label') ?></span>
                     </label>
-                    <div id="ia-notes-container" class="mt-3 hidden">
-                        <label class="block text-sm font-medium text-green-700 mb-1"><?= t('act.ai_how') ?></label>
-                        <textarea id="activity-notes-ia" rows="2"
-                                  class="w-full border border-green-200 rounded-lg px-3 py-2"
-                                  placeholder="<?= t('act.ai_how_placeholder') ?>"></textarea>
-                    </div>
+                    <!-- Le champ "Comment l'IA peut aider" est genere par le formateur via IA -->
+                    <input type="hidden" id="activity-notes-ia" value="">
                 </div>
             </form>
             <div class="p-6 border-t bg-gray-50 flex justify-end gap-3">
@@ -310,12 +306,12 @@ $stats = getStatistiques($sessionId);
                     document.getElementById('activity-temps').value = activite.temps_estime || '';
                     document.getElementById('activity-priorite').value = activite.priorite;
                     document.getElementById('activity-ia').checked = activite.potentiel_ia == 1;
+                    // Preserver la valeur notes_ia (generee par le formateur) en hidden input
                     document.getElementById('activity-notes-ia').value = activite.notes_ia || '';
-                    toggleIaNotes();
                 }
             } else {
                 document.getElementById('activity-form').reset();
-                document.getElementById('ia-notes-container').classList.add('hidden');
+                document.getElementById('activity-notes-ia').value = '';
             }
         }
 
@@ -325,17 +321,6 @@ $stats = getStatistiques($sessionId);
 
         function editActivite(id) {
             openModal(id);
-        }
-
-        // Toggle IA notes visibility
-        document.getElementById('activity-ia').addEventListener('change', toggleIaNotes);
-        function toggleIaNotes() {
-            const container = document.getElementById('ia-notes-container');
-            if (document.getElementById('activity-ia').checked) {
-                container.classList.remove('hidden');
-            } else {
-                container.classList.add('hidden');
-            }
         }
 
         // Save activity

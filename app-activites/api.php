@@ -314,6 +314,28 @@ switch ($action) {
         echo json_encode(['success' => true]);
         break;
 
+    case 'update_notes_ia':
+        // Reserve aux formateurs : edition du texte "Comment l'IA peut aider"
+        if (!isFormateur()) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'error' => 'Acces reserve aux formateurs']);
+            exit;
+        }
+        try {
+            $id = intval($input['id'] ?? 0);
+            if (!$id) {
+                echo json_encode(['success' => false, 'error' => 'ID requis']);
+                exit;
+            }
+            $notes = $input['notes_ia'] ?? '';
+            $stmt = $db->prepare("UPDATE activites SET notes_ia = ?, updated_by = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
+            $stmt->execute([$notes, $user['id'], $id]);
+            echo json_encode(['success' => true]);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        }
+        break;
+
     default:
         echo json_encode(['success' => false, 'error' => 'Invalid action']);
 }
