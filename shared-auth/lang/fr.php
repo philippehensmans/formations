@@ -1498,6 +1498,11 @@ return [
             'description' => 'Structurez votre projet des objectifs aux tâches concrètes, avec phases, points de contrôle et leçons apprises.',
             'color' => 'emerald',
         ],
+        'gouvernance' => [
+            'title' => 'Évaluateur de Gouvernance',
+            'description' => 'Auto-évaluation des normes de gouvernance d\'une organisation : structures, finances, anti-corruption, RH, risques et durabilité.',
+            'color' => 'indigo',
+        ],
     ],
 
     // Pilotage de Projet
