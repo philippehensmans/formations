@@ -145,6 +145,13 @@ $isSubmitted = ($evaluation['is_submitted'] ?? 0) == 1;
             <button class="btn btn-danger" onclick="resetAssessment()">Recommencer</button>
         </div>
 
+        <div class="notation">
+            <h3>Système de notation</h3>
+            <p><strong>1</strong> = Éléments développés au minimum / peu développés</p>
+            <p><strong>2</strong> = Plans et processus appliqués mais de façon inégale</p>
+            <p><strong>3</strong> = Processus correctement appliqués et passés en revue</p>
+        </div>
+
         <div id="assessment" class="assessment"></div>
 
         <div id="dashboard" class="dashboard">
@@ -159,12 +166,6 @@ $isSubmitted = ($evaluation['is_submitted'] ?? 0) == 1;
             <div id="section-scores" class="score-grid"></div>
         </div>
 
-        <div class="notation">
-            <h3>Système de notation</h3>
-            <p><strong>1</strong> = Éléments développés au minimum / peu développés</p>
-            <p><strong>2</strong> = Plans et processus appliqués mais de façon inégale</p>
-            <p><strong>3</strong> = Processus correctement appliqués et passés en revue</p>
-        </div>
     </div>
 
     <script>
