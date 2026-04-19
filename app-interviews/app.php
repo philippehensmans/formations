@@ -11,7 +11,7 @@ $sessionId = (int)$_SESSION['current_session_id'];
 $user = getLoggedUser();
 $userId = $user['id'];
 
-ensureParticipant($appKey, $sessionId, $userId);
+ensureParticipant($db, $sessionId, $user);
 
 $stmt = $db->prepare("SELECT * FROM sessions WHERE id = ?");
 $stmt->execute([$sessionId]);
