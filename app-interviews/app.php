@@ -74,6 +74,7 @@ $aideItems = getAideMemoireItems();
             <?php if (isFormateur()): ?>
             <a href="formateur.php" class="text-sm bg-white/20 hover:bg-white/30 px-3 py-1 rounded">Formateur</a>
             <?php endif; ?>
+            <?= renderHomeLink('text-sm bg-white/20 hover:bg-white/30 px-3 py-1 rounded') ?>
             <a href="logout.php" class="text-sm bg-white/20 hover:bg-white/30 px-3 py-1 rounded">Déconnexion</a>
         </div>
     </div>
