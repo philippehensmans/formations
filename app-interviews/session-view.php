@@ -76,16 +76,17 @@ function hasContent($p) {
                     $hasFiche = hasContent($p);
                     $isSubmitted = (bool)$p['is_submitted'];
                 ?>
-                <div class="p-4 hover:bg-gray-50 flex flex-wrap items-start gap-4">
+                <div class="p-4 hover:bg-rose-50 cursor-pointer" onclick="location.href='view.php?id=<?= $p['id'] ?>'">
+                    <div class="flex flex-wrap items-start gap-4">
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2 mb-1">
                             <span class="font-semibold text-gray-800"><?= h($p['prenom']) ?> <?= h($p['nom']) ?></span>
                             <?php if ($isSubmitted): ?>
-                            <span class="px-2 py-0.5 bg-green-100 text-green-800 rounded text-xs">Soumis</span>
+                            <a href="view.php?id=<?= $p['id'] ?>" class="px-2 py-0.5 bg-green-100 text-green-800 rounded text-xs hover:bg-green-200">Soumis</a>
                             <?php elseif ($hasFiche): ?>
-                            <span class="px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded text-xs">Brouillon</span>
+                            <a href="view.php?id=<?= $p['id'] ?>" class="px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded text-xs hover:bg-yellow-200">Brouillon</a>
                             <?php else: ?>
-                            <span class="px-2 py-0.5 bg-gray-100 text-gray-500 rounded text-xs">Vide</span>
+                            <a href="view.php?id=<?= $p['id'] ?>" class="px-2 py-0.5 bg-gray-100 text-gray-500 rounded text-xs hover:bg-gray-200">Vide</a>
                             <?php endif; ?>
                         </div>
                         <?php if (!empty(trim($p['sujet'] ?? ''))): ?>
@@ -95,9 +96,8 @@ function hasContent($p) {
                         <p class="text-xs text-gray-500 mt-0.5 truncate">💬 <?= h(mb_substr($p['message1'], 0, 80)) ?><?= mb_strlen($p['message1']) > 80 ? '…' : '' ?></p>
                         <?php endif; ?>
                     </div>
-                    <a href="view.php?id=<?= $p['id'] ?>" class="text-sm text-rose-600 hover:text-rose-800 font-medium no-print whitespace-nowrap">
-                        Voir la fiche →
-                    </a>
+                    <span class="text-sm text-rose-600 font-medium no-print whitespace-nowrap">Voir →</span>
+                    </div>
                 </div>
                 <?php endforeach; ?>
             </div>
