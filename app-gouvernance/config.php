@@ -23,9 +23,31 @@ function getDB() {
         $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
         $db->exec("PRAGMA foreign_keys = ON");
         initDatabase($db);
-        seedIfEmpty($db);
+        ensureDefaultScale($db);
     }
     return $db;
+}
+
+function ensureDefaultScale($db) {
+    $count = (int)$db->query("SELECT COUNT(*) FROM scale_levels")->fetchColumn();
+    if ($count > 0) return;
+    $stmt = $db->prepare("INSERT INTO scale_levels (niveau, cle, label, description) VALUES (?, ?, ?, ?)");
+    $default = [
+        [1, 'niveau_1', 'Niveau 1', ''],
+        [2, 'niveau_2', 'Niveau 2', ''],
+        [3, 'niveau_3', 'Niveau 3', ''],
+        [4, 'niveau_4', 'Niveau 4', ''],
+    ];
+    foreach ($default as $l) $stmt->execute($l);
+    if (getConfig('na_enabled', null) === null) {
+        setConfigValue($db, 'na_enabled', '1');
+        setConfigValue($db, 'na_label', 'Non applicable / Ne sais pas');
+        setConfigValue($db, 'na_description', 'À cocher sans pénalisation.');
+    }
+}
+
+function setConfigValue($db, $key, $value) {
+    $db->prepare("INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)")->execute([$key, $value]);
 }
 
 function initDatabase($db) {
@@ -105,43 +127,155 @@ function initDatabase($db) {
     )");
 }
 
-function seedIfEmpty($db) {
-    $count = (int)$db->query("SELECT COUNT(*) FROM domains")->fetchColumn();
-    if ($count > 0) return;
+/**
+ * Importe une config (échelle + N/A + domaines + questions + ancrages) depuis un tableau PHP.
+ * Format attendu : JSON original {echelleMaturite:{niveaux:[], optionNonApplicable:{}}, domaines:[...]}
+ * OU format plat {scale:[...], na:{...}, domains:[...]}.
+ * Retourne ['inserted' => [...], 'errors' => [...]].
+ */
+function importConfig($data, $replace = false) {
+    $db = getDB();
+    $result = ['domains' => 0, 'questions' => 0, 'anchors' => 0, 'errors' => []];
 
-    $seed = require __DIR__ . '/seed-data.php';
+    $db->beginTransaction();
+    try {
+        if ($replace) {
+            $db->exec("DELETE FROM anchors");
+            $db->exec("DELETE FROM questions");
+            $db->exec("DELETE FROM domains");
+            $db->exec("DELETE FROM scale_levels");
+        }
 
-    // Échelle
-    $stmt = $db->prepare("INSERT INTO scale_levels (niveau, cle, label, description) VALUES (?, ?, ?, ?)");
-    foreach ($seed['scale'] as $lvl) {
-        $stmt->execute([$lvl['niveau'], $lvl['cle'], $lvl['label'], $lvl['description']]);
-    }
-
-    // N/A
-    setConfig('na_enabled', $seed['na']['enabled'] ? '1' : '0');
-    setConfig('na_label', $seed['na']['label']);
-    setConfig('na_description', $seed['na']['description']);
-
-    // Titre
-    setConfig('app_title', $seed['meta']['title'] ?? APP_NAME);
-    setConfig('app_subtitle', $seed['meta']['subtitle'] ?? '');
-
-    // Domaines + questions + ancrages
-    $sd = $db->prepare("INSERT INTO domains (slug, titre, description, ordre) VALUES (?, ?, ?, ?)");
-    $sq = $db->prepare("INSERT INTO questions (domain_id, slug, intitule, texte, aide, ordre) VALUES (?, ?, ?, ?, ?, ?)");
-    $sa = $db->prepare("INSERT INTO anchors (question_id, niveau, description) VALUES (?, ?, ?)");
-
-    foreach ($seed['domains'] as $dIdx => $d) {
-        $sd->execute([$d['slug'], $d['titre'], $d['description'] ?? '', $d['ordre'] ?? ($dIdx + 1)]);
-        $domainId = (int)$db->lastInsertId();
-        foreach ($d['questions'] as $qIdx => $q) {
-            $sq->execute([$domainId, $q['slug'], $q['intitule'], $q['texte'], $q['aide'] ?? null, $q['ordre'] ?? ($qIdx + 1)]);
-            $questionId = (int)$db->lastInsertId();
-            foreach (($q['ancrages'] ?? []) as $niveau => $desc) {
-                $sa->execute([$questionId, (int)$niveau, $desc]);
+        // Normaliser l'échelle
+        $scale = [];
+        if (isset($data['echelleMaturite']['niveaux'])) {
+            foreach ($data['echelleMaturite']['niveaux'] as $n) {
+                $scale[] = [
+                    'niveau' => (int)($n['id'] ?? $n['niveau'] ?? 0),
+                    'cle' => $n['cle'] ?? '',
+                    'label' => $n['label'] ?? '',
+                    'description' => $n['description'] ?? '',
+                ];
+            }
+        } elseif (isset($data['scale'])) {
+            foreach ($data['scale'] as $n) {
+                $scale[] = [
+                    'niveau' => (int)($n['niveau'] ?? $n['id'] ?? 0),
+                    'cle' => $n['cle'] ?? '',
+                    'label' => $n['label'] ?? '',
+                    'description' => $n['description'] ?? '',
+                ];
             }
         }
+        if ($scale) {
+            $db->exec("DELETE FROM scale_levels");
+            $stmt = $db->prepare("INSERT INTO scale_levels (niveau, cle, label, description) VALUES (?, ?, ?, ?)");
+            foreach ($scale as $s) {
+                if ($s['niveau'] > 0) $stmt->execute([$s['niveau'], $s['cle'], $s['label'], $s['description']]);
+            }
+        }
+
+        // N/A
+        $na = $data['echelleMaturite']['optionNonApplicable'] ?? $data['na'] ?? null;
+        if ($na) {
+            $enabled = $na['activee'] ?? $na['enabled'] ?? true;
+            setConfig('na_enabled', $enabled ? '1' : '0');
+            setConfig('na_label', $na['label'] ?? 'Non applicable / Ne sais pas');
+            setConfig('na_description', $na['description'] ?? '');
+        }
+
+        // Meta
+        if (isset($data['meta']['titre'])) setConfig('app_title', $data['meta']['titre']);
+        if (isset($data['meta']['contexte'])) setConfig('app_subtitle', $data['meta']['contexte']);
+
+        // Domaines
+        $domains = $data['domaines'] ?? $data['domains'] ?? [];
+        $sd = $db->prepare("INSERT INTO domains (slug, titre, description, ordre) VALUES (?, ?, ?, ?)");
+        $sq = $db->prepare("INSERT INTO questions (domain_id, slug, intitule, texte, aide, ordre) VALUES (?, ?, ?, ?, ?, ?)");
+        $sa = $db->prepare("INSERT OR REPLACE INTO anchors (question_id, niveau, description) VALUES (?, ?, ?)");
+
+        foreach ($domains as $dIdx => $d) {
+            $slug = $d['id'] ?? $d['slug'] ?? slugify($d['titre'] ?? $d['title'] ?? ('domain-' . ($dIdx + 1)));
+            $slug = uniqueSlug('domains', $slug);
+            $titre = $d['titre'] ?? $d['title'] ?? '';
+            $desc = $d['description'] ?? '';
+            $ordre = (int)($d['ordre'] ?? $d['order'] ?? ($dIdx + 1));
+            $sd->execute([$slug, $titre, $desc, $ordre]);
+            $domainId = (int)$db->lastInsertId();
+            $result['domains']++;
+
+            foreach (($d['questions'] ?? []) as $qIdx => $q) {
+                $qSlug = $q['id'] ?? $q['slug'] ?? slugify($q['intitule'] ?? ('q-' . ($qIdx + 1)));
+                $qSlug = uniqueSlug('questions', $qSlug);
+                $intitule = $q['intitule'] ?? '';
+                $texte = $q['question'] ?? $q['texte'] ?? '';
+                $aide = $q['aide'] ?? null;
+                $qOrdre = (int)($q['ordre'] ?? $q['order'] ?? ($qIdx + 1));
+                $sq->execute([$domainId, $qSlug, $intitule, $texte, $aide, $qOrdre]);
+                $questionId = (int)$db->lastInsertId();
+                $result['questions']++;
+
+                foreach (($q['ancrages'] ?? []) as $niveau => $anchorDesc) {
+                    $niveau = (int)$niveau;
+                    if ($niveau > 0) {
+                        $sa->execute([$questionId, $niveau, (string)$anchorDesc]);
+                        $result['anchors']++;
+                    }
+                }
+            }
+        }
+
+        $db->commit();
+    } catch (Exception $e) {
+        $db->rollBack();
+        $result['errors'][] = $e->getMessage();
     }
+    return $result;
+}
+
+function exportConfig() {
+    $scale = getScaleLevels();
+    $na = getNaSettings();
+    $domains = getAllDomains();
+    $out = [
+        'meta' => [
+            'titre' => getConfig('app_title', APP_NAME),
+            'contexte' => getConfig('app_subtitle', ''),
+            'exportedAt' => date('c'),
+        ],
+        'echelleMaturite' => [
+            'niveaux' => array_map(fn($s) => [
+                'id' => (int)$s['niveau'],
+                'cle' => $s['cle'],
+                'label' => $s['label'],
+                'description' => $s['description'],
+            ], $scale),
+            'optionNonApplicable' => [
+                'activee' => $na['enabled'],
+                'label' => $na['label'],
+                'description' => $na['description'],
+            ],
+        ],
+        'domaines' => array_map(function($d) {
+            return [
+                'id' => $d['slug'],
+                'titre' => $d['titre'],
+                'description' => $d['description'],
+                'ordre' => (int)$d['ordre'],
+                'questions' => array_map(function($q) {
+                    $out = [
+                        'id' => $q['slug'],
+                        'intitule' => $q['intitule'],
+                        'question' => $q['texte'],
+                    ];
+                    if (!empty($q['aide'])) $out['aide'] = $q['aide'];
+                    $out['ancrages'] = array_map('strval', $q['ancrages'] ?? []);
+                    return $out;
+                }, $d['questions']),
+            ];
+        }, $domains),
+    ];
+    return $out;
 }
 
 // ----- Config (key/value) -----
