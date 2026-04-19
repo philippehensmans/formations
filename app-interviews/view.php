@@ -65,6 +65,7 @@ function badge($submitted, $has) {
                 <span class="text-sm px-3 py-1 rounded-full <?= $isSubmitted ? 'bg-green-500' : 'bg-yellow-500' ?>"><?= $isSubmitted ? 'Soumis' : 'Brouillon' ?></span>
                 <button onclick="window.print()" class="text-sm bg-white/20 hover:bg-white/30 px-3 py-1 rounded">Imprimer</button>
                 <a href="session-view.php?id=<?= $participant['session_id'] ?>" class="text-sm bg-white/20 hover:bg-white/30 px-3 py-1 rounded">Retour</a>
+                <?= renderHomeLink('text-sm bg-white/20 hover:bg-white/30 px-3 py-1 rounded') ?>
             </div>
         </div>
     </div>
