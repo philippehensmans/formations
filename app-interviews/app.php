@@ -123,7 +123,7 @@ $aideItems = getAideMemoireItems();
 
         <?php if ($isSubmitted): ?>
         <div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">
-            Fiche soumise — lecture seule.
+            ✓ Fiche déjà soumise — vous pouvez encore modifier.
         </div>
         <?php endif; ?>
 
@@ -135,7 +135,7 @@ $aideItems = getAideMemoireItems();
             </label>
             <textarea id="sujet" rows="2" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-rose-400 focus:border-transparent"
                 placeholder="Ex : Le lancement de notre programme de formation en gouvernance locale..."
-                <?= $isSubmitted ? 'disabled' : '' ?>><?= h($fiche['sujet'] ?? '') ?></textarea>
+                ><?= h($fiche['sujet'] ?? '') ?></textarea>
         </div>
 
         <!-- 3 messages clés -->
@@ -150,7 +150,7 @@ $aideItems = getAideMemoireItems();
                     <span class="mt-3 w-7 h-7 rounded-full bg-rose-100 text-rose-700 font-bold text-sm flex items-center justify-center flex-shrink-0"><?= $i ?></span>
                     <textarea id="message<?= $i ?>" rows="2" class="flex-1 border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-rose-400 focus:border-transparent"
                         placeholder="Message clé <?= $i ?>..."
-                        <?= $isSubmitted ? 'disabled' : '' ?>><?= h($fiche['message' . $i] ?? '') ?></textarea>
+                        ><?= h($fiche['message' . $i] ?? '') ?></textarea>
                 </div>
                 <?php endforeach; ?>
             </div>
@@ -164,7 +164,7 @@ $aideItems = getAideMemoireItems();
             </label>
             <textarea id="anecdote" rows="3" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-rose-400 focus:border-transparent"
                 placeholder="Ex : L'an dernier, dans la commune de X, nous avons mis en place..."
-                <?= $isSubmitted ? 'disabled' : '' ?>><?= h($fiche['anecdote'] ?? '') ?></textarea>
+                ><?= h($fiche['anecdote'] ?? '') ?></textarea>
         </div>
 
         <!-- À éviter -->
@@ -175,19 +175,17 @@ $aideItems = getAideMemoireItems();
             </label>
             <textarea id="a_eviter" rows="2" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-rose-400 focus:border-transparent border-red-200 focus:ring-red-300"
                 placeholder="Ex : Ne pas mentionner le conflit avec le partenaire Y, éviter les chiffres non vérifiés..."
-                <?= $isSubmitted ? 'disabled' : '' ?>><?= h($fiche['a_eviter'] ?? '') ?></textarea>
+                ><?= h($fiche['a_eviter'] ?? '') ?></textarea>
         </div>
 
-        <?php if (!$isSubmitted): ?>
         <div class="flex flex-wrap gap-3 pt-4 border-t">
             <button onclick="saveFiche(true)" class="bg-rose-600 hover:bg-rose-700 text-white px-6 py-2 rounded-lg font-medium text-sm">
-                Soumettre ma fiche
+                <?= $isSubmitted ? 'Mettre à jour' : 'Soumettre ma fiche' ?>
             </button>
             <button onclick="saveFiche(false)" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm">
                 Sauvegarder (brouillon)
             </button>
         </div>
-        <?php endif; ?>
     </div>
 </div>
 
@@ -201,7 +199,7 @@ $aideItems = getAideMemoireItems();
     </div>
 
     <?php if ($lignesSubmitted): ?>
-    <div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">Document soumis — lecture seule.</div>
+    <div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">✓ Document déjà soumis — vous pouvez encore modifier.</div>
     <?php endif; ?>
 
     <!-- Q&R probables -->
@@ -213,9 +211,7 @@ $aideItems = getAideMemoireItems();
             </div>
         </div>
         <div id="qrList" class="space-y-4"></div>
-        <?php if (!$lignesSubmitted): ?>
         <button type="button" onclick="addQR()" class="mt-4 text-sm text-indigo-600 hover:text-indigo-800 font-medium">+ Ajouter une question</button>
-        <?php endif; ?>
     </div>
 
     <!-- Éléments de langage -->
@@ -227,17 +223,13 @@ $aideItems = getAideMemoireItems();
             </div>
         </div>
         <div id="elList" class="space-y-4"></div>
-        <?php if (!$lignesSubmitted): ?>
         <button type="button" onclick="addEl()" class="mt-4 text-sm text-indigo-600 hover:text-indigo-800 font-medium">+ Ajouter un élément</button>
-        <?php endif; ?>
     </div>
 
-    <?php if (!$lignesSubmitted): ?>
     <div class="flex flex-wrap gap-3 pt-4">
-        <button onclick="saveLignes(true)" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium text-sm">Soumettre</button>
+        <button onclick="saveLignes(true)" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium text-sm"><?= $lignesSubmitted ? 'Mettre à jour' : 'Soumettre' ?></button>
         <button onclick="saveLignes(false)" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm">Sauvegarder (brouillon)</button>
     </div>
-    <?php endif; ?>
 </div>
 
 <!-- ==================== MODE COMMUNIQUÉ ==================== -->
@@ -250,7 +242,7 @@ $aideItems = getAideMemoireItems();
     </div>
 
     <?php if ($cpSubmitted): ?>
-    <div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">Communiqué soumis — lecture seule.</div>
+    <div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">✓ Communiqué déjà soumis — vous pouvez encore modifier.</div>
     <?php endif; ?>
 
     <div class="bg-white rounded-xl shadow-lg p-6 mb-4">
@@ -262,7 +254,7 @@ $aideItems = getAideMemoireItems();
             </label>
             <input type="text" id="cp_titre" maxlength="200" class="w-full border border-gray-300 rounded-lg p-3 text-base font-bold focus:ring-2 focus:ring-purple-400"
                 placeholder="Ex : L'association X lance un programme inédit..."
-                value="<?= h($cp['titre'] ?? '') ?>" <?= $cpSubmitted ? 'disabled' : '' ?>>
+                value="<?= h($cp['titre'] ?? '') ?>" >
         </div>
 
         <!-- Chapeau -->
@@ -273,7 +265,7 @@ $aideItems = getAideMemoireItems();
             </label>
             <textarea id="cp_chapeau" rows="4" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-purple-400"
                 placeholder="Résume l'essentiel de l'info en répondant aux questions fondamentales..."
-                <?= $cpSubmitted ? 'disabled' : '' ?>><?= h($cp['chapeau'] ?? '') ?></textarea>
+                ><?= h($cp['chapeau'] ?? '') ?></textarea>
         </div>
 
         <!-- Corps du texte -->
@@ -289,7 +281,7 @@ $aideItems = getAideMemoireItems();
                         <?= $i === 1 ? '— développe l\'info principale' : ($i === 2 ? '— détails, chiffres, contexte' : '— informations complémentaires') ?>
                     </div>
                     <textarea id="cp_p<?= $i ?>" rows="3" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-purple-400"
-                        <?= $cpSubmitted ? 'disabled' : '' ?>><?= h($cp['paragraphe' . $i] ?? '') ?></textarea>
+                        ><?= h($cp['paragraphe' . $i] ?? '') ?></textarea>
                 </div>
                 <?php endforeach; ?>
             </div>
@@ -303,10 +295,10 @@ $aideItems = getAideMemoireItems();
             </label>
             <textarea id="cp_citation" rows="2" class="w-full border border-gray-300 rounded-lg p-3 text-sm italic focus:ring-2 focus:ring-purple-400"
                 placeholder="« Cette initiative répond à un besoin concret... »"
-                <?= $cpSubmitted ? 'disabled' : '' ?>><?= h($cp['citation'] ?? '') ?></textarea>
+                ><?= h($cp['citation'] ?? '') ?></textarea>
             <input type="text" id="cp_citation_source" maxlength="200" class="mt-2 w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-purple-400"
                 placeholder="Source de la citation (ex : Marie Dupont, directrice)"
-                value="<?= h($cp['citation_source'] ?? '') ?>" <?= $cpSubmitted ? 'disabled' : '' ?>>
+                value="<?= h($cp['citation_source'] ?? '') ?>" >
         </div>
 
         <!-- Contact -->
@@ -314,23 +306,21 @@ $aideItems = getAideMemoireItems();
             <label class="block text-sm font-semibold text-gray-700 mb-2">Coordonnées de contact</label>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <input type="text" id="cp_contact_nom" maxlength="150" class="border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-purple-400"
-                    placeholder="Nom complet" value="<?= h($cp['contact_nom'] ?? '') ?>" <?= $cpSubmitted ? 'disabled' : '' ?>>
+                    placeholder="Nom complet" value="<?= h($cp['contact_nom'] ?? '') ?>" >
                 <input type="text" id="cp_contact_titre" maxlength="150" class="border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-purple-400"
-                    placeholder="Fonction" value="<?= h($cp['contact_titre'] ?? '') ?>" <?= $cpSubmitted ? 'disabled' : '' ?>>
+                    placeholder="Fonction" value="<?= h($cp['contact_titre'] ?? '') ?>" >
                 <input type="email" id="cp_contact_email" maxlength="150" class="border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-purple-400"
-                    placeholder="email@exemple.org" value="<?= h($cp['contact_email'] ?? '') ?>" <?= $cpSubmitted ? 'disabled' : '' ?>>
+                    placeholder="email@exemple.org" value="<?= h($cp['contact_email'] ?? '') ?>" >
                 <input type="text" id="cp_contact_tel" maxlength="50" class="border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-purple-400"
-                    placeholder="+32 ..." value="<?= h($cp['contact_tel'] ?? '') ?>" <?= $cpSubmitted ? 'disabled' : '' ?>>
+                    placeholder="+32 ..." value="<?= h($cp['contact_tel'] ?? '') ?>" >
             </div>
         </div>
 
-        <?php if (!$cpSubmitted): ?>
         <div class="flex flex-wrap gap-3 pt-4 border-t">
-            <button onclick="saveCP(true)" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-medium text-sm">Soumettre</button>
+            <button onclick="saveCP(true)" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-medium text-sm"><?= $cpSubmitted ? 'Mettre à jour' : 'Soumettre' ?></button>
             <button onclick="saveCP(false)" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm">Sauvegarder (brouillon)</button>
             <button onclick="togglePreview()" class="ml-auto bg-purple-100 text-purple-800 hover:bg-purple-200 px-4 py-2 rounded-lg text-sm">👁️ Aperçu</button>
         </div>
-        <?php endif; ?>
     </div>
 
     <!-- Preview -->
@@ -463,10 +453,8 @@ function showError(msg) {
 }
 
 function scheduleAutoSave() {
-    <?php if (!$isSubmitted): ?>
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => saveFiche(false, true), 1500);
-    <?php endif; ?>
 }
 
 async function postSave(payload, submit) {
@@ -504,7 +492,7 @@ async function saveFiche(submit, silent) {
     if (submit && !silent) {
         const filled = [data.sujet, data.message1, data.message2, data.message3].some(v => v.trim());
         if (!filled) { alert('Remplis au moins un champ avant de soumettre.'); return; }
-        if (!confirm('Soumettre ta fiche ? Tu ne pourras plus la modifier.')) return;
+        if (!confirm('Soumettre ta fiche ?')) return;
     }
     await postSave(data, submit);
 }
@@ -524,10 +512,10 @@ function renderQR() {
             <div class="flex items-start gap-3">
                 <span class="mt-2 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-sm flex items-center justify-center flex-shrink-0">${i + 1}</span>
                 <div class="flex-1 space-y-2">
-                    <textarea data-qr-q="${i}" rows="2" placeholder="Question anticipée..." class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-400" ${lignesSubmitted ? 'disabled' : ''}>${escapeHtml(row.question || '')}</textarea>
-                    <textarea data-qr-r="${i}" rows="3" placeholder="Ma réponse préparée..." class="w-full border border-gray-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-indigo-400" ${lignesSubmitted ? 'disabled' : ''}>${escapeHtml(row.reponse || '')}</textarea>
+                    <textarea data-qr-q="${i}" rows="2" placeholder="Question anticipée..." class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-400">${escapeHtml(row.question || '')}</textarea>
+                    <textarea data-qr-r="${i}" rows="3" placeholder="Ma réponse préparée..." class="w-full border border-gray-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-indigo-400">${escapeHtml(row.reponse || '')}</textarea>
                 </div>
-                ${lignesSubmitted ? '' : `<button type="button" onclick="removeQR(${i})" class="text-gray-400 hover:text-red-600 text-sm mt-2">×</button>`}
+                <button type="button" onclick="removeQR(${i})" class="text-gray-400 hover:text-red-600 text-sm mt-2">×</button>
             </div>`;
         list.appendChild(div);
     });
@@ -544,10 +532,10 @@ function renderEl() {
             <div class="flex items-start gap-3">
                 <span class="mt-2 w-7 h-7 rounded-full bg-amber-100 text-amber-700 font-bold text-sm flex items-center justify-center flex-shrink-0">⚠</span>
                 <div class="flex-1 space-y-2">
-                    <textarea data-el-s="${i}" rows="2" placeholder="Situation / question difficile..." class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-400" ${lignesSubmitted ? 'disabled' : ''}>${escapeHtml(row.situation || '')}</textarea>
-                    <textarea data-el-f="${i}" rows="3" placeholder="Formulation à utiliser..." class="w-full border border-gray-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-amber-400" ${lignesSubmitted ? 'disabled' : ''}>${escapeHtml(row.formulation || '')}</textarea>
+                    <textarea data-el-s="${i}" rows="2" placeholder="Situation / question difficile..." class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-400">${escapeHtml(row.situation || '')}</textarea>
+                    <textarea data-el-f="${i}" rows="3" placeholder="Formulation à utiliser..." class="w-full border border-gray-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-amber-400">${escapeHtml(row.formulation || '')}</textarea>
                 </div>
-                ${lignesSubmitted ? '' : `<button type="button" onclick="removeEl(${i})" class="text-gray-400 hover:text-red-600 text-sm mt-2">×</button>`}
+                <button type="button" onclick="removeEl(${i})" class="text-gray-400 hover:text-red-600 text-sm mt-2">×</button>
             </div>`;
         list.appendChild(div);
     });
@@ -570,7 +558,6 @@ function collectLignes() {
 
 let lignesTimer = null;
 function scheduleLignesAutoSave() {
-    if (lignesSubmitted) return;
     clearTimeout(lignesTimer);
     lignesTimer = setTimeout(() => saveLignes(false, true), 1500);
 }
@@ -584,7 +571,7 @@ function bindLignesInputs() {
 async function saveLignes(submit, silent) {
     collectLignes();
     if (submit && !silent) {
-        if (!confirm('Soumettre ce document ? Tu ne pourras plus le modifier.')) return;
+        if (!confirm('Soumettre ce document ?')) return;
     }
     await postSave({
         type: 'lignes',
@@ -617,7 +604,6 @@ function collectCP() {
 
 let cpTimer = null;
 function scheduleCPAutoSave() {
-    if (cpSubmittedJS) return;
     clearTimeout(cpTimer);
     cpTimer = setTimeout(() => saveCP(false, true), 1500);
 }
@@ -627,7 +613,7 @@ async function saveCP(submit, silent) {
     data.submit = !!submit;
     if (submit && !silent) {
         if (!data.titre.trim()) { alert('Renseigne au moins un titre.'); return; }
-        if (!confirm('Soumettre ce communiqué ? Tu ne pourras plus le modifier.')) return;
+        if (!confirm('Soumettre ce communiqué ?')) return;
     }
     try {
         const r = await fetch('api/save.php', {
