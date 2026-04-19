@@ -15,7 +15,7 @@ if (!file_exists($aiConfigPath)) {
 require_once $aiConfigPath;
 
 if (!isLoggedIn()) { http_response_code(401); echo json_encode(['error' => 'Non authentifié']); exit; }
-if (!isSuperAdmin()) { http_response_code(403); echo json_encode(['error' => 'Accès réservé aux super-administrateurs']); exit; }
+if (!isFormateur()) { http_response_code(403); echo json_encode(['error' => 'Accès réservé aux formateurs']); exit; }
 
 if (ANTHROPIC_API_KEY === 'YOUR_API_KEY_HERE') {
     http_response_code(500); echo json_encode(['error' => 'Clé API non configurée dans ai-config.php']); exit;

@@ -161,7 +161,7 @@ function badge($submitted, $has) {
                 <p class="text-sm opacity-90 mt-0.5">Rédaction en pyramide inversée</p>
             </div>
             <div class="flex items-center gap-2">
-                <?php if (isSuperAdmin() && (!empty(trim($fiche['sujet'] ?? '')) || !empty(trim($fiche['message1'] ?? '')))): ?>
+                <?php if (isFormateur() && (!empty(trim($fiche['sujet'] ?? '')) || !empty(trim($fiche['message1'] ?? '')))): ?>
                 <button id="aiGenBtn" onclick="generateCP()" class="no-print bg-white text-purple-700 hover:bg-purple-50 px-3 py-1.5 rounded text-sm font-medium">
                     ✨ Générer avec l'IA
                 </button>
@@ -170,7 +170,7 @@ function badge($submitted, $has) {
             </div>
         </div>
 
-        <?php if (isSuperAdmin()): ?>
+        <?php if (isFormateur()): ?>
         <!-- AI result (hidden by default) -->
         <div id="aiResult" class="hidden mb-6">
             <div class="bg-gradient-to-r from-violet-100 to-purple-100 border border-purple-300 rounded-xl p-4 mb-2 flex items-center justify-between flex-wrap gap-2 no-print">
@@ -234,7 +234,7 @@ function badge($submitted, $has) {
         </div>
     </div>
 
-    <?php if (isSuperAdmin()): ?>
+    <?php if (isFormateur()): ?>
     <script>
     async function generateCP() {
         const btn = document.getElementById('aiGenBtn');

@@ -598,19 +598,20 @@ async function saveLignes(submit, silent) {
 const cpSubmittedJS = <?= $cpSubmitted ? 'true' : 'false' ?>;
 
 function collectCP() {
+    const v = id => { const el = document.getElementById(id); return el ? el.value : ''; };
     return {
         type: 'communique',
-        titre: document.getElementById('cp_titre').value,
-        chapeau: document.getElementById('cp_chapeau').value,
-        paragraphe1: document.getElementById('cp_p1').value,
-        paragraphe2: document.getElementById('cp_p2').value,
-        paragraphe3: document.getElementById('cp_p3').value,
-        citation: document.getElementById('cp_citation').value,
-        citation_source: document.getElementById('cp_citation_source').value,
-        contact_nom: document.getElementById('cp_contact_nom').value,
-        contact_titre: document.getElementById('cp_contact_titre').value,
-        contact_email: document.getElementById('cp_contact_email').value,
-        contact_tel: document.getElementById('cp_contact_tel').value,
+        titre:           v('cp_titre'),
+        chapeau:         v('cp_chapeau'),
+        paragraphe1:     v('cp_p1'),
+        paragraphe2:     v('cp_p2'),
+        paragraphe3:     v('cp_p3'),
+        citation:        v('cp_citation'),
+        citation_source: v('cp_citation_source'),
+        contact_nom:     v('cp_contact_nom'),
+        contact_titre:   v('cp_contact_titre'),
+        contact_email:   v('cp_contact_email'),
+        contact_tel:     v('cp_contact_tel'),
     };
 }
 
@@ -628,7 +629,26 @@ async function saveCP(submit, silent) {
         if (!data.titre.trim()) { alert('Renseigne au moins un titre.'); return; }
         if (!confirm('Soumettre ce communiqué ? Tu ne pourras plus le modifier.')) return;
     }
-    await postSave(data, submit);
+    try {
+        const r = await fetch('api/save.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data),
+        });
+        const json = await r.json();
+        if (json.success) {
+            showSaved();
+            if (submit) setTimeout(() => location.reload(), 500);
+        } else {
+            const msg = json.error || 'Erreur de sauvegarde (communiqué)';
+            showError(msg);
+            if (!silent) alert(msg);
+        }
+    } catch (e) {
+        const msg = 'Erreur réseau : ' + e.message;
+        showError(msg);
+        if (!silent) alert(msg);
+    }
 }
 
 function togglePreview() {
