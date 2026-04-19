@@ -1503,6 +1503,11 @@ return [
             'description' => 'Auto-évaluation des normes de gouvernance d\'une organisation : structures, finances, anti-corruption, RH, risques et durabilité.',
             'color' => 'indigo',
         ],
+        'interviews' => [
+            'title' => 'Préparation à l\'interview',
+            'description' => 'Préparez votre interview journalistique : fiche interviewé·e avec messages clés, et fiches de rôle pour journaliste (bienveillant, pressé, sceptique).',
+            'color' => 'rose',
+        ],
     ],
 
     // Pilotage de Projet
