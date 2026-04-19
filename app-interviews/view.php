@@ -165,7 +165,7 @@ function badge($submitted, $has) {
                 <p class="text-sm opacity-90 mt-0.5">Rédaction en pyramide inversée</p>
             </div>
             <div class="flex items-center gap-2">
-                <?php if (isFormateur() && (!empty(trim($fiche['sujet'] ?? '')) || !empty(trim($fiche['message1'] ?? '')))): ?>
+                <?php if (isFormateur()): ?>
                 <button id="aiGenBtn" onclick="generateCP()" class="no-print bg-white text-purple-700 hover:bg-purple-50 px-3 py-1.5 rounded text-sm font-medium">
                     ✨ Générer avec l'IA
                 </button>
