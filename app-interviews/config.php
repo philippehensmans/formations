@@ -61,6 +61,37 @@ function initDatabase($db) {
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         UNIQUE(user_id, session_id)
     )");
+
+    $db->exec("CREATE TABLE IF NOT EXISTS lignes_reponse (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        session_id INTEGER NOT NULL,
+        qr_data TEXT DEFAULT '[]',
+        elements_data TEXT DEFAULT '[]',
+        is_submitted INTEGER DEFAULT 0,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, session_id)
+    )");
+
+    $db->exec("CREATE TABLE IF NOT EXISTS communiques (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        session_id INTEGER NOT NULL,
+        titre TEXT DEFAULT '',
+        chapeau TEXT DEFAULT '',
+        paragraphe1 TEXT DEFAULT '',
+        paragraphe2 TEXT DEFAULT '',
+        paragraphe3 TEXT DEFAULT '',
+        citation TEXT DEFAULT '',
+        citation_source TEXT DEFAULT '',
+        contact_nom TEXT DEFAULT '',
+        contact_titre TEXT DEFAULT '',
+        contact_email TEXT DEFAULT '',
+        contact_tel TEXT DEFAULT '',
+        is_submitted INTEGER DEFAULT 0,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, session_id)
+    )");
 }
 
 function getJournalisteProfiles() {
