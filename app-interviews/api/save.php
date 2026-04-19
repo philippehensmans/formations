@@ -23,8 +23,6 @@ switch ($type) {
         $stmt = $db->prepare("SELECT id, is_submitted FROM fiches WHERE user_id=? AND session_id=?");
         $stmt->execute([$userId, $sessionId]);
         $row = $stmt->fetch();
-        if ($row && $row['is_submitted']) { http_response_code(403); echo json_encode(['error' => 'Déjà soumis']); exit; }
-
         $sujet    = mb_substr(trim($data['sujet']    ?? ''), 0, 2000);
         $message1 = mb_substr(trim($data['message1'] ?? ''), 0, 1000);
         $message2 = mb_substr(trim($data['message2'] ?? ''), 0, 1000);
@@ -45,8 +43,6 @@ switch ($type) {
         $stmt = $db->prepare("SELECT id, is_submitted FROM lignes_reponse WHERE user_id=? AND session_id=?");
         $stmt->execute([$userId, $sessionId]);
         $row = $stmt->fetch();
-        if ($row && $row['is_submitted']) { http_response_code(403); echo json_encode(['error' => 'Déjà soumis']); exit; }
-
         $qr = $data['qr_data'] ?? [];
         $el = $data['elements_data'] ?? [];
         if (!is_array($qr)) $qr = [];
@@ -75,8 +71,6 @@ switch ($type) {
         $stmt = $db->prepare("SELECT id, is_submitted FROM communiques WHERE user_id=? AND session_id=?");
         $stmt->execute([$userId, $sessionId]);
         $row = $stmt->fetch();
-        if ($row && $row['is_submitted']) { http_response_code(403); echo json_encode(['error' => 'Déjà soumis']); exit; }
-
         $fields = ['titre','chapeau','paragraphe1','paragraphe2','paragraphe3','citation','citation_source','contact_nom','contact_titre','contact_email','contact_tel'];
         $vals = [];
         foreach ($fields as $f) $vals[$f] = mb_substr(trim($data[$f] ?? ''), 0, 2000);
