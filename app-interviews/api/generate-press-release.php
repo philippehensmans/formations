@@ -39,10 +39,24 @@ $stmt = $db->prepare("SELECT * FROM lignes_reponse WHERE user_id = ? AND session
 $stmt->execute([$participant['user_id'], $participant['session_id']]);
 $lignes = $stmt->fetch() ?: [];
 $qrData = json_decode($lignes['qr_data'] ?? '[]', true) ?: [];
+$elData = json_decode($lignes['elements_data'] ?? '[]', true) ?: [];
 
-$hasContent = !empty(trim($fiche['sujet'] ?? '')) || !empty(trim($fiche['message1'] ?? ''));
+$stmt = $db->prepare("SELECT * FROM communiques WHERE user_id = ? AND session_id = ?");
+$stmt->execute([$participant['user_id'], $participant['session_id']]);
+$cp = $stmt->fetch() ?: [];
+
+$hasContent = !empty(trim($fiche['sujet'] ?? ''))
+    || !empty(trim($fiche['message1'] ?? ''))
+    || !empty(trim($fiche['message2'] ?? ''))
+    || !empty(trim($fiche['message3'] ?? ''))
+    || !empty($qrData)
+    || !empty($elData)
+    || !empty(trim($cp['titre'] ?? ''))
+    || !empty(trim($cp['chapeau'] ?? ''))
+    || !empty(trim($cp['paragraphe1'] ?? ''));
+
 if (!$hasContent) {
-    http_response_code(400); echo json_encode(['error' => 'Le participant n\'a pas encore rempli sa fiche de préparation.']); exit;
+    http_response_code(400); echo json_encode(['error' => 'Le participant n\'a pas encore saisi de contenu.']); exit;
 }
 
 // Construire le contexte pour l'IA
