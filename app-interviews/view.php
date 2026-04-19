@@ -19,18 +19,22 @@ $stmt->execute([$participant['user_id'], $participant['session_id']]);
 $fiche = $stmt->fetch() ?: [];
 $isSubmitted = ($fiche['is_submitted'] ?? 0) == 1;
 
-$stmt = $db->prepare("SELECT * FROM lignes_reponse WHERE user_id = ? AND session_id = ?");
-$stmt->execute([$participant['user_id'], $participant['session_id']]);
-$lignes = $stmt->fetch() ?: [];
+try {
+    $stmt = $db->prepare("SELECT * FROM lignes_reponse WHERE user_id = ? AND session_id = ?");
+    $stmt->execute([$participant['user_id'], $participant['session_id']]);
+    $lignes = $stmt->fetch() ?: [];
+} catch (Exception $e) { $lignes = []; }
 $qrData = json_decode($lignes['qr_data'] ?? '[]', true) ?: [];
 $elementsData = json_decode($lignes['elements_data'] ?? '[]', true) ?: [];
 $lignesSubmitted = ($lignes['is_submitted'] ?? 0) == 1;
 $hasLignes = !empty(array_filter($qrData, fn($r) => trim($r['question'] ?? '').trim($r['reponse'] ?? '') !== ''))
           || !empty(array_filter($elementsData, fn($r) => trim($r['situation'] ?? '').trim($r['formulation'] ?? '') !== ''));
 
-$stmt = $db->prepare("SELECT * FROM communiques WHERE user_id = ? AND session_id = ?");
-$stmt->execute([$participant['user_id'], $participant['session_id']]);
-$cp = $stmt->fetch() ?: [];
+try {
+    $stmt = $db->prepare("SELECT * FROM communiques WHERE user_id = ? AND session_id = ?");
+    $stmt->execute([$participant['user_id'], $participant['session_id']]);
+    $cp = $stmt->fetch() ?: [];
+} catch (Exception $e) { $cp = []; }
 $cpSubmitted = ($cp['is_submitted'] ?? 0) == 1;
 $hasCp = !empty(array_filter([$cp['titre'] ?? '', $cp['chapeau'] ?? '', $cp['paragraphe1'] ?? ''], fn($v) => trim($v) !== ''));
 
