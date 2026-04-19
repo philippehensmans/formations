@@ -70,6 +70,7 @@
         "app-craintes-attentes": ["evaluation", "collaboration"],
         "app-questionnaire-ia": ["intelligence_artificielle", "evaluation"],
         "app-comm-diagnostic": ["communication", "evaluation"],
-        "app-gouvernance": ["evaluation", "analyse_strategique"]
+        "app-gouvernance": ["evaluation", "analyse_strategique"],
+        "app-interviews": ["communication"]
     }
 }
