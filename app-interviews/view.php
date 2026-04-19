@@ -160,8 +160,38 @@ function badge($submitted, $has) {
                 <h2 class="text-lg font-bold">📰 Communiqué de presse</h2>
                 <p class="text-sm opacity-90 mt-0.5">Rédaction en pyramide inversée</p>
             </div>
-            <?= badge($cpSubmitted, $hasCp) ?>
+            <div class="flex items-center gap-2">
+                <?php if (isSuperAdmin() && ($hasCp || !empty(trim($fiche['sujet'] ?? '')) || !empty(trim($fiche['message1'] ?? '')))): ?>
+                <button id="aiGenBtn" onclick="generateCP()" class="no-print bg-white text-purple-700 hover:bg-purple-50 px-3 py-1.5 rounded text-sm font-medium">
+                    ✨ Générer avec l'IA
+                </button>
+                <?php endif; ?>
+                <?= badge($cpSubmitted, $hasCp) ?>
+            </div>
         </div>
+
+        <?php if (isSuperAdmin()): ?>
+        <!-- AI result (hidden by default) -->
+        <div id="aiResult" class="hidden mb-6">
+            <div class="bg-gradient-to-r from-violet-100 to-purple-100 border border-purple-300 rounded-xl p-4 mb-2 flex items-center justify-between flex-wrap gap-2 no-print">
+                <div class="text-sm">
+                    <span class="font-semibold text-purple-800">✨ Communiqué rédigé par l'IA</span>
+                    <span class="text-purple-600 ml-2">— brouillon de travail, vérifiez avant diffusion</span>
+                </div>
+                <button onclick="document.getElementById('aiResult').classList.add('hidden')" class="text-purple-700 hover:text-purple-900 text-sm">Fermer</button>
+            </div>
+            <div class="bg-white rounded-xl shadow p-8 border-2 border-purple-200" style="font-family: Georgia, serif;">
+                <div class="text-xs text-gray-500 uppercase tracking-wide mb-2">Communiqué de presse — proposition IA</div>
+                <h1 id="aiTitre" class="text-2xl font-bold text-gray-900 mb-4"></h1>
+                <p id="aiChapeau" class="text-base font-medium text-gray-800 mb-4 pb-4 border-b whitespace-pre-wrap"></p>
+                <div id="aiCorps" class="space-y-3 text-gray-700 text-sm"></div>
+                <blockquote id="aiCitation" class="mt-6 pl-4 border-l-4 border-purple-300 italic text-gray-700 hidden"></blockquote>
+                <div id="aiRaw" class="hidden mt-4 bg-amber-50 border border-amber-200 rounded p-3 text-xs text-amber-900 font-mono whitespace-pre-wrap"></div>
+            </div>
+        </div>
+
+        <div id="aiError" class="hidden mb-6 bg-red-50 border border-red-300 rounded-xl p-4 text-red-800 text-sm no-print"></div>
+        <?php endif; ?>
 
         <?php if ($hasCp): ?>
         <div class="bg-white rounded-xl shadow p-8 mb-4" style="font-family: Georgia, serif;">
@@ -198,5 +228,66 @@ function badge($submitted, $has) {
         <div class="bg-white rounded-xl shadow p-5 mb-4 text-center text-gray-400 italic text-sm">Aucun communiqué rédigé.</div>
         <?php endif; ?>
     </div>
+
+    <?php if (isSuperAdmin()): ?>
+    <script>
+    async function generateCP() {
+        const btn = document.getElementById('aiGenBtn');
+        const err = document.getElementById('aiError');
+        const result = document.getElementById('aiResult');
+        err.classList.add('hidden');
+        const oldLabel = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '⏳ Génération en cours...';
+        try {
+            const r = await fetch('api/generate-press-release.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({participant_id: <?= (int)$participantId ?>}),
+            });
+            const json = await r.json();
+            if (!json.success) {
+                err.textContent = json.error || 'Erreur inconnue';
+                err.classList.remove('hidden');
+                return;
+            }
+            if (json.parsed && json.communique) {
+                const c = json.communique;
+                document.getElementById('aiTitre').textContent = c.titre || '';
+                document.getElementById('aiChapeau').textContent = c.chapeau || '';
+                const corps = document.getElementById('aiCorps');
+                corps.innerHTML = '';
+                [c.paragraphe1, c.paragraphe2, c.paragraphe3].forEach(p => {
+                    if ((p || '').trim()) { const el = document.createElement('p'); el.textContent = p; el.className = 'whitespace-pre-wrap'; corps.appendChild(el); }
+                });
+                const quote = document.getElementById('aiCitation');
+                document.getElementById('aiRaw').classList.add('hidden');
+                if ((c.citation || '').trim()) {
+                    quote.classList.remove('hidden');
+                    quote.innerHTML = '« ' + escapeHtml(c.citation) + ' »' + (c.citation_source ? '<div class="text-xs not-italic text-gray-500 mt-1">— ' + escapeHtml(c.citation_source) + '</div>' : '');
+                } else quote.classList.add('hidden');
+            } else {
+                // Fallback: afficher le texte brut
+                document.getElementById('aiTitre').textContent = 'Réponse IA';
+                document.getElementById('aiChapeau').textContent = '';
+                document.getElementById('aiCorps').innerHTML = '';
+                document.getElementById('aiCitation').classList.add('hidden');
+                const raw = document.getElementById('aiRaw');
+                raw.textContent = json.raw || '';
+                raw.classList.remove('hidden');
+            }
+            result.classList.remove('hidden');
+            result.scrollIntoView({behavior: 'smooth'});
+        } catch (e) {
+            err.textContent = 'Erreur réseau : ' + e.message;
+            err.classList.remove('hidden');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = oldLabel;
+        }
+    }
+    function escapeHtml(s) { return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    </script>
+    <?php endif; ?>
 </body>
 </html>
