@@ -26,8 +26,8 @@ if (!$session) {
     exit;
 }
 
-// Recuperer ou creer la carte mentale
-$mindmap = getOrCreateMindmap($sessionId);
+// Recuperer ou creer la carte mentale du participant
+$mindmap = getOrCreateMindmap($sessionId, $user['id']);
 $nodes = getNodes($mindmap['id']);
 $colors = getColors();
 $icons = getIcons();
