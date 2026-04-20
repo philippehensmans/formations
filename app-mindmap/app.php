@@ -54,6 +54,7 @@ foreach ($participantIds as $pid) {
     <title><?= t('mindmap.title') ?> - <?= h($session['nom']) ?></title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='6' fill='%23f59e0b'/><circle cx='6' cy='8' r='4' fill='%2322c55e'/><circle cx='26' cy='8' r='4' fill='%233b82f6'/><circle cx='6' cy='24' r='4' fill='%23ec4899'/><circle cx='26' cy='24' r='4' fill='%238b5cf6'/><line x1='16' y1='16' x2='6' y2='8' stroke='%23999' stroke-width='2'/><line x1='16' y1='16' x2='26' y2='8' stroke='%23999' stroke-width='2'/><line x1='16' y1='16' x2='6' y2='24' stroke='%23999' stroke-width='2'/><line x1='16' y1='16' x2='26' y2='24' stroke='%23999' stroke-width='2'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
     <style>
         .mindmap-container {
             position: relative;
@@ -194,6 +195,7 @@ foreach ($participantIds as $pid) {
         <div class="flex-1"></div>
         <button onclick="exportRTF()" class="toolbar-btn bg-violet-100 text-violet-700 hover:bg-violet-200">📄 <?= t('mindmap.export_rtf') ?></button>
         <button onclick="exportPDF()" class="toolbar-btn bg-violet-100 text-violet-700 hover:bg-violet-200">📑 <?= t('mindmap.export_pdf') ?></button>
+        <button onclick="exportExcel()" class="toolbar-btn bg-green-100 text-green-700 hover:bg-green-200">📊 Excel</button>
     </div>
 
     <!-- Mindmap Container -->
@@ -828,6 +830,45 @@ foreach ($participantIds as $pid) {
             printWindow.onload = function() {
                 printWindow.print();
             };
+        }
+
+        // Export Excel (.xlsx via SheetJS)
+        function exportExcel() {
+            const tree = buildTree();
+            if (!tree) return alert(trans.noData);
+
+            const rows = [['Niveau', 'Texte', 'Note', 'Lien', 'Icône']];
+
+            function addNodeRow(node, level) {
+                const indent = '  '.repeat(level);
+                const iconLabel = node.icon && icons[node.icon] ? icons[node.icon].emoji + ' ' : '';
+                rows.push([
+                    level,
+                    indent + iconLabel + node.text,
+                    node.note || '',
+                    node.file_url || '',
+                    node.icon && icons[node.icon] ? icons[node.icon].label : ''
+                ]);
+                if (node.children) node.children.forEach(child => addNodeRow(child, level + 1));
+            }
+
+            addNodeRow(tree, 0);
+
+            const ws = XLSX.utils.aoa_to_sheet(rows);
+
+            // Largeurs de colonnes
+            ws['!cols'] = [{wch: 8}, {wch: 45}, {wch: 40}, {wch: 50}, {wch: 15}];
+
+            // Style en-tête (gras)
+            const headerRange = XLSX.utils.decode_range('A1:E1');
+            for (let c = headerRange.s.c; c <= headerRange.e.c; c++) {
+                const cell = ws[XLSX.utils.encode_cell({r: 0, c})];
+                if (cell) cell.s = {font: {bold: true}};
+            }
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Carte Mentale');
+            XLSX.writeFile(wb, 'carte-mentale.xlsx');
         }
 
         // Utils
