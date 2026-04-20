@@ -24,9 +24,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     if ($action === 'poll' && $mindmapId) {
         $since = $_GET['since'] ?? '';
 
-        // Verifier si mise a jour
-        $stmt = $db->prepare("SELECT updated_at FROM mindmaps WHERE id = ?");
-        $stmt->execute([$mindmapId]);
+        // Verifier si mise a jour (et que la carte appartient a l'utilisateur)
+        $stmt = $db->prepare("SELECT updated_at FROM mindmaps WHERE id = ? AND user_id = ?");
+        $stmt->execute([$mindmapId, $user['id']]);
         $mindmap = $stmt->fetch();
 
         if ($mindmap && $mindmap['updated_at'] > $since) {
@@ -50,6 +50,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!$mindmapId) {
         echo json_encode(['error' => 'mindmap_id requis']);
+        exit;
+    }
+
+    // Verifier que la carte appartient a l'utilisateur courant
+    $ownerCheck = $db->prepare("SELECT id FROM mindmaps WHERE id = ? AND user_id = ?");
+    $ownerCheck->execute([$mindmapId, $user['id']]);
+    if (!$ownerCheck->fetch()) {
+        http_response_code(403);
+        echo json_encode(['error' => 'Acces refuse']);
         exit;
     }
 

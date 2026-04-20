@@ -38,8 +38,8 @@ $userStmt = $sharedDb->prepare("SELECT prenom, nom, organisation FROM users WHER
 $userStmt->execute([$participant['user_id']]);
 $userInfo = $userStmt->fetch();
 
-// Recuperer la carte mentale de la session
-$mindmap = getOrCreateMindmap($participant['session_id']);
+// Recuperer la carte mentale du participant
+$mindmap = getOrCreateMindmap($participant['session_id'], $participant['user_id']);
 $nodes = getNodes($mindmap['id']);
 $icons = getIcons();
 ?>
@@ -48,7 +48,7 @@ $icons = getIcons();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carte Mentale - <?= h($participant['session_nom']) ?></title>
+    <title>Carte Mentale - <?= $userInfo ? h($userInfo['prenom'] . ' ' . $userInfo['nom']) : '' ?> - <?= h($participant['session_nom']) ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @media print { .no-print { display: none !important; } }
@@ -97,6 +97,9 @@ $icons = getIcons();
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div>
                 <span class="font-medium">Carte Mentale</span>
+                <?php if ($userInfo): ?>
+                <span class="font-semibold ml-1"><?= h($userInfo['prenom'] . ' ' . $userInfo['nom']) ?></span>
+                <?php endif; ?>
                 <span class="text-violet-200 text-sm ml-2"><?= h($participant['session_nom']) ?> (<?= h($participant['session_code']) ?>)</span>
             </div>
             <div class="flex gap-3">

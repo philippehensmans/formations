@@ -64,14 +64,40 @@ function initDB($db) {
         try { $db->exec($sql); } catch (Exception $e) { /* Colonne existe deja */ }
     }
 
-    // Table des cartes mentales (une par session)
+    // Table des cartes mentales (une par participant par session)
     $db->exec("CREATE TABLE IF NOT EXISTS mindmaps (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        session_id INTEGER NOT NULL UNIQUE,
+        session_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL DEFAULT 0,
         title VARCHAR(255) DEFAULT 'Carte Mentale',
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE
+        FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
+        UNIQUE(session_id, user_id)
     )");
+
+    // Migration: ajouter user_id si la table existe avec l'ancienne structure (session_id UNIQUE)
+    $tableInfo = $db->query("PRAGMA table_info(mindmaps)")->fetchAll();
+    $hasUserId = false;
+    foreach ($tableInfo as $col) {
+        if ($col['name'] === 'user_id') { $hasUserId = true; break; }
+    }
+    if (!$hasUserId) {
+        $db->exec("BEGIN");
+        $db->exec("CREATE TABLE mindmaps_new (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL DEFAULT 0,
+            title VARCHAR(255) DEFAULT 'Carte Mentale',
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
+            UNIQUE(session_id, user_id)
+        )");
+        $db->exec("INSERT INTO mindmaps_new (id, session_id, user_id, title, updated_at)
+                   SELECT id, session_id, 0, title, updated_at FROM mindmaps");
+        $db->exec("DROP TABLE mindmaps");
+        $db->exec("ALTER TABLE mindmaps_new RENAME TO mindmaps");
+        $db->exec("COMMIT");
+    }
 
     // Table des noeuds
     $db->exec("CREATE TABLE IF NOT EXISTS nodes (
@@ -105,21 +131,19 @@ function initDB($db) {
 }
 
 /**
- * Recuperer ou creer la carte mentale d'une session
+ * Recuperer ou creer la carte mentale d'un participant dans une session
  */
-function getOrCreateMindmap($sessionId) {
+function getOrCreateMindmap($sessionId, $userId) {
     $db = getDB();
 
-    $stmt = $db->prepare("SELECT * FROM mindmaps WHERE session_id = ?");
-    $stmt->execute([$sessionId]);
+    $stmt = $db->prepare("SELECT * FROM mindmaps WHERE session_id = ? AND user_id = ?");
+    $stmt->execute([$sessionId, $userId]);
     $mindmap = $stmt->fetch();
 
     if (!$mindmap) {
-        // Creer la carte avec un noeud racine
-        $db->prepare("INSERT INTO mindmaps (session_id) VALUES (?)")->execute([$sessionId]);
+        $db->prepare("INSERT INTO mindmaps (session_id, user_id) VALUES (?, ?)")->execute([$sessionId, $userId]);
         $mindmapId = $db->lastInsertId();
 
-        // Creer le noeud central
         $db->prepare("INSERT INTO nodes (mindmap_id, text, color, is_root, pos_x, pos_y) VALUES (?, 'Idee centrale', 'violet', 1, 400, 300)")
            ->execute([$mindmapId]);
 
