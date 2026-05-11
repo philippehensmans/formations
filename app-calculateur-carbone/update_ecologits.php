@@ -189,6 +189,9 @@ if (php_sapi_name() === 'cli') {
     // Appel direct via navigateur
     fetchEcoLogitsData();
     updateEstimations();
+    $referer = $_SERVER['HTTP_REFERER'] ?? 'formateur.php';
+    header('Location: ' . $referer);
+    exit;
 } elseif (isset($_POST['action']) && $_POST['action'] === 'update_ecologits') {
     // Inclus depuis formateur.php
     fetchEcoLogitsData();

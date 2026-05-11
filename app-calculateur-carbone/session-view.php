@@ -103,6 +103,9 @@ $maxCo2 = $participantsCount > 0 ? max(array_column($byUser, 'total_co2')) : 0;
                     <p class="text-emerald-200 text-sm"><?= h($session['nom']) ?> - <?= h($session['code']) ?></p>
                 </div>
                 <div class="flex items-center gap-4">
+                    <a href="export.php?type=session&session=<?= $sessionId ?>" class="bg-white text-emerald-700 hover:bg-emerald-50 px-3 py-1 rounded text-sm font-semibold border border-emerald-200">
+                        &#x2B07; Télécharger le bilan (CSV)
+                    </a>
                     <button onclick="window.print()" class="bg-emerald-500 hover:bg-emerald-400 px-3 py-1 rounded text-sm">
                         Imprimer
                     </button>
@@ -115,6 +118,25 @@ $maxCo2 = $participantsCount > 0 ? max(array_column($byUser, 'total_co2')) : 0;
     </header>
 
     <main class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Bandeau EcoLogits -->
+        <div class="bg-white rounded-xl shadow p-4 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 no-print border border-emerald-100">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl">&#x1F331;</span>
+                <div>
+                    <span class="font-semibold text-emerald-700">Données basées sur EcoLogits</span>
+                    <span class="text-gray-500 text-sm ml-2">— bibliothèque de référence pour l'impact carbone des LLMs</span>
+                    <div>
+                        <a href="https://ecologits.ai/" target="_blank" rel="noopener noreferrer" class="text-emerald-600 hover:underline text-sm">ecologits.ai &#x2197;</a>
+                    </div>
+                </div>
+            </div>
+            <form method="post" action="update_ecologits.php" onsubmit="this.querySelector('button').disabled=true; this.querySelector('button').textContent='Mise à jour...';">
+                <button type="submit" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-4 py-2 rounded text-sm font-medium whitespace-nowrap">
+                    &#x21BB; Mettre à jour les facteurs EcoLogits
+                </button>
+            </form>
+        </div>
+
         <!-- Statistiques -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             <div class="bg-white rounded-xl shadow p-4 text-center">
