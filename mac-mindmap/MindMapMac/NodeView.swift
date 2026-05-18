@@ -39,37 +39,19 @@ struct NodeView: View {
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 6)
-
-            if isHovered {
-                nodeActions
-            }
         }
         .frame(width: node.nodeWidth, height: node.nodeHeight)
         .onHover { isHovered = $0 }
-    }
-
-    private var nodeActions: some View {
-        HStack(spacing: 3) {
-            actionButton(label: "+", color: .green, help: "Ajouter un enfant", action: onAddChild)
-            actionButton(label: "✏️", color: .blue, help: "Modifier", action: onEdit)
+        // Clic droit → menu contextuel (fiable, natif macOS)
+        .contextMenu {
+            Button("➕  Ajouter un enfant") { onAddChild() }
+            Button("✏️  Modifier") { onEdit() }
             if !node.isRoot {
-                actionButton(label: "×", color: .red, help: "Supprimer", action: onDelete)
+                Divider()
+                Button("🗑️  Supprimer", role: .destructive) { onDelete() }
             }
         }
-        .offset(y: -(node.nodeHeight / 2 + 14))
-    }
-
-    private func actionButton(label: String, color: Color, help: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Text(label)
-                .font(.caption)
-                .fontWeight(.bold)
-                .foregroundStyle(.white)
-                .frame(width: 22, height: 22)
-                .background(color)
-                .clipShape(Circle())
-        }
-        .buttonStyle(.plain)
-        .help(help)
+        // Tooltip sur les indicateurs
+        .help(node.note.isEmpty ? "" : "Note : \(node.note)")
     }
 }

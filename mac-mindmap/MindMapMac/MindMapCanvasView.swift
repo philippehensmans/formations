@@ -1,28 +1,24 @@
 import SwiftUI
 
-// MARK: - Canvas view (infinite pan + zoom)
-
 struct MindMapCanvasView: View {
     @Binding var mindmap: MindMap
 
-    // Camera state
     @State private var scale: CGFloat = 1.0
     @State private var lastScale: CGFloat = 1.0
     @State private var panOffset: CGSize = .zero
     @State private var panStart: CGSize = .zero
 
-    // Interaction state
     @State private var editingNode: MindNode? = nil
     @State private var draggedID: UUID? = nil
     @State private var dragTargetID: UUID? = nil
     @State private var dragTranslation: CGSize = .zero
 
-    // Toolbar state
     @State private var currentColor: NodeColor = .blue
     @State private var currentIcon: NodeIcon? = nil
 
-    private let canvasW: CGFloat = 8000
-    private let canvasH: CGFloat = 6000
+    // Canvas réduit : moins de risque de perdre les nœuds hors vue
+    private let canvasW: CGFloat = 4000
+    private let canvasH: CGFloat = 3000
 
     var body: some View {
         GeometryReader { geo in
@@ -38,31 +34,23 @@ struct MindMapCanvasView: View {
 
     private func canvasLayer(geo: GeometryProxy) -> some View {
         ZStack(alignment: .topLeading) {
-            // Background grid
-            Canvas { ctx, size in
-                drawGrid(ctx: ctx, size: size)
-            }
-            .frame(width: canvasW, height: canvasH)
+            Canvas { ctx, size in drawGrid(ctx: ctx, size: size) }
+                .frame(width: canvasW, height: canvasH)
 
-            // Connections
-            Canvas { ctx, size in
-                drawConnections(ctx: ctx)
-            }
-            .frame(width: canvasW, height: canvasH)
-            .allowsHitTesting(false)
+            Canvas { ctx, size in drawConnections(ctx: ctx) }
+                .frame(width: canvasW, height: canvasH)
+                .allowsHitTesting(false)
 
-            // Nodes
             ForEach(mindmap.nodes) { node in
-                let pos = displayPosition(for: node)
                 NodeView(
                     node: node,
                     isDropTarget: dragTargetID == node.id,
-                    onAddChild: { addChild(to: node.id) },
+                    onAddChild: { addChild(to: node.id, geoSize: geo.size) },
                     onEdit: { editingNode = node },
                     onDelete: { mindmap.delete(id: node.id) }
                 )
-                .position(pos)
-                .gesture(nodeDragGesture(node: node, geoSize: geo.size))
+                .position(displayPosition(for: node))
+                .gesture(nodeDragGesture(node: node))
                 .onTapGesture(count: 2) { editingNode = node }
             }
         }
@@ -82,7 +70,6 @@ struct MindMapCanvasView: View {
     private var toolbarOverlay: some View {
         VStack {
             HStack(spacing: 8) {
-                // Zoom controls
                 Group {
                     toolBtn("−") { zoomOut() }
                     toolBtn("+") { zoomIn() }
@@ -91,7 +78,6 @@ struct MindMapCanvasView: View {
 
                 Divider().frame(height: 24)
 
-                // Colors
                 ForEach(NodeColor.allCases, id: \.self) { c in
                     Circle()
                         .fill(c.fill)
@@ -103,7 +89,6 @@ struct MindMapCanvasView: View {
 
                 Divider().frame(height: 24)
 
-                // Icons
                 ForEach(NodeIcon.allCases, id: \.self) { icon in
                     Text(icon.emoji)
                         .font(.callout)
@@ -123,11 +108,8 @@ struct MindMapCanvasView: View {
 
                 Spacer()
 
-                // Export
-                Button("PDF") { ExportManager.exportPDF(mindmap: mindmap) }
-                    .buttonStyle(.bordered)
-                Button("RTF") { ExportManager.exportRTF(mindmap: mindmap) }
-                    .buttonStyle(.bordered)
+                Button("PDF") { ExportManager.exportPDF(mindmap: mindmap) }.buttonStyle(.bordered)
+                Button("RTF") { ExportManager.exportRTF(mindmap: mindmap) }.buttonStyle(.bordered)
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
@@ -139,54 +121,41 @@ struct MindMapCanvasView: View {
     }
 
     private func toolBtn(_ label: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Text(label).frame(width: 24, height: 24)
-        }
-        .buttonStyle(.bordered)
+        Button(action: action) { Text(label).frame(width: 24, height: 24) }
+            .buttonStyle(.bordered)
     }
 
     // MARK: - Node positioning
 
-    // Nodes are stored in absolute canvas coords.
-    // During drag, we show a translated position without modifying the model yet.
     private func displayPosition(for node: MindNode) -> CGPoint {
-        if draggedID == node.id {
-            return CGPoint(
-                x: node.posX + dragTranslation.width / scale,
-                y: node.posY + dragTranslation.height / scale
-            )
-        }
-        return CGPoint(x: node.posX, y: node.posY)
+        guard draggedID == node.id else { return CGPoint(x: node.posX, y: node.posY) }
+        return CGPoint(
+            x: node.posX + dragTranslation.width / scale,
+            y: node.posY + dragTranslation.height / scale
+        )
     }
 
     // MARK: - Gestures
 
-    private func nodeDragGesture(node: MindNode, geoSize: CGSize) -> some Gesture {
+    private func nodeDragGesture(node: MindNode) -> some Gesture {
         DragGesture(minimumDistance: 3)
             .onChanged { value in
                 draggedID = node.id
                 dragTranslation = value.translation
 
-                // Find drop target
                 let currentPos = CGPoint(
                     x: node.posX + value.translation.width / scale,
                     y: node.posY + value.translation.height / scale
                 )
                 dragTargetID = mindmap.nodes.first { candidate in
                     guard candidate.id != node.id else { return false }
-                    let dx = candidate.posX - currentPos.x
-                    let dy = candidate.posY - currentPos.y
-                    let hw = candidate.nodeWidth / 2
-                    let hh = candidate.nodeHeight / 2
-                    return abs(dx) < hw && abs(dy) < hh
+                    let dx = abs(candidate.posX - currentPos.x)
+                    let dy = abs(candidate.posY - currentPos.y)
+                    return dx < candidate.nodeWidth / 2 && dy < candidate.nodeHeight / 2
                 }?.id
             }
             .onEnded { value in
-                defer {
-                    draggedID = nil
-                    dragTranslation = .zero
-                    dragTargetID = nil
-                }
+                defer { draggedID = nil; dragTranslation = .zero; dragTargetID = nil }
                 let newPos = CGPoint(
                     x: node.posX + value.translation.width / scale,
                     y: node.posY + value.translation.height / scale
@@ -212,40 +181,46 @@ struct MindMapCanvasView: View {
 
     private func magnifyGesture() -> some Gesture {
         MagnificationGesture()
-            .onChanged { value in
-                scale = max(0.2, min(3.0, lastScale * value))
-            }
+            .onChanged { value in scale = max(0.2, min(3.0, lastScale * value)) }
             .onEnded { _ in lastScale = scale }
     }
 
-    // MARK: - Zoom helpers
+    // MARK: - Zoom
 
     private func zoomIn()  { withAnimation { scale = min(3.0, scale * 1.25); lastScale = scale } }
-    private func zoomOut() { withAnimation { scale = max(0.2, scale * 0.8); lastScale = scale } }
+    private func zoomOut() { withAnimation { scale = max(0.2, scale * 0.8);  lastScale = scale } }
     private func resetView() {
-        withAnimation {
-            scale = 1.0
-            lastScale = 1.0
-            panOffset = .zero
-            panStart = .zero
-        }
+        withAnimation { scale = 1.0; lastScale = 1.0; panOffset = .zero; panStart = .zero }
     }
 
     private func centerOnRoot(in size: CGSize) {
         guard let root = mindmap.root else { return }
         panOffset = CGSize(
-            width: size.width / 2 - root.posX * scale,
+            width:  size.width  / 2 - root.posX * scale,
             height: size.height / 2 - root.posY * scale
         )
         panStart = panOffset
     }
 
+    // Centre la vue sur un point donné en coordonnées canvas
+    private func centerOn(_ point: CGPoint, in size: CGSize) {
+        withAnimation(.easeInOut(duration: 0.35)) {
+            panOffset = CGSize(
+                width:  size.width  / 2 - point.x * scale,
+                height: size.height / 2 - point.y * scale
+            )
+            panStart = panOffset
+        }
+    }
+
     // MARK: - Add child
 
-    private func addChild(to parentID: UUID) {
+    private func addChild(to parentID: UUID, geoSize: CGSize) {
         let panel = AddNodePanel()
         guard let text = panel.run(), !text.trimmingCharacters(in: .whitespaces).isEmpty else { return }
-        _ = mindmap.addChild(text: text, color: currentColor, icon: currentIcon, parentID: parentID)
+        let newNode = mindmap.addChild(text: text, color: currentColor, icon: currentIcon, parentID: parentID)
+        // Centrer automatiquement sur le nouveau nœud
+        centerOn(CGPoint(x: newNode.posX, y: newNode.posY), in: geoSize)
     }
 
     // MARK: - Drawing
@@ -266,10 +241,9 @@ struct MindMapCanvasView: View {
                   let parent = mindmap.nodes.first(where: { $0.id == parentID }) else { continue }
 
             let start = displayPosition(for: parent)
-            let end = displayPosition(for: node)
-            let midX = (start.x + end.x) / 2
+            let end   = displayPosition(for: node)
+            let midX  = (start.x + end.x) / 2
 
-            // Shadow
             var shadow = Path()
             shadow.move(to: start)
             shadow.addCurve(to: end,
@@ -277,7 +251,6 @@ struct MindMapCanvasView: View {
                             control2: CGPoint(x: midX, y: end.y))
             ctx.stroke(shadow, with: .color(.black.opacity(0.08)), style: StrokeStyle(lineWidth: 8, lineCap: .round))
 
-            // Main curve
             var path = Path()
             path.move(to: start)
             path.addCurve(to: end,
@@ -288,7 +261,7 @@ struct MindMapCanvasView: View {
     }
 }
 
-// MARK: - Simple text input panel
+// MARK: - Text input panel
 
 private class AddNodePanel {
     func run() -> String? {
@@ -301,7 +274,6 @@ private class AddNodePanel {
         field.placeholderString = "Texte…"
         alert.accessoryView = field
         alert.window.initialFirstResponder = field
-        let response = alert.runModal()
-        return response == .alertFirstButtonReturn ? field.stringValue : nil
+        return alert.runModal() == .alertFirstButtonReturn ? field.stringValue : nil
     }
 }

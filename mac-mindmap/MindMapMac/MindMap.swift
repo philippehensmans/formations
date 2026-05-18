@@ -9,8 +9,8 @@ struct MindMap: Codable {
         let root = MindNode(
             text: "Idée centrale",
             color: .violet,
-            posX: 4000,
-            posY: 3000,
+            posX: 2000,
+            posY: 1500,
             isRoot: true
         )
         nodes = [root]
@@ -22,8 +22,17 @@ struct MindMap: Codable {
         guard let parent = nodes.first(where: { $0.id == parentID }) else {
             return MindNode(text: text)
         }
-        let angle = Double.random(in: 0..<(2 * .pi))
-        let distance = 200.0
+        // Choisir un angle qui évite les nœuds déjà existants
+        let siblings = children(of: parentID)
+        let usedAngles = siblings.map { atan2($0.posY - parent.posY, $0.posX - parent.posX) }
+        var angle = Double.random(in: 0..<(2 * .pi))
+        // Essayer jusqu'à 8 angles pour éviter les superpositions
+        for attempt in 0..<8 {
+            let candidate = Double(attempt) * (.pi / 4)
+            let tooClose = usedAngles.contains { abs($0 - candidate) < .pi / 6 }
+            if !tooClose { angle = candidate; break }
+        }
+        let distance = 180.0
         let node = MindNode(
             text: text,
             color: color,
