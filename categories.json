@@ -71,6 +71,7 @@
         "app-questionnaire-ia": ["intelligence_artificielle", "evaluation"],
         "app-comm-diagnostic": ["communication", "evaluation"],
         "app-gouvernance": ["evaluation", "analyse_strategique"],
-        "app-interviews": ["communication"]
+        "app-interviews": ["communication"],
+        "app-canevas-animation": ["intelligence_artificielle", "gestion_projet"]
     }
 }
