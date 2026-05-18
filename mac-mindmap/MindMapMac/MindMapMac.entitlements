@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- App Sandbox (requis pour Mac App Store) -->
+    <key>com.apple.security.app-sandbox</key>
+    <true/>
+
+    <!-- Accès lecture/écriture fichiers choisis par l'utilisateur -->
+    <key>com.apple.security.files.user-selected.read-write</key>
+    <true/>
+
+    <!-- iCloud Drive : synchronisation des documents -->
+    <key>com.apple.developer.icloud-container-identifiers</key>
+    <array>
+        <string>iCloud.com.formations.mindmap-mac</string>
+    </array>
+    <key>com.apple.developer.icloud-services</key>
+    <array>
+        <string>CloudDocuments</string>
+    </array>
+    <key>com.apple.developer.ubiquity-container-identifiers</key>
+    <array>
+        <string>iCloud.com.formations.mindmap-mac</string>
+    </array>
+
+    <!-- Réseau (optionnel : pour liens URL dans les nœuds) -->
+    <key>com.apple.security.network.client</key>
+    <true/>
+</dict>
+</plist>
