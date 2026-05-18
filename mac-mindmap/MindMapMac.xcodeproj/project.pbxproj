@@ -29,7 +29,7 @@
 		2A2B3C4D5E6F7A8B9C0D1E35 /* NodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeView.swift; sourceTree = "<group>"; };
 		2A2B3C4D5E6F7A8B9C0D1E36 /* NodeEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeEditSheet.swift; sourceTree = "<group>"; };
 		2A2B3C4D5E6F7A8B9C0D1E37 /* ExportManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportManager.swift; sourceTree = "<group>"; };
-		2A2B3C4D5E6F7A8B9C0D1E38 /* Color+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Color+Hex.swift; sourceTree = "<group>"; };
+		2A2B3C4D5E6F7A8B9C0D1E38 /* Color+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Hex.swift"; sourceTree = "<group>"; };
 		2A2B3C4D5E6F7A8B9C0D1E39 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2A2B3C4D5E6F7A8B9C0D1E3A /* MindMapMac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MindMapMac.entitlements; sourceTree = "<group>"; };
 		2A2B3C4D5E6F7A8B9C0D1E3B /* MindMapMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MindMapMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
