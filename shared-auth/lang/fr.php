@@ -1508,6 +1508,11 @@ return [
             'description' => 'Préparez votre interview journalistique : fiche interviewé·e avec messages clés, et fiches de rôle pour journaliste (bienveillant, pressé, sceptique).',
             'color' => 'rose',
         ],
+        'canevas-animation' => [
+            'title' => 'Canevas d\'animation IA',
+            'description' => 'Préparez une animation IA de 90 minutes pour un public 12-20 ans : cadrage, séquençage, outils, points d\'attention et bilan.',
+            'color' => 'indigo',
+        ],
     ],
 
     // Pilotage de Projet
