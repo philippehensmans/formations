@@ -101,7 +101,7 @@ $etapeCourante = $mesure['etape_courante'] ?: 1;
                     </div>
                     <div>
                         <h1 class="font-semibold text-gray-900"><?= t('impact.title') ?></h1>
-                        <p class="text-sm text-gray-500"><?= t('impact.session') ?>: <?= htmlspecialchars($participant['session_code']) ?></p>
+                        <p class="text-sm text-gray-500"><?= t('impact.session') ?>: <?= htmlspecialchars($_SESSION['current_session_nom'] ?? $participant['session_code']) ?></p>
                     </div>
                 </div>
                 <div class="flex items-center gap-4">
