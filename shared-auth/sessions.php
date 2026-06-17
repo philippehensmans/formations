@@ -42,7 +42,7 @@ function syncLocalSessions($db) {
     // n'existent pas encore dans la shared DB, AVANT la suppression plus bas.
     // Sans cela, ces sessions seraient effacees de la base locale et n'apparaitraient
     // jamais dans la liste formateur (qui lit la shared DB).
-    promoteLocalSessions($db, $sdb, $hasFormateurId);
+    promoteLocalSessions($db, $sdb);
 
     $sessions = $sdb->query("SELECT id, code, nom, formateur_id, is_active, created_at FROM sessions")->fetchAll();
     foreach ($sessions as $s) {
@@ -88,7 +88,7 @@ function syncLocalSessions($db) {
  * migrate-sessions.php : inserer la session dans la shared DB (par code) puis
  * re-mapper l'id local et toutes les references session_id vers le nouvel id partage.
  */
-function promoteLocalSessions($db, $sdb, $hasFormateurId) {
+function promoteLocalSessions($db, $sdb) {
     $localSessions = $db->query("SELECT * FROM sessions")->fetchAll();
     if (empty($localSessions)) return;
 
@@ -135,17 +135,12 @@ function promoteLocalSessions($db, $sdb, $hasFormateurId) {
             } catch (Exception $e) { /* ignore */ }
         }
 
-        // Re-mapper l'id de la session locale elle-meme
+        // Re-mapper l'id de la session locale elle-meme via UPDATE pour PRESERVER les
+        // colonnes specifiques a l'app (sujet, description, formateur_password, etc.).
+        // Un DELETE + INSERT les effacerait.
         try {
-            $db->prepare("DELETE FROM sessions WHERE id = ?")->execute([$localId]);
-            if ($hasFormateurId) {
-                $db->prepare("INSERT OR REPLACE INTO sessions (id, code, nom, formateur_id, is_active, created_at) VALUES (?, ?, ?, ?, ?, ?)")
-                   ->execute([$sharedId, $code, $s['nom'] ?? '', $s['formateur_id'] ?? null, $s['is_active'] ?? 1, $s['created_at'] ?? date('Y-m-d H:i:s')]);
-            } else {
-                $db->prepare("INSERT OR REPLACE INTO sessions (id, code, nom, is_active, created_at) VALUES (?, ?, ?, ?, ?)")
-                   ->execute([$sharedId, $code, $s['nom'] ?? '', $s['is_active'] ?? 1, $s['created_at'] ?? date('Y-m-d H:i:s')]);
-            }
-        } catch (Exception $e) { /* ignore */ }
+            $db->prepare("UPDATE sessions SET id = ? WHERE id = ?")->execute([$sharedId, $localId]);
+        } catch (Exception $e) { /* collision d'id improbable : on laisse en l'etat */ }
     }
 }
 
