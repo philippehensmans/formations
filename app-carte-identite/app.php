@@ -77,7 +77,7 @@ $session = $stmt->fetch();
                 <span class="text-2xl">🗂️</span>
                 <div>
                     <div class="font-bold text-gray-800"><?= h($user['prenom'] ?? $user['username']) ?> <?= h($user['nom'] ?? '') ?></div>
-                    <div class="text-sm text-gray-500">Session: <?= h($session['code'] ?? '') ?></div>
+                    <div class="text-sm text-gray-500">Session: <?= h($session['nom'] ?? '') ?></div>
                 </div>
             </div>
             <div class="flex items-center gap-2">

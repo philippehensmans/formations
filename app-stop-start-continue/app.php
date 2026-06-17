@@ -71,7 +71,7 @@ $isSubmitted = ($retro['is_shared'] ?? 0) == 1;
                         <?php if (!empty($user['organisation'])): ?>
                             - <?= h($user['organisation']) ?>
                         <?php endif; ?>
-                        | <?= t('ssc.session') ?>: <?= h($_SESSION['current_session_code'] ?? '') ?>
+                        | <?= t('ssc.session') ?>: <?= h($_SESSION['current_session_nom'] ?? '') ?>
                     </p>
                 </div>
                 <div class="flex items-center gap-3">

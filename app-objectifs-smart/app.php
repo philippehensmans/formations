@@ -75,7 +75,7 @@ $exemples = getExemplesParDomaine();
         <div class="max-w-5xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-4">
             <div>
                 <h1 class="text-xl font-bold"><?= t('smart.title') ?></h1>
-                <p class="text-emerald-200 text-sm"><?= h($user['prenom']) ?> <?= h($user['nom']) ?> | <?= h($sessionCode) ?></p>
+                <p class="text-emerald-200 text-sm"><?= h($user['prenom']) ?> <?= h($user['nom']) ?> | <?= h($sessionNom) ?></p>
             </div>
             <div class="flex items-center gap-3">
                 <?= renderLanguageSelector('text-sm bg-emerald-600 text-white px-2 py-1 rounded border border-emerald-500') ?>
