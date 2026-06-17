@@ -38,6 +38,12 @@ function syncLocalSessions($db) {
     $localCols = array_column($db->query("PRAGMA table_info(sessions)")->fetchAll(), 'name');
     $hasFormateurId = in_array('formateur_id', $localCols);
 
+    // Promouvoir les sessions locales (heritage d'avant la centralisation) qui
+    // n'existent pas encore dans la shared DB, AVANT la suppression plus bas.
+    // Sans cela, ces sessions seraient effacees de la base locale et n'apparaitraient
+    // jamais dans la liste formateur (qui lit la shared DB).
+    promoteLocalSessions($db, $sdb);
+
     $sessions = $sdb->query("SELECT id, code, nom, formateur_id, is_active, created_at FROM sessions")->fetchAll();
     foreach ($sessions as $s) {
         try {
@@ -67,6 +73,74 @@ function syncLocalSessions($db) {
         try {
             $db->exec("DELETE FROM sessions");
         } catch (Exception $e) { /* ignore */ }
+    }
+}
+
+/**
+ * Promouvoir vers la shared DB les sessions presentes uniquement dans la base locale.
+ *
+ * Cas d'usage : une application utilisee AVANT la centralisation des sessions possede
+ * des sessions dans sa base locale qui n'ont jamais ete migrees vers la shared DB.
+ * Comme syncLocalSessions() supprime les sessions locales absentes de la shared DB,
+ * ces sessions disparaitraient (et leurs donnees deviendraient orphelines).
+ *
+ * Cette fonction reproduit, de maniere automatique et idempotente, ce que fait
+ * migrate-sessions.php : inserer la session dans la shared DB (par code) puis
+ * re-mapper l'id local et toutes les references session_id vers le nouvel id partage.
+ */
+function promoteLocalSessions($db, $sdb) {
+    $localSessions = $db->query("SELECT * FROM sessions")->fetchAll();
+    if (empty($localSessions)) return;
+
+    // Codes deja presents dans la shared DB
+    $sharedCodes = array_map('strtoupper', array_column($sdb->query("SELECT code FROM sessions")->fetchAll(), 'code'));
+
+    // Tables locales referencant une session (pour re-mapper les ids)
+    $refTables = [];
+    $tables = $db->query("SELECT name FROM sqlite_master WHERE type='table' AND name NOT IN ('sessions', 'sqlite_sequence')")->fetchAll(PDO::FETCH_COLUMN);
+    foreach ($tables as $t) {
+        $cols = array_column($db->query("PRAGMA table_info(" . $t . ")")->fetchAll(), 'name');
+        if (in_array('session_id', $cols)) $refTables[] = $t;
+    }
+
+    foreach ($localSessions as $s) {
+        $code = strtoupper($s['code'] ?? '');
+        if ($code === '' || in_array($code, $sharedCodes, true)) continue; // deja centralisee
+
+        // Inserer dans la shared DB (INSERT OR IGNORE puis SELECT : robuste aux courses)
+        try {
+            $stmt = $sdb->prepare("INSERT OR IGNORE INTO sessions (code, nom, formateur_id, is_active, created_at) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([
+                $code,
+                $s['nom'] ?? 'Session ' . $code,
+                $s['formateur_id'] ?? null,
+                $s['is_active'] ?? 1,
+                $s['created_at'] ?? date('Y-m-d H:i:s')
+            ]);
+        } catch (Exception $e) { continue; }
+
+        $idStmt = $sdb->prepare("SELECT id FROM sessions WHERE code = ?");
+        $idStmt->execute([$code]);
+        $sharedId = (int)$idStmt->fetchColumn();
+        if (!$sharedId) continue;
+        $sharedCodes[] = $code;
+
+        $localId = (int)$s['id'];
+        if ($localId === $sharedId) continue; // l'id local correspond deja
+
+        // Re-mapper les references locales vers le nouvel id partage
+        foreach ($refTables as $t) {
+            try {
+                $db->prepare("UPDATE " . $t . " SET session_id = ? WHERE session_id = ?")->execute([$sharedId, $localId]);
+            } catch (Exception $e) { /* ignore */ }
+        }
+
+        // Re-mapper l'id de la session locale elle-meme via UPDATE pour PRESERVER les
+        // colonnes specifiques a l'app (sujet, description, formateur_password, etc.).
+        // Un DELETE + INSERT les effacerait.
+        try {
+            $db->prepare("UPDATE sessions SET id = ? WHERE id = ?")->execute([$sharedId, $localId]);
+        } catch (Exception $e) { /* collision d'id improbable : on laisse en l'etat */ }
     }
 }
 
