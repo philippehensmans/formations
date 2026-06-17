@@ -289,10 +289,24 @@ function toggleSession($db, $sessionId) {
 }
 
 /**
- * Supprimer une session et ses participants locaux
+ * Supprimer une session, ses participants et ses donnees applicatives locales
  * Supprime de la shared DB puis du miroir local
  */
 function deleteSession($db, $sessionId) {
+    // Supprimer les donnees applicatives locales rattachees a cette session
+    // (toutes les tables ayant une colonne session_id), pour ne pas laisser
+    // d'enregistrements orphelins une fois la session supprimee.
+    try {
+        $tables = $db->query("SELECT name FROM sqlite_master WHERE type='table' AND name NOT IN ('sessions', 'participants', 'sqlite_sequence')")->fetchAll(PDO::FETCH_COLUMN);
+        foreach ($tables as $t) {
+            $cols = array_column($db->query("PRAGMA table_info(" . $t . ")")->fetchAll(), 'name');
+            if (in_array('session_id', $cols)) {
+                $stmt = $db->prepare("DELETE FROM " . $t . " WHERE session_id = ?");
+                $stmt->execute([$sessionId]);
+            }
+        }
+    } catch (Exception $e) { /* best-effort */ }
+
     // Supprimer les participants locaux
     try {
         $stmt = $db->prepare("DELETE FROM participants WHERE session_id = ?");
