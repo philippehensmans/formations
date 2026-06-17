@@ -84,16 +84,19 @@ function syncLocalSessions($db) {
  * Comme syncLocalSessions() supprime les sessions locales absentes de la shared DB,
  * ces sessions disparaitraient (et leurs donnees deviendraient orphelines).
  *
- * Cette fonction reproduit, de maniere automatique et idempotente, ce que fait
- * migrate-sessions.php : inserer la session dans la shared DB (par code) puis
- * re-mapper l'id local et toutes les references session_id vers le nouvel id partage.
+ * Cette fonction insere les sessions manquantes dans la shared DB (par code) puis
+ * re-mappe l'id local et toutes les references session_id vers le nouvel id partage.
+ *
+ * IMPORTANT - securite des collisions d'ids : un id partage attribue peut entrer en
+ * collision avec un id de session locale encore present (frequent quand la shared DB
+ * est recente et que les ids locaux herites sont petits). Un remappage naif en une
+ * passe (UPDATE refs puis UPDATE sessions) provoque alors un effet de cascade qui
+ * ecrase les session_id et fait converger tous les cahiers vers une seule session.
+ * Le remappage est donc realise en DEUX phases via un espace d'ids temporaire disjoint.
  */
 function promoteLocalSessions($db, $sdb) {
     $localSessions = $db->query("SELECT * FROM sessions")->fetchAll();
     if (empty($localSessions)) return;
-
-    // Codes deja presents dans la shared DB
-    $sharedCodes = array_map('strtoupper', array_column($sdb->query("SELECT code FROM sessions")->fetchAll(), 'code'));
 
     // Tables locales referencant une session (pour re-mapper les ids)
     $refTables = [];
@@ -103,44 +106,67 @@ function promoteLocalSessions($db, $sdb) {
         if (in_array('session_id', $cols)) $refTables[] = $t;
     }
 
+    // Map code -> id partage ; promouvoir d'abord les sessions locales absentes
+    $sharedByCode = [];
+    foreach ($sdb->query("SELECT id, code FROM sessions")->fetchAll() as $r) {
+        $sharedByCode[strtoupper($r['code'])] = (int)$r['id'];
+    }
     foreach ($localSessions as $s) {
         $code = strtoupper($s['code'] ?? '');
-        if ($code === '' || in_array($code, $sharedCodes, true)) continue; // deja centralisee
-
-        // Inserer dans la shared DB (INSERT OR IGNORE puis SELECT : robuste aux courses)
+        if ($code === '' || isset($sharedByCode[$code])) continue;
         try {
-            $stmt = $sdb->prepare("INSERT OR IGNORE INTO sessions (code, nom, formateur_id, is_active, created_at) VALUES (?, ?, ?, ?, ?)");
-            $stmt->execute([
-                $code,
-                $s['nom'] ?? 'Session ' . $code,
-                $s['formateur_id'] ?? null,
-                $s['is_active'] ?? 1,
-                $s['created_at'] ?? date('Y-m-d H:i:s')
-            ]);
+            $sdb->prepare("INSERT OR IGNORE INTO sessions (code, nom, formateur_id, is_active, created_at) VALUES (?, ?, ?, ?, ?)")
+                ->execute([$code, $s['nom'] ?? 'Session ' . $code, $s['formateur_id'] ?? null, $s['is_active'] ?? 1, $s['created_at'] ?? date('Y-m-d H:i:s')]);
         } catch (Exception $e) { continue; }
-
         $idStmt = $sdb->prepare("SELECT id FROM sessions WHERE code = ?");
         $idStmt->execute([$code]);
-        $sharedId = (int)$idStmt->fetchColumn();
-        if (!$sharedId) continue;
-        $sharedCodes[] = $code;
+        $sid = (int)$idStmt->fetchColumn();
+        if ($sid) $sharedByCode[$code] = $sid;
+    }
 
+    // Determiner les remappings necessaires (id local != id partage pour le meme code)
+    $remaps = [];
+    foreach ($localSessions as $s) {
+        $code = strtoupper($s['code'] ?? '');
+        if ($code === '' || !isset($sharedByCode[$code])) continue;
         $localId = (int)$s['id'];
-        if ($localId === $sharedId) continue; // l'id local correspond deja
-
-        // Re-mapper les references locales vers le nouvel id partage
-        foreach ($refTables as $t) {
-            try {
-                $db->prepare("UPDATE " . $t . " SET session_id = ? WHERE session_id = ?")->execute([$sharedId, $localId]);
-            } catch (Exception $e) { /* ignore */ }
+        $target = $sharedByCode[$code];
+        if ($localId !== $target) {
+            $remaps[] = ['local' => $localId, 'target' => $target];
         }
+    }
+    if (empty($remaps)) return;
 
-        // Re-mapper l'id de la session locale elle-meme via UPDATE pour PRESERVER les
-        // colonnes specifiques a l'app (sujet, description, formateur_password, etc.).
-        // Un DELETE + INSERT les effacerait.
+    // Remappage collision-safe en deux phases via un espace d'ids temporaire eleve.
+    // Les cibles etant uniques par code, les ids temporaires (target + OFFSET) sont
+    // tous distincts et hors de portee des ids reels.
+    $OFFSET = 1000000;
+
+    // Phase A : local -> temporaire (references + ligne sessions, qui preserve les colonnes app)
+    foreach ($remaps as $m) {
+        $temp = $m['target'] + $OFFSET;
+        foreach ($refTables as $t) {
+            try { $db->prepare("UPDATE " . $t . " SET session_id = ? WHERE session_id = ?")->execute([$temp, $m['local']]); } catch (Exception $e) {}
+        }
+        try { $db->prepare("UPDATE sessions SET id = ? WHERE id = ?")->execute([$temp, $m['local']]); } catch (Exception $e) {}
+    }
+
+    // Phase B : temporaire -> id partage definitif
+    foreach ($remaps as $m) {
+        $temp = $m['target'] + $OFFSET;
+        foreach ($refTables as $t) {
+            try { $db->prepare("UPDATE " . $t . " SET session_id = ? WHERE session_id = ?")->execute([$m['target'], $temp]); } catch (Exception $e) {}
+        }
         try {
-            $db->prepare("UPDATE sessions SET id = ? WHERE id = ?")->execute([$sharedId, $localId]);
-        } catch (Exception $e) { /* collision d'id improbable : on laisse en l'etat */ }
+            $chk = $db->prepare("SELECT 1 FROM sessions WHERE id = ?");
+            $chk->execute([$m['target']]);
+            if ($chk->fetchColumn()) {
+                // Une ligne existe deja a l'id cible : eviter le doublon
+                $db->prepare("DELETE FROM sessions WHERE id = ?")->execute([$temp]);
+            } else {
+                $db->prepare("UPDATE sessions SET id = ? WHERE id = ?")->execute([$m['target'], $temp]);
+            }
+        } catch (Exception $e) {}
     }
 }
 
