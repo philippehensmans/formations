@@ -119,6 +119,21 @@ $participantsCount = $stmt->fetch()['count'];
     </header>
 
     <main class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Sujet de reflexion -->
+        <div class="bg-white rounded-xl shadow p-5 mb-6">
+            <div class="flex justify-between items-start gap-4">
+                <div class="flex-1">
+                    <h2 class="text-sm font-bold text-slate-700 uppercase mb-1">Sujet de reflexion</h2>
+                    <?php if (!empty($session['sujet'])): ?>
+                    <p class="text-gray-700" id="sujetDisplay"><?= nl2br(h($session['sujet'])) ?></p>
+                    <?php else: ?>
+                    <p class="text-gray-400 italic" id="sujetDisplay">Aucun sujet defini</p>
+                    <?php endif; ?>
+                </div>
+                <button onclick="openSujetModal()" class="no-print bg-slate-600 hover:bg-slate-500 text-white px-3 py-1 rounded text-sm">Modifier</button>
+            </div>
+        </div>
+
         <?php if ($showAll): ?>
         <div class="bg-orange-100 border border-orange-300 rounded-xl p-4 mb-6">
             <p class="text-orange-800 text-sm">
@@ -218,5 +233,51 @@ $participantsCount = $stmt->fetch()['count'];
             <?php endif; ?>
         </div>
     </main>
+
+    <!-- Modal pour editer le sujet -->
+    <div id="sujetModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4 no-print">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Modifier le sujet de reflexion</h3>
+            <textarea id="sujetInput" rows="4"
+                      class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-slate-500"
+                      placeholder="Sujet ou question sur laquelle les participants doivent reflechir..."><?= h($session['sujet'] ?? '') ?></textarea>
+            <div class="flex justify-end gap-3 mt-4">
+                <button onclick="closeSujetModal()" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Annuler</button>
+                <button onclick="saveSujet()" class="px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white rounded-lg">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const sessionId = <?= (int)$sessionId ?>;
+        function openSujetModal() {
+            document.getElementById('sujetModal').classList.remove('hidden');
+            document.getElementById('sujetInput').focus();
+        }
+        function closeSujetModal() {
+            document.getElementById('sujetModal').classList.add('hidden');
+        }
+        async function saveSujet() {
+            const sujet = document.getElementById('sujetInput').value.trim();
+            try {
+                const r = await fetch('api/update_session.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ session_id: sessionId, sujet: sujet })
+                });
+                const res = await r.json();
+                if (res.success) {
+                    document.getElementById('sujetDisplay').innerHTML = sujet
+                        ? sujet.replace(/\n/g, '<br>')
+                        : '<span class="text-gray-400 italic">Aucun sujet defini</span>';
+                    closeSujetModal();
+                } else {
+                    alert('Erreur: ' + (res.error || 'inconnue'));
+                }
+            } catch (e) {
+                alert('Erreur de connexion');
+            }
+        }
+    </script>
 </body>
 </html>
