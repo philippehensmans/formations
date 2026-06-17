@@ -35,8 +35,9 @@ $session = $stmt->fetch();
         <div class="max-w-5xl mx-auto flex justify-between items-center flex-wrap gap-3">
             <span class="font-semibold">
                 <strong><?= sanitize($user['prenom'] ?? $user['username']) ?></strong>
-                <?php if (isset($_SESSION['current_session_code'])): ?>
-                    <span class="ml-2 px-2 py-1 bg-white/20 rounded text-xs">Session: <?= h($_SESSION['current_session_code']) ?></span>
+                <?php $sessionNom = $session['nom'] ?? ($_SESSION['current_session_nom'] ?? ''); ?>
+                <?php if ($sessionNom !== ''): ?>
+                    <span class="ml-2 px-2 py-1 bg-white/20 rounded text-xs">Session : <?= h($sessionNom) ?></span>
                 <?php endif; ?>
                 <?php if (isFormateur()): ?>
                     <a href="formateur.php" class="ml-2 bg-white/20 hover:bg-white/30 px-2 py-1 rounded text-xs">Formateur</a>
