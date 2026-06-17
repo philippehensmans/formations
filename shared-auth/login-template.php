@@ -34,24 +34,30 @@ if (isLoggedIn()) {
     if ($loggedUser) {
         $alreadyLoggedIn = true;
 
-        // Verifier si la session actuelle existe (IDs globaux depuis la shared DB)
-        if (isset($_SESSION['current_session_id'])) {
-            $currentSession = getSessionById($db, $_SESSION['current_session_id']);
+        // Redirection SSO : uniquement en GET. Sur un POST, l'utilisateur soumet
+        // (peut-etre) un nouveau choix de session ; il ne faut pas court-circuiter
+        // le traitement du formulaire plus bas, sinon le choix est ignore et
+        // l'utilisateur reste bloque sur sa session precedente.
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            // Verifier si la session actuelle existe (IDs globaux depuis la shared DB)
+            if (isset($_SESSION['current_session_id'])) {
+                $currentSession = getSessionById($db, $_SESSION['current_session_id']);
 
-            if ($currentSession) {
-                // S'assurer que le participant existe dans la base locale de cette app
-                ensureParticipant($db, $currentSession['id'], $loggedUser);
+                if ($currentSession) {
+                    // S'assurer que le participant existe dans la base locale de cette app
+                    ensureParticipant($db, $currentSession['id'], $loggedUser);
 
-                if (isset($_SESSION['participant_id'])) {
-                    header('Location: ' . $redirectAfterLogin);
-                    exit;
+                    if (isset($_SESSION['participant_id'])) {
+                        header('Location: ' . $redirectAfterLogin);
+                        exit;
+                    }
                 }
             }
-        }
 
-        // Session non trouvee ou pas de participant - nettoyer
-        unset($_SESSION['current_session_id'], $_SESSION['current_session_code'],
-              $_SESSION['current_session_nom'], $_SESSION['participant_id']);
+            // Session non trouvee ou pas de participant - nettoyer
+            unset($_SESSION['current_session_id'], $_SESSION['current_session_code'],
+                  $_SESSION['current_session_nom'], $_SESSION['participant_id']);
+        }
     } else {
         // Utilisateur en session mais introuvable en base - deconnecter
         logout();
