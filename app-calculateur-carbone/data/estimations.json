@@ -50,6 +50,21 @@
             "nom": "Création Visuelle",
             "icon": "🎨",
             "color": "pink"
+        },
+        "etudes": {
+            "nom": "Études & Devoirs",
+            "icon": "🎒",
+            "color": "orange"
+        },
+        "creativite": {
+            "nom": "Créativité & Loisirs",
+            "icon": "🎮",
+            "color": "violet"
+        },
+        "vie_perso": {
+            "nom": "Vie Quotidienne",
+            "icon": "🏠",
+            "color": "emerald"
         }
     },
     "use_cases": {
@@ -435,6 +450,168 @@
             "categorie": "beneficiaires",
             "nom": "Question simple au chatbot",
             "description": "Réponse courte à une question basique",
+            "modele_type": "GPT-3.5/Claude Haiku",
+            "tokens_estimes": 200,
+            "co2_grammes": 0.5,
+            "equivalent": "2 emails envoyés"
+        },
+        "aide_devoir": {
+            "categorie": "etudes",
+            "nom": "Aide aux devoirs",
+            "description": "Explication d'un exercice ou correction d'un devoir",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 1500,
+            "co2_grammes": 6.4,
+            "equivalent": "30 emails envoyés"
+        },
+        "dissertation": {
+            "categorie": "etudes",
+            "nom": "Rédiger une dissertation",
+            "description": "Aide à la structure et rédaction d'une dissertation ou d'un exposé",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 3000,
+            "co2_grammes": 12.8,
+            "equivalent": "6 km en voiture"
+        },
+        "explication_concept": {
+            "categorie": "etudes",
+            "nom": "Expliquer un concept",
+            "description": "Explication claire d'une notion complexe (maths, sciences, histoire...)",
+            "modele_type": "GPT-3.5/Claude Haiku",
+            "tokens_estimes": 600,
+            "co2_grammes": 1.5,
+            "equivalent": "7 emails envoyés"
+        },
+        "fiche_revision": {
+            "categorie": "etudes",
+            "nom": "Fiche de révision",
+            "description": "Création de fiches synthétiques pour réviser un cours",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 2000,
+            "co2_grammes": 8.5,
+            "equivalent": "40 emails envoyés"
+        },
+        "correction_texte_eleve": {
+            "categorie": "etudes",
+            "nom": "Corriger un texte",
+            "description": "Relecture et correction d'une rédaction ou d'un email",
+            "modele_type": "GPT-3.5/Claude Haiku",
+            "tokens_estimes": 500,
+            "co2_grammes": 2.1,
+            "equivalent": "10 emails envoyés"
+        },
+        "recherche_documentaire": {
+            "categorie": "etudes",
+            "nom": "Recherche documentaire",
+            "description": "Synthèse d'informations sur un sujet pour un exposé ou un TPE",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 2500,
+            "co2_grammes": 10.6,
+            "equivalent": "5 km en voiture"
+        },
+        "ecriture_histoire": {
+            "categorie": "creativite",
+            "nom": "Écrire une histoire",
+            "description": "Rédaction d'une histoire courte, d'un fan-fiction ou d'un début de roman",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 2000,
+            "co2_grammes": 8.5,
+            "equivalent": "40 emails envoyés"
+        },
+        "paroles_chanson": {
+            "categorie": "creativite",
+            "nom": "Paroles de chanson",
+            "description": "Écriture de paroles originales sur un thème ou un style musical",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 1000,
+            "co2_grammes": 4.3,
+            "equivalent": "20 emails envoyés"
+        },
+        "scenario_jeu": {
+            "categorie": "creativite",
+            "nom": "Scénario de jeu de rôle",
+            "description": "Création d'un scénario, de personnages ou d'un univers pour JDR ou jeu vidéo",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 3000,
+            "co2_grammes": 12.8,
+            "equivalent": "6 km en voiture"
+        },
+        "image_creative": {
+            "categorie": "creativite",
+            "nom": "Générer une image",
+            "description": "Création d'une illustration, d'un avatar ou d'une image artistique",
+            "modele_type": "DALL-E 3",
+            "tokens_estimes": 0,
+            "co2_grammes": 35.0,
+            "equivalent": "17 km en voiture"
+        },
+        "poeme": {
+            "categorie": "creativite",
+            "nom": "Écrire un poème",
+            "description": "Composition d'un poème ou d'un texte créatif pour une occasion",
+            "modele_type": "GPT-3.5/Claude Haiku",
+            "tokens_estimes": 400,
+            "co2_grammes": 1.3,
+            "equivalent": "6 emails envoyés"
+        },
+        "critique_film": {
+            "categorie": "creativite",
+            "nom": "Critique de film / série",
+            "description": "Rédaction d'un avis argumenté sur un film, une série ou un jeu",
+            "modele_type": "GPT-3.5/Claude Haiku",
+            "tokens_estimes": 500,
+            "co2_grammes": 2.1,
+            "equivalent": "10 emails envoyés"
+        },
+        "idee_cadeau": {
+            "categorie": "vie_perso",
+            "nom": "Idées cadeaux",
+            "description": "Trouver des idées de cadeaux personnalisés selon un profil et un budget",
+            "modele_type": "GPT-3.5/Claude Haiku",
+            "tokens_estimes": 400,
+            "co2_grammes": 0.8,
+            "equivalent": "4 emails envoyés"
+        },
+        "recette_cuisine": {
+            "categorie": "vie_perso",
+            "nom": "Recette de cuisine",
+            "description": "Proposer une recette avec les ingrédients disponibles ou selon un régime",
+            "modele_type": "GPT-3.5/Claude Haiku",
+            "tokens_estimes": 500,
+            "co2_grammes": 1.0,
+            "equivalent": "5 emails envoyés"
+        },
+        "plan_voyage": {
+            "categorie": "vie_perso",
+            "nom": "Planifier un voyage",
+            "description": "Itinéraire, activités et conseils pratiques pour un voyage ou un week-end",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 2000,
+            "co2_grammes": 8.5,
+            "equivalent": "40 emails envoyés"
+        },
+        "conseil_sport_sante": {
+            "categorie": "vie_perso",
+            "nom": "Conseil sport & bien-être",
+            "description": "Programme d'entraînement, conseils nutrition ou questions bien-être",
+            "modele_type": "GPT-4/Claude",
+            "tokens_estimes": 1000,
+            "co2_grammes": 4.3,
+            "equivalent": "20 emails envoyés"
+        },
+        "lettre_personnelle": {
+            "categorie": "vie_perso",
+            "nom": "Rédiger une lettre ou un message",
+            "description": "Lettre d'excuse, de motivation, félicitations ou message délicat",
+            "modele_type": "GPT-3.5/Claude Haiku",
+            "tokens_estimes": 600,
+            "co2_grammes": 1.5,
+            "equivalent": "7 emails envoyés"
+        },
+        "traduction_rapide": {
+            "categorie": "vie_perso",
+            "nom": "Traduction rapide",
+            "description": "Traduire un SMS, des paroles de chanson, un email ou un texte court",
             "modele_type": "GPT-3.5/Claude Haiku",
             "tokens_estimes": 200,
             "co2_grammes": 0.5,
