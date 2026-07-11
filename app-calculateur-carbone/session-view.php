@@ -41,6 +41,10 @@ $stmt = $db->prepare("SELECT * FROM calculs WHERE session_id = ? ORDER BY user_i
 $stmt->execute([$sessionId]);
 $allCalculs = $stmt->fetchAll();
 
+// Charger les noms des cas d'usage
+$estimations = getEstimations();
+$useCaseNames = array_map(fn($uc) => $uc['nom'], $estimations['use_cases']);
+
 // Grouper par user_id
 $byUser = [];
 foreach ($allCalculs as $c) {
@@ -189,7 +193,7 @@ $maxCo2 = $participantsCount > 0 ? max(array_column($byUser, 'total_co2')) : 0;
                         <?php foreach ($data['calculs'] as $calcul): ?>
                         <div class="bg-emerald-50 rounded-lg p-3 border border-emerald-100">
                             <div class="flex justify-between items-start mb-1">
-                                <div class="text-xs font-semibold text-emerald-600 uppercase">Use case #<?= h($calcul['use_case_id']) ?></div>
+                                <div class="text-xs font-semibold text-emerald-600 uppercase"><?= h($useCaseNames[$calcul['use_case_id']] ?? $calcul['use_case_id']) ?></div>
                                 <span class="text-sm font-bold text-emerald-700"><?= number_format((float)($calcul['co2_total'] ?? 0), 2) ?> kg</span>
                             </div>
                             <div class="text-xs text-gray-500 space-y-0.5">
