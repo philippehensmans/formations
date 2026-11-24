@@ -173,7 +173,7 @@ $maxCo2 = $participantsCount > 0 ? max(array_column($byUser, 'total_co2')) : 0;
                         <td class="p-2 text-right">${l.tokens}</td>
                         <td class="p-2 text-right">${(l.ancien_g / 1000).toFixed(4)}</td>
                         <td class="p-2 text-right">${l.min_kg.toFixed(6)} – ${l.max_kg.toFixed(6)}</td>
-                        <td class="p-2 text-right font-semibold">${l.moyenne_kg.toFixed(6)}</td>
+                        <td class="p-2 text-right font-semibold">${((l.min_kg + l.max_kg) / 2).toFixed(6)}</td>
                     </tr>`).join('');
 
                 document.getElementById('majApercu').innerHTML = `
