@@ -65,9 +65,7 @@ function exportParticipantData($output, $db, $user, $sessionId, $useCases, $cate
 
     // Total
     $total = array_sum(array_column($calculs, 'co2_total'));
-    $totalMin = array_sum(array_column($calculs, 'co2_min'));
-    $totalMax = array_sum(array_column($calculs, 'co2_max'));
-    fputcsv($output, ['TOTAL ANNUEL', fmtFourchetteKg($totalMin, $totalMax) . ' kg CO2'], ';');
+    fputcsv($output, ['TOTAL ANNUEL', fmtKg($total) . ' kg CO2'], ';');
     fputcsv($output, ['Equivalent km voiture', round($total / 1000 / 0.21, 1)], ';');
     fputcsv($output, ['Equivalent emails', round($total / 4)], ';');
     fputcsv($output, [], ';');
@@ -88,7 +86,7 @@ function exportParticipantData($output, $db, $user, $sessionId, $useCases, $cate
             $uc['nom'] ?? $calc['use_case_id'],
             getFrequenceLabel($calc['frequence']),
             $calc['quantite'],
-            fmtFourchetteKg((float)$calc['co2_min'], (float)$calc['co2_max'])
+            fmtKg((float)$calc['co2_total'])
         ], ';');
     }
 
@@ -115,17 +113,16 @@ function exportSessionData($output, $db, $sharedDb, $sessionId, $useCases, $cate
     fputcsv($output, [], ';');
 
     // Stats globales
-    $stmt = $db->prepare("SELECT SUM(co2_total) as total, SUM(co2_min) as tmin, SUM(co2_max) as tmax, COUNT(DISTINCT user_id) as nb_participants FROM calculs WHERE session_id = ?");
+    $stmt = $db->prepare("SELECT SUM(co2_total) as total, COUNT(DISTINCT user_id) as nb_participants FROM calculs WHERE session_id = ?");
     $stmt->execute([$sessionId]);
     $stats = $stmt->fetch(PDO::FETCH_ASSOC);
-    $tmin = (float)($stats['tmin'] ?? 0);
-    $tmax = (float)($stats['tmax'] ?? 0);
+    $total = (float)($stats['total'] ?? 0);
     $nbPart = max(1, (int)($stats['nb_participants'] ?? 0));
 
     fputcsv($output, ['RESUME'], ';');
     fputcsv($output, ['Nombre de participants', $stats['nb_participants'] ?? 0], ';');
-    fputcsv($output, ['Total CO2 session (kg)', fmtFourchetteKg($tmin, $tmax)], ';');
-    fputcsv($output, ['Moyenne par participant (kg)', fmtFourchetteKg($tmin / $nbPart, $tmax / $nbPart)], ';');
+    fputcsv($output, ['Total CO2 session (kg)', fmtKg($total)], ';');
+    fputcsv($output, ['Moyenne par participant (kg)', fmtKg($total / $nbPart)], ';');
     fputcsv($output, [], ';');
 
     // Par participant
@@ -133,7 +130,7 @@ function exportSessionData($output, $db, $sharedDb, $sessionId, $useCases, $cate
     fputcsv($output, ['Participant', 'Nb usages', 'CO2 total (kg)', 'Km voiture eq.'], ';');
 
     $stmt = $db->prepare("
-        SELECT user_id, COUNT(*) as nb, SUM(co2_total) as total, SUM(co2_min) as tmin, SUM(co2_max) as tmax
+        SELECT user_id, COUNT(*) as nb, SUM(co2_total) as total
         FROM calculs WHERE session_id = ?
         GROUP BY user_id ORDER BY total DESC
     ");
@@ -149,7 +146,7 @@ function exportSessionData($output, $db, $sharedDb, $sessionId, $useCases, $cate
         fputcsv($output, [
             $name,
             $u['nb'],
-            fmtFourchetteKg($u['tmin'], $u['tmax']),
+            fmtKg($u['total']),
             round($u['total'] / 1000 / 0.21, 1)
         ], ';');
     }
@@ -161,7 +158,7 @@ function exportSessionData($output, $db, $sharedDb, $sessionId, $useCases, $cate
     fputcsv($output, ['Categorie', 'Cas d\'usage', 'Nb utilisations', 'CO2 total (kg)'], ';');
 
     $stmt = $db->prepare("
-        SELECT use_case_id, COUNT(*) as nb, SUM(co2_total) as total, SUM(co2_min) as tmin, SUM(co2_max) as tmax
+        SELECT use_case_id, COUNT(*) as nb, SUM(co2_total) as total
         FROM calculs WHERE session_id = ?
         GROUP BY use_case_id ORDER BY total DESC
     ");
@@ -179,7 +176,7 @@ function exportSessionData($output, $db, $sharedDb, $sessionId, $useCases, $cate
             $catName,
             $ucData['nom'] ?? $uc['use_case_id'],
             $uc['nb'],
-            fmtFourchetteKg($uc['tmin'], $uc['tmax'])
+            fmtKg($uc['total'])
         ], ';');
     }
 
@@ -215,7 +212,7 @@ function exportSessionData($output, $db, $sharedDb, $sessionId, $useCases, $cate
             $ucData['nom'] ?? $calc['use_case_id'],
             getFrequenceLabel($calc['frequence']),
             $calc['quantite'],
-            fmtFourchetteKg((float)$calc['co2_min'], (float)$calc['co2_max'])
+            fmtKg((float)$calc['co2_total'])
         ], ';');
     }
 }
