@@ -136,6 +136,88 @@ $maxCo2 = $participantsCount > 0 ? max(array_column($byUser, 'total_co2')) : 0;
             </div>
         </div>
 
+        <!-- Catalogue EcoLogits : aperçu puis application (aucune écriture sans confirmation) -->
+        <div class="bg-white rounded-xl shadow p-4 mb-6 no-print border border-emerald-100">
+            <div class="flex flex-wrap gap-3 items-center">
+                <button id="btnApercu" type="button" onclick="chargerApercu()" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-4 py-2 rounded text-sm font-medium">
+                    &#x21BB; Charger le catalogue EcoLogits (aperçu)
+                </button>
+                <button id="btnAppliquer" type="button" onclick="appliquerCatalogue()" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-sm font-medium">
+                    Appliquer ces valeurs
+                </button>
+                <span id="majStatut" class="text-sm text-gray-500"></span>
+            </div>
+            <div id="majApercu" class="mt-4 overflow-x-auto"></div>
+        </div>
+
+        <script>
+        const URL_ECOLOGITS = 'update_ecologits.php';
+
+        function echapper(texte) {
+            const d = document.createElement('div');
+            d.textContent = String(texte);
+            return d.innerHTML;
+        }
+
+        async function chargerApercu() {
+            const statut = document.getElementById('majStatut');
+            statut.textContent = 'Interrogation de EcoLogits… (peut prendre une minute)';
+            try {
+                const r = await fetch(URL_ECOLOGITS + '?action=preview', { credentials: 'same-origin' });
+                const d = await r.json();
+                if (!d.success) throw new Error(d.error || 'erreur inconnue');
+
+                const lignes = d.lignes.map(l => `
+                    <tr class="border-t">
+                        <td class="p-2">${echapper(l.nom)}</td>
+                        <td class="p-2 text-right">${l.tokens}</td>
+                        <td class="p-2 text-right">${(l.ancien_g / 1000).toFixed(4)}</td>
+                        <td class="p-2 text-right">${l.min_kg.toFixed(6)} – ${l.max_kg.toFixed(6)}</td>
+                        <td class="p-2 text-right font-semibold">${l.moyenne_kg.toFixed(6)}</td>
+                    </tr>`).join('');
+
+                document.getElementById('majApercu').innerHTML = `
+                    <table class="w-full text-sm">
+                        <thead class="text-left text-gray-600">
+                            <tr>
+                                <th class="p-2">Cas d'usage</th>
+                                <th class="p-2 text-right">Tokens</th>
+                                <th class="p-2 text-right">Actuel (kg)</th>
+                                <th class="p-2 text-right">EcoLogits min – max (kg)</th>
+                                <th class="p-2 text-right">Valeur retenue (kg)</th>
+                            </tr>
+                        </thead>
+                        <tbody>${lignes}</tbody>
+                    </table>`;
+
+                document.getElementById('btnAppliquer').classList.remove('hidden');
+                statut.textContent = d.lignes.length + ' cas d\'usage. Rien n\'est écrit tant que vous ne cliquez pas sur « Appliquer ».';
+            } catch (e) {
+                statut.textContent = 'Erreur : ' + e.message;
+            }
+        }
+
+        async function appliquerCatalogue() {
+            if (!confirm('Écrire ces valeurs dans le catalogue utilisé par tous les participants ?')) return;
+            const statut = document.getElementById('majStatut');
+            statut.textContent = 'Écriture en cours…';
+            try {
+                const r = await fetch(URL_ECOLOGITS, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({ action: 'apply' })
+                });
+                const d = await r.json();
+                if (!d.success) throw new Error(d.error || 'erreur inconnue');
+                statut.textContent = d.updated + ' cas d\'usage mis à jour. Rechargement…';
+                setTimeout(() => location.reload(), 1500);
+            } catch (e) {
+                statut.textContent = 'Erreur : ' + e.message;
+            }
+        }
+        </script>
+
         <!-- Statistiques -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             <div class="bg-white rounded-xl shadow p-4 text-center">
