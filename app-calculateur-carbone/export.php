@@ -65,7 +65,7 @@ function exportParticipantData($output, $db, $user, $sessionId, $useCases, $cate
 
     // Total
     $total = array_sum(array_column($calculs, 'co2_total'));
-    fputcsv($output, ['TOTAL ANNUEL', number_format($total, 0, ',', ' ') . ' g CO2'], ';');
+    fputcsv($output, ['TOTAL ANNUEL', number_format($total / 1000, 3, ',', ' ') . ' kg CO2'], ';');
     fputcsv($output, ['Equivalent km voiture', round($total / 1000 / 0.21, 1)], ';');
     fputcsv($output, ['Equivalent emails', round($total / 4)], ';');
     fputcsv($output, [], ';');
@@ -86,7 +86,7 @@ function exportParticipantData($output, $db, $user, $sessionId, $useCases, $cate
             $uc['nom'] ?? $calc['use_case_id'],
             getFrequenceLabel($calc['frequence']),
             $calc['quantite'],
-            number_format($calc['co2_total'], 0, ',', ' ')
+            number_format($calc['co2_total'] / 1000, 3, ',', ' ')
         ], ';');
     }
 
@@ -120,13 +120,13 @@ function exportSessionData($output, $db, $sharedDb, $sessionId, $useCases, $cate
 
     fputcsv($output, ['RESUME'], ';');
     fputcsv($output, ['Nombre de participants', $stats['nb_participants'] ?? 0], ';');
-    fputcsv($output, ['Total CO2 session', number_format($total, 0, ',', ' ') . ' g'], ';');
-    fputcsv($output, ['Moyenne par participant', $stats['nb_participants'] > 0 ? number_format($total / $stats['nb_participants'], 0, ',', ' ') . ' g' : '0 g'], ';');
+    fputcsv($output, ['Total CO2 session', number_format($total / 1000, 3, ',', ' ') . ' kg'], ';');
+    fputcsv($output, ['Moyenne par participant', $stats['nb_participants'] > 0 ? number_format($total / $stats['nb_participants'] / 1000, 3, ',', ' ') . ' kg' : '0 kg'], ';');
     fputcsv($output, [], ';');
 
     // Par participant
     fputcsv($output, ['DETAIL PAR PARTICIPANT'], ';');
-    fputcsv($output, ['Participant', 'Nb usages', 'CO2 total (g)', 'Km voiture eq.'], ';');
+    fputcsv($output, ['Participant', 'Nb usages', 'CO2 total (kg)', 'Km voiture eq.'], ';');
 
     $stmt = $db->prepare("
         SELECT user_id, COUNT(*) as nb, SUM(co2_total) as total
@@ -145,7 +145,7 @@ function exportSessionData($output, $db, $sharedDb, $sessionId, $useCases, $cate
         fputcsv($output, [
             $name,
             $u['nb'],
-            number_format($u['total'], 0, ',', ' '),
+            number_format($u['total'] / 1000, 3, ',', ' '),
             round($u['total'] / 1000 / 0.21, 1)
         ], ';');
     }
@@ -154,7 +154,7 @@ function exportSessionData($output, $db, $sharedDb, $sessionId, $useCases, $cate
 
     // Par cas d'usage
     fputcsv($output, ['DETAIL PAR CAS D\'USAGE'], ';');
-    fputcsv($output, ['Categorie', 'Cas d\'usage', 'Nb utilisations', 'CO2 total (g)'], ';');
+    fputcsv($output, ['Categorie', 'Cas d\'usage', 'Nb utilisations', 'CO2 total (kg)'], ';');
 
     $stmt = $db->prepare("
         SELECT use_case_id, COUNT(*) as nb, SUM(co2_total) as total
@@ -175,7 +175,7 @@ function exportSessionData($output, $db, $sharedDb, $sessionId, $useCases, $cate
             $catName,
             $ucData['nom'] ?? $uc['use_case_id'],
             $uc['nb'],
-            number_format($uc['total'], 0, ',', ' ')
+            number_format($uc['total'] / 1000, 3, ',', ' ')
         ], ';');
     }
 
@@ -183,7 +183,7 @@ function exportSessionData($output, $db, $sharedDb, $sessionId, $useCases, $cate
 
     // Detail complet
     fputcsv($output, ['DETAIL COMPLET'], ';');
-    fputcsv($output, ['Participant', 'Categorie', 'Cas d\'usage', 'Frequence', 'Quantite', 'CO2 (g)'], ';');
+    fputcsv($output, ['Participant', 'Categorie', 'Cas d\'usage', 'Frequence', 'Quantite', 'CO2 (kg)'], ';');
 
     $stmt = $db->prepare("SELECT * FROM calculs WHERE session_id = ? ORDER BY user_id, created_at");
     $stmt->execute([$sessionId]);
@@ -211,7 +211,7 @@ function exportSessionData($output, $db, $sharedDb, $sessionId, $useCases, $cate
             $ucData['nom'] ?? $calc['use_case_id'],
             getFrequenceLabel($calc['frequence']),
             $calc['quantite'],
-            number_format($calc['co2_total'], 0, ',', ' ')
+            number_format($calc['co2_total'] / 1000, 3, ',', ' ')
         ], ';');
     }
 }

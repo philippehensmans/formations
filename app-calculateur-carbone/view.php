@@ -106,7 +106,7 @@ $useCases = $estimations['use_cases'] ?? [];
                     <?php endif; ?>
                 </div>
                 <div class="text-right">
-                    <div class="text-3xl font-bold text-emerald-600"><?= number_format($totalCo2, 1) ?></div>
+                    <div class="text-3xl font-bold text-emerald-600"><?= number_format($totalCo2 / 1000, 3, ',', ' ') ?></div>
                     <div class="text-gray-500 text-sm">kg CO2 total</div>
                 </div>
             </div>
@@ -129,7 +129,7 @@ $useCases = $estimations['use_cases'] ?? [];
             <div class="bg-white rounded-xl shadow p-4 border border-emerald-100">
                 <div class="flex justify-between items-start mb-2">
                     <div class="font-semibold text-emerald-700"><?= h($useCaseName) ?></div>
-                    <span class="text-sm font-bold text-emerald-600"><?= number_format($co2, 2) ?> kg</span>
+                    <span class="text-sm font-bold text-emerald-600"><?= number_format($co2 / 1000, 3, ',', ' ') ?> kg</span>
                 </div>
                 <div class="w-full bg-emerald-100 rounded-full h-2 mb-2">
                     <div class="bg-emerald-500 h-2 rounded-full" style="width: <?= $barWidth ?>%"></div>

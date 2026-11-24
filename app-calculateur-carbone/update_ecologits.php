@@ -15,6 +15,10 @@
 
 require_once __DIR__ . '/config.php';
 
+// DESACTIVE : les facteurs codes en dur ci-dessous ne sont pas sources.
+// Ce script ne doit pas reecrire estimations.json tant que des valeurs sourcees ne sont pas validees.
+exit("Mise a jour desactivee : facteurs non sources.\n");
+
 // Configuration
 $ECOLOGITS_API = 'https://huggingface.co/spaces/genai-impact/ecologits-calculator';
 $GITHUB_RAW = 'https://raw.githubusercontent.com/genai-impact/ecologits/main/ecologits/data';

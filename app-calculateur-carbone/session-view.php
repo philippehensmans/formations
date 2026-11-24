@@ -134,11 +134,6 @@ $maxCo2 = $participantsCount > 0 ? max(array_column($byUser, 'total_co2')) : 0;
                     </div>
                 </div>
             </div>
-            <form method="post" action="update_ecologits.php" onsubmit="this.querySelector('button').disabled=true; this.querySelector('button').textContent='Mise à jour...';">
-                <button type="submit" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-4 py-2 rounded text-sm font-medium whitespace-nowrap">
-                    &#x21BB; Mettre à jour les facteurs EcoLogits
-                </button>
-            </form>
         </div>
 
         <!-- Statistiques -->
@@ -152,11 +147,11 @@ $maxCo2 = $participantsCount > 0 ? max(array_column($byUser, 'total_co2')) : 0;
                 <div class="text-gray-500 text-sm">Calculs</div>
             </div>
             <div class="bg-white rounded-xl shadow p-4 text-center">
-                <div class="text-3xl font-bold text-teal-600"><?= number_format($globalCo2, 1) ?></div>
+                <div class="text-3xl font-bold text-teal-600"><?= number_format($globalCo2 / 1000, 3, ',', ' ') ?></div>
                 <div class="text-gray-500 text-sm">CO2 total (kg)</div>
             </div>
             <div class="bg-white rounded-xl shadow p-4 text-center">
-                <div class="text-3xl font-bold text-cyan-600"><?= number_format($avgCo2, 1) ?></div>
+                <div class="text-3xl font-bold text-cyan-600"><?= number_format($avgCo2 / 1000, 3, ',', ' ') ?></div>
                 <div class="text-gray-500 text-sm">Moyenne / participant (kg)</div>
             </div>
         </div>
@@ -176,7 +171,7 @@ $maxCo2 = $participantsCount > 0 ? max(array_column($byUser, 'total_co2')) : 0;
                             <?php endif; ?>
                         </div>
                         <div>
-                            <span class="bg-white/30 px-3 py-1 rounded text-sm font-bold"><?= number_format($data['total_co2'], 1) ?> kg CO2</span>
+                            <span class="bg-white/30 px-3 py-1 rounded text-sm font-bold"><?= number_format($data['total_co2'] / 1000, 3, ',', ' ') ?> kg CO2</span>
                         </div>
                     </div>
                     <!-- Barre de CO2 relative -->
@@ -194,7 +189,7 @@ $maxCo2 = $participantsCount > 0 ? max(array_column($byUser, 'total_co2')) : 0;
                         <div class="bg-emerald-50 rounded-lg p-3 border border-emerald-100">
                             <div class="flex justify-between items-start mb-1">
                                 <div class="text-xs font-semibold text-emerald-600 uppercase"><?= h($useCaseNames[$calcul['use_case_id']] ?? $calcul['use_case_id']) ?></div>
-                                <span class="text-sm font-bold text-emerald-700"><?= number_format((float)($calcul['co2_total'] ?? 0), 2) ?> kg</span>
+                                <span class="text-sm font-bold text-emerald-700"><?= number_format((float)($calcul['co2_total'] ?? 0) / 1000, 3, ',', ' ') ?> kg</span>
                             </div>
                             <div class="text-xs text-gray-500 space-y-0.5">
                                 <?php if (!empty($calcul['frequence'])): ?>
