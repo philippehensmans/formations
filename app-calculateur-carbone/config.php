@@ -188,13 +188,6 @@ function fmtKg($grammes) {
 }
 
 /**
- * Fourchette affichee : "min – max" en kg
- */
-function fmtFourchetteKg($minG, $maxG) {
-    return fmtKg($minG) . ' – ' . fmtKg($maxG);
-}
-
-/**
  * Convertir CO2 en equivalents comprehensibles
  */
 function co2Equivalents($grammes) {
