@@ -27,15 +27,17 @@ switch ($action) {
             exit;
         }
 
-        $co2Total = calculerCO2($useCaseId, $frequence, $quantite);
+        $f = calculerCO2Fourchette($useCaseId, $frequence, $quantite);
 
-        $stmt = $db->prepare("INSERT INTO calculs (session_id, user_id, use_case_id, frequence, quantite, co2_total) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$sessionId, $userId, $useCaseId, $frequence, $quantite, $co2Total]);
+        $stmt = $db->prepare("INSERT INTO calculs (session_id, user_id, use_case_id, frequence, quantite, co2_total, co2_min, co2_max) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$sessionId, $userId, $useCaseId, $frequence, $quantite, $f['total'], $f['min'], $f['max']]);
 
         echo json_encode([
             'success' => true,
             'calcul_id' => $db->lastInsertId(),
-            'co2_total' => $co2Total
+            'co2_total' => $f['total'],
+            'co2_min' => $f['min'],
+            'co2_max' => $f['max']
         ]);
         break;
 

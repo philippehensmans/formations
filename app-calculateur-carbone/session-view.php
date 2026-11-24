@@ -53,10 +53,14 @@ foreach ($allCalculs as $c) {
         $byUser[$uid] = [
             'calculs' => [],
             'total_co2' => 0,
+            'total_min' => 0,
+            'total_max' => 0,
         ];
     }
     $byUser[$uid]['calculs'][] = $c;
     $byUser[$uid]['total_co2'] += (float)($c['co2_total'] ?? 0);
+    $byUser[$uid]['total_min'] += (float)($c['co2_min'] ?? 0);
+    $byUser[$uid]['total_max'] += (float)($c['co2_max'] ?? 0);
 }
 
 // Enrichir avec les infos utilisateur
@@ -77,6 +81,8 @@ uasort($byUser, fn($a, $b) => $b['total_co2'] <=> $a['total_co2']);
 $participantsCount = count($byUser);
 $totalCalculs = count($allCalculs);
 $globalCo2 = array_sum(array_column($byUser, 'total_co2'));
+$globalMin = array_sum(array_column($byUser, 'total_min'));
+$globalMax = array_sum(array_column($byUser, 'total_max'));
 $avgCo2 = $participantsCount > 0 ? round($globalCo2 / $participantsCount, 1) : 0;
 $maxCo2 = $participantsCount > 0 ? max(array_column($byUser, 'total_co2')) : 0;
 ?>
@@ -229,11 +235,11 @@ $maxCo2 = $participantsCount > 0 ? max(array_column($byUser, 'total_co2')) : 0;
                 <div class="text-gray-500 text-sm">Calculs</div>
             </div>
             <div class="bg-white rounded-xl shadow p-4 text-center">
-                <div class="text-3xl font-bold text-teal-600"><?= number_format($globalCo2 / 1000, 3, ',', ' ') ?></div>
+                <div class="text-3xl font-bold text-teal-600"><?= fmtFourchetteKg($globalMin, $globalMax) ?></div>
                 <div class="text-gray-500 text-sm">CO2 total (kg)</div>
             </div>
             <div class="bg-white rounded-xl shadow p-4 text-center">
-                <div class="text-3xl font-bold text-cyan-600"><?= number_format($avgCo2 / 1000, 3, ',', ' ') ?></div>
+                <div class="text-3xl font-bold text-cyan-600"><?= fmtFourchetteKg($globalMin / max(1, $participantsCount), $globalMax / max(1, $participantsCount)) ?></div>
                 <div class="text-gray-500 text-sm">Moyenne / participant (kg)</div>
             </div>
         </div>
@@ -253,7 +259,7 @@ $maxCo2 = $participantsCount > 0 ? max(array_column($byUser, 'total_co2')) : 0;
                             <?php endif; ?>
                         </div>
                         <div>
-                            <span class="bg-white/30 px-3 py-1 rounded text-sm font-bold"><?= number_format($data['total_co2'] / 1000, 3, ',', ' ') ?> kg CO2</span>
+                            <span class="bg-white/30 px-3 py-1 rounded text-sm font-bold"><?= fmtFourchetteKg($data['total_min'], $data['total_max']) ?> kg CO2</span>
                         </div>
                     </div>
                     <!-- Barre de CO2 relative -->
@@ -271,7 +277,7 @@ $maxCo2 = $participantsCount > 0 ? max(array_column($byUser, 'total_co2')) : 0;
                         <div class="bg-emerald-50 rounded-lg p-3 border border-emerald-100">
                             <div class="flex justify-between items-start mb-1">
                                 <div class="text-xs font-semibold text-emerald-600 uppercase"><?= h($useCaseNames[$calcul['use_case_id']] ?? $calcul['use_case_id']) ?></div>
-                                <span class="text-sm font-bold text-emerald-700"><?= number_format((float)($calcul['co2_total'] ?? 0) / 1000, 3, ',', ' ') ?> kg</span>
+                                <span class="text-sm font-bold text-emerald-700"><?= fmtFourchetteKg((float)($calcul['co2_min'] ?? 0), (float)($calcul['co2_max'] ?? 0)) ?> kg</span>
                             </div>
                             <div class="text-xs text-gray-500 space-y-0.5">
                                 <?php if (!empty($calcul['frequence'])): ?>
