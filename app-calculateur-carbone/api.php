@@ -65,15 +65,15 @@ switch ($action) {
 
         $stmt = $db->prepare("
             SELECT
-                u.id,
-                u.prenom,
-                u.username,
+                c.user_id AS id,
+                p.prenom,
+                p.nom,
                 SUM(c.co2_total) as total_co2,
                 COUNT(c.id) as nb_calculs
             FROM calculs c
-            JOIN users u ON c.user_id = u.id
+            LEFT JOIN participants p ON p.user_id = c.user_id AND p.session_id = c.session_id
             WHERE c.session_id = ?
-            GROUP BY u.id
+            GROUP BY c.user_id
             ORDER BY total_co2 DESC
         ");
         $stmt->execute([$sessionId]);

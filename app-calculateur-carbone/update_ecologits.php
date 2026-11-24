@@ -1,199 +1,170 @@
 <?php
 /**
- * Script de mise a jour des estimations CO2 depuis EcoLogits
+ * Mise a jour du catalogue CO2 depuis l'API EcoLogits (v1beta)
+ * https://api.ecologits.ai/v1beta/estimations
  *
- * EcoLogits est une bibliotheque Python qui calcule l'impact carbone des LLMs.
- * Ce script tente de recuperer les donnees les plus recentes depuis leurs sources.
+ * Un modele de reference unique est utilise pour tous les cas d'usage.
+ * Valeur retenue : moyenne de la fourchette min/max renvoyee par l'API (kgCO2eq),
+ * pour les tokens de sortie (output_token_count = tokens_estimes).
  *
- * Sources:
- * - https://ecologits.ai/
- * - https://huggingface.co/spaces/genai-impact/ecologits-calculator
- * - https://github.com/genai-impact/ecologits
- *
- * Usage: php update_ecologits.php
+ * Actions (formateur connecte uniquement) :
+ *  - GET  ?action=preview : calcule les nouvelles valeurs, n'ecrit rien
+ *  - POST action=apply    : recalcule puis ecrit data/estimations.json
  */
-
 require_once __DIR__ . '/config.php';
 
-// Configuration
-$ECOLOGITS_API = 'https://huggingface.co/spaces/genai-impact/ecologits-calculator';
-$GITHUB_RAW = 'https://raw.githubusercontent.com/genai-impact/ecologits/main/ecologits/data';
+const ECOLOGITS_API = 'https://api.ecologits.ai/v1beta/estimations';
+const MODELE_REFERENCE = ['provider' => 'anthropic', 'model_name' => 'claude-sonnet-5-5'];
+// Pas de electricity_mix_zone : la doc annonce WOR par defaut, mais WOR explicite
+// donne des valeurs differentes (0.000177 vs 0.000151 kg pour 300 tokens, claude-sonnet-5-5).
+// On garde l'appel sans zone, comme les valeurs deja presentees.
 
-// Facteurs de conversion EcoLogits (valeurs par defaut)
-// Ces valeurs sont basees sur les donnees publiees par EcoLogits
-$ECOLOGITS_FACTORS = [
-    // Energie par token en kWh (moyenne)
-    'energy_per_1k_tokens' => [
-        'gpt-4' => 0.0052,
-        'gpt-4-turbo' => 0.0048,
-        'gpt-3.5-turbo' => 0.0012,
-        'claude-3-opus' => 0.0055,
-        'claude-3-sonnet' => 0.0028,
-        'claude-3-haiku' => 0.0008,
-        'claude-2' => 0.0035,
-        'mistral-large' => 0.0030,
-        'mistral-medium' => 0.0018,
-        'mistral-small' => 0.0010,
-        'llama-70b' => 0.0025,
-        'llama-13b' => 0.0008,
-        'llama-7b' => 0.0004,
-        'dall-e-3' => 0.025, // par image
-        'stable-diffusion' => 0.015, // par image
-    ],
-
-    // Intensite carbone moyenne (gCO2/kWh) - mix mondial
-    'carbon_intensity' => 475,
-
-    // Facteur PUE datacenter
-    'pue' => 1.2,
-];
-
-function log_message($msg) {
-    echo date('[Y-m-d H:i:s]') . " $msg\n";
-}
-
-function calculateCO2FromTokens($tokens, $modelType = 'gpt-4') {
-    global $ECOLOGITS_FACTORS;
-
-    // Mapper le type de modele
-    $modelKey = 'gpt-4'; // defaut
-    $modelLower = strtolower($modelType);
-
-    if (strpos($modelLower, 'gpt-3.5') !== false || strpos($modelLower, 'haiku') !== false) {
-        $modelKey = 'gpt-3.5-turbo';
-    } elseif (strpos($modelLower, 'gpt-4') !== false || strpos($modelLower, 'claude') !== false) {
-        $modelKey = 'gpt-4';
-    } elseif (strpos($modelLower, 'dall-e') !== false || strpos($modelLower, 'image') !== false) {
-        $modelKey = 'dall-e-3';
-    }
-
-    $energyPer1kTokens = $ECOLOGITS_FACTORS['energy_per_1k_tokens'][$modelKey] ?? 0.003;
-    $carbonIntensity = $ECOLOGITS_FACTORS['carbon_intensity'];
-    $pue = $ECOLOGITS_FACTORS['pue'];
-
-    // Calcul: tokens/1000 * energy * PUE * carbon_intensity
-    $energyKwh = ($tokens / 1000) * $energyPer1kTokens * $pue;
-    $co2Grams = $energyKwh * $carbonIntensity;
-
-    return round($co2Grams, 1);
-}
-
-function updateEstimations() {
-    log_message("Demarrage de la mise a jour des estimations...");
-
-    // Charger les estimations actuelles
-    $estimations = getEstimations();
-    if (empty($estimations)) {
-        log_message("ERREUR: Impossible de charger les estimations actuelles");
-        return false;
-    }
-
-    $useCases = $estimations['use_cases'] ?? [];
-    $updated = 0;
-
-    foreach ($useCases as $id => &$uc) {
-        $tokens = $uc['tokens_estimes'] ?? 0;
-        $modelType = $uc['modele_type'] ?? 'GPT-4';
-
-        if ($tokens > 0) {
-            $newCO2 = calculateCO2FromTokens($tokens, $modelType);
-            if ($newCO2 != $uc['co2_grammes']) {
-                log_message("  $id: {$uc['co2_grammes']}g -> {$newCO2}g");
-                $uc['co2_grammes'] = $newCO2;
-                $updated++;
-            }
-        }
-
-        // Mise a jour de l'equivalent
-        $uc['equivalent'] = generateEquivalent($uc['co2_grammes']);
-    }
-
-    // Mettre a jour les metadonnees
-    $estimations['_metadata']['last_updated'] = date('Y-m-d');
-    $estimations['_metadata']['source'] = 'Mis a jour depuis facteurs EcoLogits ' . date('Y-m-d');
-
-    // Sauvegarder
-    if (saveEstimations($estimations)) {
-        log_message("Mise a jour terminee: $updated cas modifies");
-
-        // Logger dans la base
-        $db = getDB();
-        $stmt = $db->prepare("INSERT INTO updates_log (source, status, message) VALUES (?, ?, ?)");
-        $stmt->execute(['ecologits', 'success', "$updated cas mis a jour"]);
-
-        return true;
-    } else {
-        log_message("ERREUR: Impossible de sauvegarder les estimations");
-        return false;
-    }
-}
-
-function generateEquivalent($co2Grams) {
-    if ($co2Grams < 5) {
-        $emails = round($co2Grams / 4);
-        return "$emails emails envoyes";
-    } elseif ($co2Grams < 50) {
-        $emails = round($co2Grams / 4);
-        return "$emails emails envoyes";
-    } else {
-        $km = round($co2Grams / 210, 1);
-        return "$km km en voiture";
-    }
-}
-
-// Fonction pour tenter de recuperer les donnees depuis le calculateur EcoLogits
-function fetchEcoLogitsData() {
-    global $ECOLOGITS_API;
-
-    log_message("Tentative de recuperation depuis EcoLogits...");
-
-    // Note: Le calculateur EcoLogits est une app Gradio qui necessiterait
-    // du scraping JavaScript. Pour l'instant, on utilise les facteurs connus.
-
-    // Tentative de fetch du README ou des donnees publiques
-    $githubUrl = 'https://api.github.com/repos/genai-impact/ecologits/contents/ecologits/data';
-
-    $context = stream_context_create([
-        'http' => [
-            'method' => 'GET',
-            'header' => "User-Agent: PHP-Update-Script\r\n",
-            'timeout' => 10
-        ]
+/**
+ * Appel de l'API pour un nombre de tokens de sortie.
+ * Retourne ['min' => kgCO2eq, 'max' => kgCO2eq]
+ */
+function appelerEcoLogits($tokens) {
+    $body = json_encode([
+        'provider' => MODELE_REFERENCE['provider'],
+        'model_name' => MODELE_REFERENCE['model_name'],
+        'output_token_count' => (int)$tokens,
     ]);
 
-    $response = @file_get_contents($githubUrl, false, $context);
-
-    if ($response) {
-        log_message("Donnees GitHub recuperees avec succes");
-        $data = json_decode($response, true);
-        if (is_array($data)) {
-            log_message("  " . count($data) . " fichiers trouves dans le repo");
-        }
-        return true;
+    if (function_exists('curl_init')) {
+        // cURL respecte les variables de proxy de l'environnement
+        $ch = curl_init(ECOLOGITS_API);
+        curl_setopt_array($ch, [
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $body,
+            CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 20,
+        ]);
+        $raw = curl_exec($ch);
+        curl_close($ch);
     } else {
-        log_message("Impossible de contacter l'API GitHub, utilisation des facteurs locaux");
-        return false;
+        $ctx = stream_context_create(['http' => [
+            'method' => 'POST',
+            'header' => "Content-Type: application/json\r\n",
+            'content' => $body,
+            'timeout' => 20,
+            'ignore_errors' => true,
+        ]]);
+        $raw = @file_get_contents(ECOLOGITS_API, false, $ctx);
     }
+
+    if ($raw === false || $raw === '') {
+        throw new RuntimeException("API EcoLogits injoignable");
+    }
+
+    $data = json_decode($raw, true);
+    $gwp = $data['impacts']['gwp']['value'] ?? null;
+    if ($gwp === null) {
+        throw new RuntimeException("Reponse EcoLogits inattendue : " . substr($raw, 0, 200));
+    }
+
+    // Certains modeles renvoient une valeur unique au lieu d'une fourchette
+    if (is_array($gwp)) {
+        return ['min' => (float)$gwp['min'], 'max' => (float)$gwp['max']];
+    }
+    return ['min' => (float)$gwp, 'max' => (float)$gwp];
 }
 
-// Execution - seulement si appele directement (pas via include)
-if (php_sapi_name() === 'cli') {
-    // Tenter de recuperer les dernieres donnees
-    fetchEcoLogitsData();
+/**
+ * Calcule les nouvelles valeurs pour chaque cas d'usage (sans rien ecrire)
+ */
+function calculerApercu() {
+    $est = getEstimations();
+    $lignes = [];
 
-    // Mettre a jour avec les facteurs connus
-    $success = updateEstimations();
+    foreach ($est['use_cases'] ?? [] as $id => $uc) {
+        $tokens = (int)($uc['tokens_estimes'] ?? 0);
+        if ($tokens <= 0) {
+            continue; // pas de tokens : cas non traite
+        }
 
-    exit($success ? 0 : 1);
-} elseif (basename($_SERVER['SCRIPT_FILENAME'] ?? '') === 'update_ecologits.php') {
-    // Appel direct via navigateur
-    fetchEcoLogitsData();
-    updateEstimations();
-    $referer = $_SERVER['HTTP_REFERER'] ?? 'formateur.php';
-    header('Location: ' . $referer);
+        $r = appelerEcoLogits($tokens);
+        $lignes[] = [
+            'id' => $id,
+            'nom' => $uc['nom'] ?? $id,
+            'tokens' => $tokens,
+            'ancien_g' => (float)($uc['co2_grammes'] ?? 0),
+            'min_kg' => $r['min'],
+            'max_kg' => $r['max'],
+            'moyenne_kg' => ($r['min'] + $r['max']) / 2,
+        ];
+    }
+
+    return $lignes;
+}
+
+/**
+ * Ecrit les valeurs calculees dans estimations.json
+ */
+function appliquerApercu($lignes) {
+    $est = getEstimations();
+    $modele = MODELE_REFERENCE['provider'] . '/' . MODELE_REFERENCE['model_name'];
+    $maj = 0;
+
+    foreach ($lignes as $l) {
+        if (!isset($est['use_cases'][$l['id']])) {
+            continue;
+        }
+        $uc = &$est['use_cases'][$l['id']];
+        $uc['co2_grammes'] = round($l['moyenne_kg'] * 1000, 4);
+        $uc['co2_min_kg'] = $l['min_kg'];
+        $uc['co2_max_kg'] = $l['max_kg'];
+        $uc['modele_ref'] = $modele;
+        unset($uc['equivalent']); // ancien champ, non maintenu
+        unset($uc);
+        $maj++;
+    }
+
+    $est['_metadata'] = array_merge($est['_metadata'] ?? [], [
+        'last_updated' => date('Y-m-d'),
+        'source' => 'API EcoLogits v1beta (' . $modele . ', mix electrique par defaut de l\'API)',
+        'valeur' => 'moyenne min/max, kgCO2eq par tokens de sortie',
+    ]);
+
+    if (!saveEstimations($est)) {
+        throw new RuntimeException("Impossible d'ecrire estimations.json");
+    }
+
+    $db = getDB();
+    $stmt = $db->prepare("INSERT INTO updates_log (source, status, message) VALUES (?, ?, ?)");
+    $stmt->execute(['ecologits', 'success', "$maj cas mis a jour (" . $modele . ")"]);
+
+    return $maj;
+}
+
+// --- Point d'entree (appel AJAX depuis la vue formateur) ---
+if (!isFormateur()) {
+    http_response_code(403);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(['error' => 'Acces formateur requis']);
     exit;
-} elseif (isset($_POST['action']) && $_POST['action'] === 'update_ecologits') {
-    // Inclus depuis formateur.php
-    fetchEcoLogitsData();
-    updateEstimations();
+}
+
+header('Content-Type: application/json; charset=utf-8');
+set_time_limit(180);
+
+$action = $_GET['action'] ?? $_POST['action'] ?? '';
+
+try {
+    if ($action === 'preview') {
+        echo json_encode(['success' => true, 'lignes' => calculerApercu()]);
+    } elseif ($action === 'apply') {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['error' => 'Ecriture refusee hors POST']);
+            exit;
+        }
+        $n = appliquerApercu(calculerApercu());
+        echo json_encode(['success' => true, 'updated' => $n]);
+    } else {
+        echo json_encode(['error' => 'Action inconnue']);
+    }
+} catch (Throwable $e) {
+    http_response_code(502);
+    echo json_encode(['error' => $e->getMessage()]);
 }
