@@ -74,15 +74,15 @@ foreach ($scenarios as $scenario) {
         }
     }
 
-    // Calculer les moyennes par option
+    // Moyennes : même calcul que la page participant et la vue formateur (config.php)
+    $calc = calculateAverages($db, $scenario['id']);
     $optionAvgs = [];
     foreach ([1, 2, 3] as $opt) {
-        $c = count($optionScores[$opt]['impact']);
         $optionAvgs[$opt] = [
             'count' => $optionCounts[$opt],
-            'avg_impact' => $c > 0 ? round(array_sum($optionScores[$opt]['impact']) / $c, 1) : 0,
-            'avg_qualite' => $c > 0 ? round(array_sum($optionScores[$opt]['qualite']) / $c, 1) : 0,
-            'avg_temps' => $c > 0 ? round(array_sum($optionScores[$opt]['temps']) / $c, 1) : 0,
+            'avg_impact' => $calc[$opt]['impact'],
+            'avg_qualite' => $calc[$opt]['qualite'],
+            'avg_temps' => $calc[$opt]['temps'],
         ];
     }
 
@@ -213,7 +213,7 @@ $participantsCount = count($totalParticipantIds);
                             <div class="grid grid-cols-3 gap-3">
                                 <div class="text-center">
                                     <div class="text-xs <?= $col['light'] ?> font-semibold uppercase">Impact</div>
-                                    <div class="text-lg font-bold <?= $col['text'] ?>"><?= $avg['avg_impact'] ?>/5</div>
+                                    <div class="text-lg font-bold <?= $col['text'] ?>"><?= $avg['avg_impact'] ?: '-' ?>/3</div>
                                 </div>
                                 <div class="text-center">
                                     <div class="text-xs <?= $col['light'] ?> font-semibold uppercase">Qualite</div>
@@ -221,7 +221,7 @@ $participantsCount = count($totalParticipantIds);
                                 </div>
                                 <div class="text-center">
                                     <div class="text-xs <?= $col['light'] ?> font-semibold uppercase">Temps</div>
-                                    <div class="text-lg font-bold <?= $col['text'] ?>"><?= $avg['avg_temps'] ?>/5</div>
+                                    <div class="text-lg font-bold <?= $col['text'] ?>"><?= $avg['avg_temps'] ?: '-' ?>/3</div>
                                 </div>
                             </div>
                             <?php endif; ?>
