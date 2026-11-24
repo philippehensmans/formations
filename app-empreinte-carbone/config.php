@@ -116,36 +116,44 @@ function getVotes($db, $scenarioId) {
 }
 
 // Calculer les moyennes des votes par option
+// Une valeur 0 signifie "critère non noté" : chaque critère est moyenné
+// uniquement sur les votes qui l'ont effectivement noté (les 0 ne sont pas comptés).
+// Le score global n'est calculé que lorsque les 3 critères ont au moins une note.
+// Échelles : impact 1-3 (3 = fort impact), qualité 1-5, temps 1-3 (3 = gain important).
+// Score global sur 100 : qualité 40 pts + temps 30 pts + impact inversé 30 pts.
 function calculateAverages($db, $scenarioId) {
     $results = [];
 
     for ($opt = 1; $opt <= 3; $opt++) {
         $stmt = $db->prepare("
             SELECT
-                COUNT(*) as voters,
-                AVG(impact) as avg_impact,
-                AVG(qualite) as avg_qualite,
-                AVG(temps) as avg_temps
+                COUNT(CASE WHEN impact > 0 OR qualite > 0 OR temps > 0 THEN 1 END) as voters,
+                AVG(NULLIF(impact, 0)) as avg_impact,
+                AVG(NULLIF(qualite, 0)) as avg_qualite,
+                AVG(NULLIF(temps, 0)) as avg_temps
             FROM votes
-            WHERE scenario_id = ? AND option_number = ? AND (impact > 0 OR qualite > 0 OR temps > 0)
+            WHERE scenario_id = ? AND option_number = ?
         ");
         $stmt->execute([$scenarioId, $opt]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
+        $avgImpact = $row['avg_impact'] !== null ? (float)$row['avg_impact'] : null;
+        $avgQualite = $row['avg_qualite'] !== null ? (float)$row['avg_qualite'] : null;
+        $avgTemps = $row['avg_temps'] !== null ? (float)$row['avg_temps'] : null;
+
         $results[$opt] = [
             'voters' => (int)$row['voters'],
-            'impact' => round($row['avg_impact'] ?: 0, 1),
-            'qualite' => round($row['avg_qualite'] ?: 0, 1),
-            'temps' => round($row['avg_temps'] ?: 0, 1),
-            'score_env' => round((4 - ($row['avg_impact'] ?: 0)) * 33.33, 0),
+            'impact' => $avgImpact !== null ? round($avgImpact, 1) : 0,
+            'qualite' => $avgQualite !== null ? round($avgQualite, 1) : 0,
+            'temps' => $avgTemps !== null ? round($avgTemps, 1) : 0,
             'score_global' => 0
         ];
 
-        if ($row['voters'] > 0) {
+        if ($avgImpact !== null && $avgQualite !== null && $avgTemps !== null) {
             $results[$opt]['score_global'] = round(
-                (($row['avg_qualite'] ?: 0) / 5 * 40) +
-                (($row['avg_temps'] ?: 0) / 3 * 30) +
-                ((4 - ($row['avg_impact'] ?: 0)) / 3 * 30)
+                ($avgQualite / 5 * 40) +
+                ($avgTemps / 3 * 30) +
+                ((4 - $avgImpact) / 3 * 30)
             , 0);
         }
     }

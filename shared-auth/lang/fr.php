@@ -989,7 +989,7 @@ return [
         'subtitle' => 'Évaluez collectivement l\'impact environnemental des solutions',
         'participant' => 'participant(s)',
         'waiting_trainer' => 'En attente du formateur',
-        'no_scénario' => 'Le formateur n\'a pas encore lancé de scénario d\'évaluation.',
+        'no_scenario' => 'Le formateur n\'a pas encore lancé de scénario d\'évaluation.',
         'auto_refresh' => 'Cette page se rafraîchira automatiquement.',
         'how_to_vote' => 'Comment voter ?',
         'env_impact' => 'Impact environnemental',
