@@ -15,9 +15,8 @@ require_once __DIR__ . '/config.php';
 
 const ECOLOGITS_API = 'https://api.ecologits.ai/v1beta/estimations';
 const MODELE_REFERENCE = ['provider' => 'anthropic', 'model_name' => 'claude-sonnet-5-5'];
-// Pas de electricity_mix_zone : la doc annonce WOR par defaut, mais WOR explicite
-// donne des valeurs differentes (0.000177 vs 0.000151 kg pour 300 tokens, claude-sonnet-5-5).
-// On garde l'appel sans zone, comme les valeurs deja presentees.
+// Zone du mix electrique : Belgique (ISO 3166-1 alpha-3). Pas de zone "Europe" dans EcoLogits.
+const ECOLOGITS_ZONE = 'BEL';
 
 /**
  * Appel de l'API pour un nombre de tokens de sortie.
@@ -28,6 +27,7 @@ function appelerEcoLogits($tokens) {
         'provider' => MODELE_REFERENCE['provider'],
         'model_name' => MODELE_REFERENCE['model_name'],
         'output_token_count' => (int)$tokens,
+        'electricity_mix_zone' => ECOLOGITS_ZONE,
     ]);
 
     if (function_exists('curl_init')) {
@@ -91,7 +91,6 @@ function calculerApercu() {
             'ancien_g' => (float)($uc['co2_grammes'] ?? 0),
             'min_kg' => $r['min'],
             'max_kg' => $r['max'],
-            'moyenne_kg' => ($r['min'] + $r['max']) / 2,
         ];
     }
 
@@ -111,9 +110,10 @@ function appliquerApercu($lignes) {
             continue;
         }
         $uc = &$est['use_cases'][$l['id']];
-        $uc['co2_grammes'] = round($l['moyenne_kg'] * 1000, 4);
-        $uc['co2_min_kg'] = $l['min_kg'];
-        $uc['co2_max_kg'] = $l['max_kg'];
+        // Fourchette complete (grammes). co2_grammes = milieu, utilise seulement comme repli.
+        $uc['co2_min_g'] = round($l['min_kg'] * 1000, 6);
+        $uc['co2_max_g'] = round($l['max_kg'] * 1000, 6);
+        $uc['co2_grammes'] = round(($uc['co2_min_g'] + $uc['co2_max_g']) / 2, 6);
         $uc['modele_ref'] = $modele;
         unset($uc['equivalent']); // ancien champ, non maintenu
         unset($uc);
@@ -122,8 +122,8 @@ function appliquerApercu($lignes) {
 
     $est['_metadata'] = array_merge($est['_metadata'] ?? [], [
         'last_updated' => date('Y-m-d'),
-        'source' => 'API EcoLogits v1beta (' . $modele . ', mix electrique par defaut de l\'API)',
-        'valeur' => 'moyenne min/max, kgCO2eq par tokens de sortie',
+        'source' => 'API EcoLogits v1beta (' . $modele . ', mix electrique ' . ECOLOGITS_ZONE . ')',
+        'valeur' => 'fourchette min/max EcoLogits, kgCO2eq par tokens de sortie',
     ]);
 
     if (!saveEstimations($est)) {

@@ -82,6 +82,16 @@ function initDatabase($db) {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )");
 
+    // Migrations : fourchette EcoLogits (min/max en grammes) pour les calculs
+    foreach ([
+        "ALTER TABLE calculs ADD COLUMN co2_min REAL DEFAULT 0",
+        "ALTER TABLE calculs ADD COLUMN co2_max REAL DEFAULT 0"
+    ] as $sql) {
+        try { $db->exec($sql); } catch (Exception $e) { /* Colonne existe deja */ }
+    }
+    // Calculs anterieurs a la fourchette : min = max = valeur unique
+    $db->exec("UPDATE calculs SET co2_min = co2_total, co2_max = co2_total WHERE co2_max = 0 AND co2_total > 0");
+
     // Table pour stocker les mises a jour EcoLogits
     $db->exec("CREATE TABLE IF NOT EXISTS updates_log (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -144,6 +154,44 @@ function calculerCO2($useCase, $frequence, $quantite = 1) {
     $mult = $multiplicateurs[$frequence] ?? 1;
 
     return $co2Base * $mult * $quantite;
+}
+
+/**
+ * Calcul avec fourchette : retourne le total (valeur retenue) et les bornes min/max, en grammes
+ */
+function calculerCO2Fourchette($useCase, $frequence, $quantite = 1) {
+    $estimation = getEstimationById($useCase);
+    if (!$estimation) return ['total' => 0, 'min' => 0, 'max' => 0];
+
+    $multiplicateurs = [
+        'ponctuel' => 1, 'quotidien' => 250, 'hebdomadaire' => 52,
+        'mensuel' => 12, 'trimestriel' => 4, 'annuel' => 1
+    ];
+    $mult = $multiplicateurs[$frequence] ?? 1;
+
+    $base = (float)($estimation['co2_grammes'] ?? 0);
+    $min = (float)($estimation['co2_min_g'] ?? $base);
+    $max = (float)($estimation['co2_max_g'] ?? $base);
+
+    return [
+        'total' => $base * $mult * $quantite,
+        'min' => $min * $mult * $quantite,
+        'max' => $max * $mult * $quantite,
+    ];
+}
+
+/**
+ * Formatage : grammes -> kg, avec 6 decimales (valeurs souvent inferieures a 1 g)
+ */
+function fmtKg($grammes) {
+    return number_format($grammes / 1000, 6, ',', ' ');
+}
+
+/**
+ * Fourchette affichee : "min – max" en kg
+ */
+function fmtFourchetteKg($minG, $maxG) {
+    return fmtKg($minG) . ' – ' . fmtKg($maxG);
 }
 
 /**

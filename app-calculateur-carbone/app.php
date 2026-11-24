@@ -28,6 +28,8 @@ $mesCalculs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Calculer le total CO2 du participant
 $totalCO2 = array_sum(array_column($mesCalculs, 'co2_total'));
+$totalMin = array_sum(array_column($mesCalculs, 'co2_min'));
+$totalMax = array_sum(array_column($mesCalculs, 'co2_max'));
 
 $currentLang = getCurrentLanguage();
 ?>
@@ -145,7 +147,7 @@ $currentLang = getCurrentLanguage();
                 <!-- Total personnel -->
                 <div class="bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-xl shadow-md p-6 text-white">
                     <h3 class="text-lg font-semibold mb-2"><?= t('carbon.my_annual_footprint') ?></h3>
-                    <p class="text-5xl font-bold" id="totalCO2"><?= number_format($totalCO2/1000, 3, ',', ' ') ?></p>
+                    <p class="text-2xl font-bold" id="totalCO2"><?= fmtFourchetteKg($totalMin, $totalMax) ?></p>
                     <p class="text-emerald-200"><?= t('carbon.kg_co2_year') ?></p>
                     <div class="mt-4 pt-4 border-t border-emerald-400 text-sm">
                         <p class="flex justify-between"><span><?= t('carbon.km_car') ?>:</span><span id="totalKm"><?= round($totalCO2/1000/0.21, 1) ?></span></p>
@@ -171,7 +173,7 @@ $currentLang = getCurrentLanguage();
                                     <p class="text-xs text-gray-500"><?= h($calc['frequence']) ?> x<?= $calc['quantite'] ?></p>
                                 </div>
                                 <div class="text-right">
-                                    <p class="font-semibold text-emerald-600"><?= number_format($calc['co2_total'] / 1000, 3, ',', ' ') ?> kg</p>
+                                    <p class="font-semibold text-emerald-600"><?= fmtFourchetteKg((float)$calc['co2_min'], (float)$calc['co2_max']) ?> kg</p>
                                     <button onclick="supprimerCalcul(<?= $calc['id'] ?>)" class="text-xs text-red-500 hover:text-red-700"><?= t('carbon.delete') ?></button>
                                 </div>
                             </div>
@@ -240,7 +242,7 @@ $currentLang = getCurrentLanguage();
                         <p class="text-sm text-gray-500">${uc.description}</p>
                     </div>
                     <div class="text-right">
-                        <span class="text-emerald-600 font-semibold">${(uc.co2_grammes / 1000).toFixed(4)} kg</span>
+                        <span class="text-emerald-600 font-semibold">${((uc.co2_min_g ?? uc.co2_grammes) / 1000).toFixed(6)} – ${((uc.co2_max_g ?? uc.co2_grammes) / 1000).toFixed(6)} kg</span>
                         <p class="text-xs text-gray-400">${uc.modele_type}</p>
                     </div>
                 </div>
@@ -280,11 +282,13 @@ $currentLang = getCurrentLanguage();
         };
 
         const co2Total = uc.co2_grammes * multiplicateurs[frequence] * quantite;
+        const co2Min = (uc.co2_min_g ?? uc.co2_grammes) * multiplicateurs[frequence] * quantite;
+        const co2Max = (uc.co2_max_g ?? uc.co2_grammes) * multiplicateurs[frequence] * quantite;
 
         // Afficher resultat
         document.getElementById('resultatCalcul').style.display = 'block';
 
-        document.getElementById('co2Result').textContent = (co2Total / 1000).toFixed(3);
+        document.getElementById('co2Result').textContent = (co2Min / 1000).toFixed(6) + ' – ' + (co2Max / 1000).toFixed(6);
         document.getElementById('co2Unit').textContent = T.kg_co2_year;
 
         // Equivalents
